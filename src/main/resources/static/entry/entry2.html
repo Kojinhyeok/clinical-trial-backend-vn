@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Trung Tâm Thử Nghiệm Lâm Sàng HUMAN</title>
+    <link href="/css/main.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="/js/script.js"></script>
+    <style>
+        .img-slider {
+            position: relative;
+            overflow: hidden;
+        }
+        .img-slider .slides {
+            display: flex;
+            transition: transform 0.4s ease;
+            width: 100%;
+        }
+        .img-slider .slide {
+            min-width: 100%;
+            gap: 15px;
+            display: flex;
+        }
+        .img-slider .slide .thumb {
+            flex: 1;
+            aspect-ratio: 4/5;
+        }
+        .board_card .item {
+            padding: 30px;
+        }
+    </style>
+</head>
+<body class="entry2">
+    <div id="head"></div>
+    <div class="top_banner">
+        <div class="container">
+            <h1>Hạng Mục Thử Nghiệm</h1>
+        </div>
+        <div class="scroll_down">
+            <span class="scroll_text">Scroll to down</span>
+            <div class="scroll_line_box"><div class="scroll_line_inner"></div></div>
+        </div>
+    </div>
+    <div class="tab_menu">
+        <div class="container">
+            <div class="wrap">
+                <a href="/entry/entry1.html">Đánh Giá An Toàn</a>
+                <a href="/entry/entry2.html" class="active">Đánh Giá Hiệu Quả</a>
+                <a href="/entry/entry4.html">IN VITRO Đánh Giá</a>
+            </div>
+        </div>
+    </div>
+    <section class="sub0">
+        <div class="container">
+            <div class="title">
+                <h2 class="normal">Hành trình khám phá giá trị thực sự của sản phẩm, <br>lĩnh vực nghiên cứu của <span class="bold purple">HUMAN</span></h2>
+            </div>
+            <div class="image">
+                <h3>"Hành trình sản phẩm gặp gỡ thế giới, <br class="m_only">bắt đầu từ lâm sàng." <br>HUMAN chứng minh giá trị mà thương hiệu muốn truyền tải <br class="m_only">bằng ngôn ngữ khoa học.</h3>
+            </div>
+        </div>
+    </section>
+    <section class="sub1">
+        <div class="container">
+            <div class="title">
+                <div class="top">
+                    <img src="/images/icon/symbol.svg" alt="" class="symbol">
+                    <h2>Hiệu Quả</h2>
+                </div>
+                <p>Thử nghiệm kiểm chứng hiệu quả thực tế của sản phẩm</p>
+            </div>
+            <div class="content">
+                <div class="board_top">
+                    <div class="board_tab">
+                        <div class="wrap">
+                            <a href="#" class="tab-link active" data-tab="">Tất cả</a>
+                        </div>
+                    </div>
+                    <div class="search_wrap">
+                        <div class="search">
+                            <div class="box">
+                                <div class="img"><img src="/images/icon/search.svg" alt=""></div>
+                                <input id="search_input" placeholder="Tìm theo loại sản phẩm hoặc hạng mục lâm sàng.">
+                            </div>
+                            <button id="search_btn" type="button">Tìm kiếm</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="board_content">
+                    <!-- 샘플 데이터로 고정 렌더링 (백엔드 연동 전) -->
+                    <div class="board_card">
+                        <a href="/entry/entry_sample.html" class="item">
+                            <div class="img">
+                                <div class="thumb"><img src="/images/board/sample.jpg" alt="Trước thử nghiệm"></div>
+                                <div class="thumb"><img src="/images/board/sample.jpg" alt="Sau thử nghiệm"></div>
+                            </div>
+                            <div class="txt">
+                                <span class="tit">Đánh giá hiệu quả dưỡng ẩm da</span>
+                                <span class="caution">Cải thiện độ ẩm da rõ rệt sau 4 tuần</span>
+                            </div>
+                        </a>
+                        <a href="/entry/entry_sample.html" class="item">
+                            <div class="img">
+                                <div class="thumb"><img src="/images/board/sample.jpg" alt="Trước thử nghiệm"></div>
+                                <div class="thumb"><img src="/images/board/sample.jpg" alt="Sau thử nghiệm"></div>
+                            </div>
+                            <div class="txt">
+                                <span class="tit">Đánh giá hiệu quả làm sáng da</span>
+                                <span class="caution">Cải thiện sắc tố da sau 8 tuần sử dụng</span>
+                            </div>
+                        </a>
+                        <a href="/entry/entry_sample.html" class="item">
+                            <div class="img">
+                                <div class="thumb"><img src="/images/board/sample.jpg" alt="Trước thử nghiệm"></div>
+                                <div class="thumb"><img src="/images/board/sample.jpg" alt="Sau thử nghiệm"></div>
+                            </div>
+                            <div class="txt">
+                                <span class="tit">Đánh giá hiệu quả giảm nếp nhăn</span>
+                                <span class="caution">Cải thiện độ đàn hồi da sau 8 tuần</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <div id="foot"></div>
+    <style>
+        .board_card .item .img {
+            margin-top: 30px;
+        }
+    </style>
+    <script>
+        $(function(){
+            $("#head").load("/head.html");
+            $("#foot").load("/foot.html");
+
+            // 2단계(백엔드 연동)에서 아래 기능 복원 예정:
+            // - /api/trial-keyword-groups/tabs, /api/trials 연동
+            // - 탭 필터링, 검색, 페이지네이션, 이미지 슬라이더(다중 before/after) 로직
+
+            $('#search_btn').on('click', function() {
+                // TODO: 백엔드 연동 후 실제 검색 기능 복원
+            });
+        });
+    </script>
+</body>
+</html>

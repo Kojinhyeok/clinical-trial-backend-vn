@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>휴먼피부임상시험센터</title>
+    <link href="/css/main.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="/js/script.js"></script>
+</head>
+<body class="promo">
+    <div id="head"></div>
+    <div class="top_banner">
+        <div class="container">
+            <h1>홍보 센터</h1>
+        </div>
+        <div class="scroll_down">
+            <span class="scroll_text">Scroll to down</span>
+            <div class="scroll_line_box"><div class="scroll_line_inner"></div></div>
+        </div>
+    </div>
+    <div class="tab_menu">
+        <div class="container">
+            <div class="wrap">
+                <a href="/promo/promo1.html">인증마크</a>
+                <a href="/promo/promo4.html">휴먼 이야기</a>
+                <a href="/promo/promo5.html" class="active">휴먼 임상소식</a>
+            </div>
+        </div>
+    </div>
+    <section class="sub1">
+        <div class="container">
+            <div class="title">
+                <div class="top">
+                    <img src="/images/icon/symbol.svg" alt="" class="symbol">
+                    <h2>휴먼 임상소식</h2>
+                </div>
+            </div>
+            <div class="content">
+                <div class="board_gallery">
+                    <!-- JavaScript로 동적 생성 -->
+                </div>
+                <!-- 페이지네이션도 동적 생성 -->
+            </div>
+        </div>
+    </section>
+    <div id="foot"></div>
+    <script>
+        $(function(){
+            $("#head").load("/head.html");
+            $("#foot").load("/foot.html");
+
+            const itemsPerPage = 12;
+            const CACHE_TTL = 5 * 60 * 1000; // 5분
+            const CACHE_PREFIX = 'human_news_';
+            const CURRENT_PAGE_KEY = 'human_news_current_page';
+
+            let currentPage = 0;
+            let totalPages = 1;
+            let prefetching = false;
+
+            // ========== sessionStorage 캐시 유틸 ==========
+
+            function getCache(page) {
+                try {
+                    const raw = sessionStorage.getItem(CACHE_PREFIX + page);
+                    if (!raw) return null;
+                    const { data, timestamp } = JSON.parse(raw);
+                    if (Date.now() - timestamp > CACHE_TTL) {
+                        sessionStorage.removeItem(CACHE_PREFIX + page);
+                        return null;
+                    }
+                    return data;
+                } catch (e) {
+                    return null;
+                }
+            }
+
+            function setCache(page, data) {
+                try {
+                    sessionStorage.setItem(CACHE_PREFIX + page, JSON.stringify({
+                        data: data,
+                        timestamp: Date.now()
+                    }));
+                } catch (e) {
+                    console.warn('캐시 저장 실패:', e);
+                }
+            }
+
+            function isCached(page) {
+                return getCache(page) !== null;
+            }
+
+            function saveCurrentPage(page) {
+                try {
+                    sessionStorage.setItem(CURRENT_PAGE_KEY, page);
+                } catch (e) {}
+            }
+
+            // ========== 진입 경로 판단 ==========
+
+            /**
+             * 상세페이지에서 돌아온 경우에만 페이지 복원
+             * - promo5-detail.html에서 왔으면 → 마지막 페이지 복원
+             * - 그 외(다른 메뉴, 직접 진입 등) → 1페이지
+             */
+            function getStartPage() {
+                const referrer = document.referrer;
+                const isFromDetail = referrer.includes('promo5-detail');
+                if (isFromDetail) {
+                    try {
+                        return parseInt(sessionStorage.getItem(CURRENT_PAGE_KEY) || '0');
+                    } catch (e) {
+                        return 0;
+                    }
+                }
+                return 0;
+            }
+
+            // ========== 페이지 로드 ==========
+
+            const startPage = getStartPage();
+            loadHumanNews(startPage, false);
+
+            function loadHumanNews(page, scroll) {
+                const cached = getCache(page);
+
+                if (cached) {
+                    currentPage = page;
+                    totalPages = cached.totalPages;
+                    saveCurrentPage(page);
+                    renderNews(cached.content);
+                    renderPagination();
+                    if (scroll) scrollToTop();
+                    return;
+                }
+
+                $.ajax({
+                    url: '/api/human-news/paged',
+                    method: 'GET',
+                    data: { page: page, size: itemsPerPage },
+                    success: function(response) {
+                        setCache(page, response);
+                        totalPages = response.totalPages;
+                        currentPage = response.currentPage;
+                        saveCurrentPage(page);
+                        renderNews(response.content);
+                        renderPagination();
+                        if (scroll) scrollToTop();
+
+                        if (!prefetching) {
+                            prefetchAllPages();
+                        }
+                    },
+                    error: function(error) {
+                        console.error('데이터 로드 실패:', error);
+                        $('.board_gallery').html('<p style="text-align:center;padding:50px;">데이터를 불러오는데 실패했습니다.</p>');
+                    }
+                });
+            }
+
+            /**
+             * 백그라운드에서 나머지 페이지 순차 캐싱
+             */
+            function prefetchAllPages() {
+                if (prefetching) return;
+                prefetching = true;
+
+                function fetchNext(page) {
+                    if (page >= totalPages) {
+                        prefetching = false;
+                        return;
+                    }
+                    if (isCached(page)) {
+                        fetchNext(page + 1);
+                        return;
+                    }
+                    $.ajax({
+                        url: '/api/human-news/paged',
+                        method: 'GET',
+                        data: { page: page, size: itemsPerPage },
+                        success: function(response) {
+                            setCache(page, response);
+                            fetchNext(page + 1);
+                        },
+                        error: function() {
+                            fetchNext(page + 1);
+                        }
+                    });
+                }
+
+                fetchNext(0);
+            }
+
+            // ========== 렌더링 ==========
+
+            function renderNews(news) {
+                $('.board_gallery').empty();
+
+                if (!news || news.length === 0) {
+                    $('.board_gallery').html('<p style="text-align:center;padding:50px;">등록된 게시글이 없습니다.</p>');
+                    return;
+                }
+
+                const itemsHtml = news.map(item => `
+                    <a href="/promo/promo5-detail.html?id=${item.id}" class="item">
+                        <div class="thumb">
+                            <img src="${item.thumbnailUrl || '/images/board/sample.jpg'}" alt="${item.title}">
+                        </div>
+                        <div class="tit">${item.title}</div>
+                    </a>
+                `).join('');
+
+                $('.board_gallery').html(itemsHtml);
+            }
+
+            function renderPagination() {
+                $('.content .pagination').remove();
+
+                if (totalPages <= 1) return;
+
+                let pageButtons = '';
+                for (let i = 0; i < totalPages; i++) {
+                    const activeClass = i === currentPage ? 'active' : '';
+                    pageButtons += `<button class="page-num ${activeClass}" data-page="${i}">${i + 1}</button>`;
+                }
+
+                const paginationHtml = `
+                    <div class="pagination">
+                        <button class="prev" ${currentPage === 0 ? 'disabled' : ''}>
+                            <img src="/images/icon/prev.svg" alt="">이전
+                        </button>
+                        <div class="num">
+                            ${pageButtons}
+                        </div>
+                        <button class="next" ${currentPage === totalPages - 1 ? 'disabled' : ''}>
+                            다음<img src="/images/icon/next.svg" alt="">
+                        </button>
+                    </div>
+                `;
+
+                $('.content').append(paginationHtml);
+                attachPaginationEvents();
+            }
+
+            function attachPaginationEvents() {
+                $('.page-num').on('click', function() {
+                    const page = $(this).data('page');
+                    if (page === currentPage) return;
+                    loadHumanNews(page, true);
+                });
+
+                $('.pagination .prev').on('click', function() {
+                    if (currentPage > 0) {
+                        loadHumanNews(currentPage - 1, true);
+                    }
+                });
+
+                $('.pagination .next').on('click', function() {
+                    if (currentPage < totalPages - 1) {
+                        loadHumanNews(currentPage + 1, true);
+                    }
+                });
+            }
+
+            function scrollToTop() {
+                $('html, body').animate({
+                    scrollTop: $('.sub1').offset().top - 100
+                }, 300);
+            }
+        });
+    </script>
+</body>
+</html>

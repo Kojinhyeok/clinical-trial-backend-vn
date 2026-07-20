@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Trung Tâm Thử Nghiệm Lâm Sàng HUMAN</title>
+    <link href="/css/main.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="/js/script.js"></script>
+</head>
+<body class="irb">
+    <div id="head"></div>
+    <div class="top_banner">
+        <div class="container">
+            <h1>E-IRB</h1>
+        </div>
+        <div class="scroll_down">
+            <span class="scroll_text">Scroll to down</span>
+            <div class="scroll_line_box"><div class="scroll_line_inner"></div></div>
+        </div>
+    </div>
+    <section class="login">
+        <div class="container">
+            <div class="title">
+                <div class="top">
+                    <img src="/images/icon/symbol.svg" alt="" class="symbol">
+                    <h2>Đăng Ký Tài Khoản</h2>
+                </div>
+            </div>
+            <form class="content" id="signupForm">
+                <div class="login_box">
+                    <div class="account">
+                        <!-- 읽기 전용 필드 (기존 정보) -->
+                        <input type="text" id="name" readonly placeholder="Họ tên" style="background-color: #f5f5f5;">
+                        <input type="text" id="phone" readonly placeholder="Số điện thoại" style="background-color: #f5f5f5;">
+                        <input type="email" id="email" readonly placeholder="Email" style="background-color: #f5f5f5;">
+
+                        <!-- 입력 필드 (비밀번호만) -->
+                        <input type="password" id="password" placeholder="Mật khẩu" required>
+                        <input type="password" id="passwordConfirm" placeholder="Xác nhận mật khẩu" required>
+
+                        <button class="login_btn" type="submit">Đăng ký</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </section>
+    <div id="foot"></div>
+
+    <script>
+        $(function(){
+            $("#head").load("/head.html");
+            $("#foot").load("/foot.html");
+
+            var urlParams = new URLSearchParams(window.location.search);
+            var token = urlParams.get('token');
+            var userId = urlParams.get('id');
+
+            if (!token && !userId) {
+                alert('Truy cập không hợp lệ.');
+                window.location.href = '/index.html';
+                return;
+            }
+
+            if (token) {
+                loadUserInfoByToken(token);
+            } else {
+                loadUserInfoById(userId);
+            }
+
+            $('#signupForm').on('submit', function(e) {
+                e.preventDefault();
+                if (token) {
+                    completeSignupByToken(token);
+                } else {
+                    completeSignupById(userId);
+                }
+            });
+        });
+
+        function loadUserInfoByToken(token) {
+            $.ajax({
+                url: '/api/users/signup-by-token?token=' + encodeURIComponent(token),
+                method: 'GET',
+                success: function(response) {
+                    $('#name').val(response.name);
+                    $('#phone').val(response.phone);
+                    $('#email').val(response.email);
+                },
+                error: function(error) {
+                    var message = error.responseJSON?.message || 'Liên kết mời không hợp lệ.';
+                    alert(message);
+                    window.location.href = '/index.html';
+                }
+            });
+        }
+
+        function loadUserInfoById(userId) {
+            $.ajax({
+                url: '/api/users/signup/' + userId,
+                method: 'GET',
+                success: function(response) {
+                    $('#name').val(response.name);
+                    $('#phone').val(response.phone);
+                    $('#email').val(response.email);
+                },
+                error: function(error) {
+                    var message = error.responseJSON?.message || 'Không thể tải thông tin người dùng.';
+                    alert(message);
+                    window.location.href = '/index.html';
+                }
+            });
+        }
+
+        function completeSignupByToken(token) {
+            var password = $('#password').val();
+            var passwordConfirm = $('#passwordConfirm').val();
+
+            if (!validatePassword(password, passwordConfirm)) return;
+
+            $.ajax({
+                url: '/api/users/signup-by-token?token=' + encodeURIComponent(token),
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    password: password,
+                    position: 'PROFESSOR'
+                }),
+                success: function(response) {
+                    alert('Đăng ký tài khoản đã hoàn tất!\nBạn sẽ được chuyển đến trang đăng nhập.');
+                    window.location.href = '/irb/irb_login.html';
+                },
+                error: function(error) {
+                    var message = error.responseJSON?.message || 'Đăng ký thất bại.';
+                    alert(message);
+                }
+            });
+        }
+
+        function completeSignupById(userId) {
+            var password = $('#password').val();
+            var passwordConfirm = $('#passwordConfirm').val();
+
+            if (!validatePassword(password, passwordConfirm)) return;
+
+            $.ajax({
+                url: '/api/users/signup/' + userId,
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    password: password,
+                    position: 'PROFESSOR'
+                }),
+                success: function(response) {
+                    alert('Đăng ký tài khoản đã hoàn tất!\nBạn sẽ được chuyển đến trang đăng nhập.');
+                    window.location.href = '/irb/irb_login.html';
+                },
+                error: function(error) {
+                    var message = error.responseJSON?.message || 'Đăng ký thất bại.';
+                    alert(message);
+                }
+            });
+        }
+
+        function validatePassword(password, passwordConfirm) {
+            if (!password || !passwordConfirm) {
+                alert('Vui lòng nhập mật khẩu.');
+                return false;
+            }
+            if (password !== passwordConfirm) {
+                alert('Mật khẩu không khớp.');
+                return false;
+            }
+            if (password.length < 4) {
+                alert('Mật khẩu phải có ít nhất 4 ký tự.');
+                return false;
+            }
+            return true;
+        }
+    </script>
+</body>
+</html>

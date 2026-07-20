@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Trung Tâm Thử Nghiệm Lâm Sàng HUMAN</title>
+    <link href="/css/main.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="/js/script.js"></script>
+</head>
+<body class="irb">
+    <div id="head"></div>
+    <div class="top_banner">
+        <div class="container">
+            <h1>E-IRB</h1>
+        </div>
+        <div class="scroll_down">
+            <span class="scroll_text">Scroll to down</span>
+            <div class="scroll_line_box"><div class="scroll_line_inner"></div></div>
+        </div>
+    </div>
+    <section class="login">
+        <div class="container">
+            <div class="title">
+                <div class="top">
+                    <img src="/images/icon/symbol.svg" alt="" class="symbol">
+                    <h2>Đặt Lại Mật Khẩu</h2>
+                </div>
+                <p>Không tìm thấy thông tin thành viên khớp với thông tin bạn đã nhập.</p>
+            </div>
+            <form class="content">
+                <div class="login_box">
+                    <div class="account">
+                        <button class="login_btn" onclick="location.href='/irb/irb_pwreset.html'" type="button">Quay lại bước trước</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </section>
+    <div id="foot"></div>
+    <script>
+        $(function(){
+            $("#head").load("/head.html");
+            $("#foot").load("/foot.html");
+        });
+    </script>
+</body>
+</html>

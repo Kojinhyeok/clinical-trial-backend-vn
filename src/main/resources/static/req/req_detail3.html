@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Trung Tâm Thử Nghiệm Lâm Sàng HUMAN</title>
+    <link href="/css/main.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="/js/script.js"></script>
+</head>
+<body class="req2">
+    <div id="head"></div>
+    <div class="top_banner">
+        <div class="container">
+            <h1>Yêu Cầu Thử Nghiệm</h1>
+        </div>
+        <div class="scroll_down">
+            <span class="scroll_text">Scroll to down</span>
+            <div class="scroll_line_box"><div class="scroll_line_inner"></div></div>
+        </div>
+    </div>
+    <div class="tab_menu">
+        <div class="container">
+            <div class="wrap">
+                <a href="/req/req1.html">Quy Trình Thử Nghiệm</a>
+                <a href="/req/req2.html" class="active">Tư Vấn Thử Nghiệm</a>
+                <a href="/req/req3.html">Thông Báo</a>
+                <a href="/req/req4.html">Câu Hỏi Thường Gặp (FAQ)</a>
+                <a href="/req/req5.html">Tải Xuống</a>
+            </div>
+        </div>
+    </div>
+    <section class="sub1">
+        <div class="container">
+            <div class="title">
+                <div class="top">
+                    <img src="/images/icon/symbol.svg" alt="" class="symbol">
+                    <h2>Tư Vấn Thử Nghiệm</h2>
+                </div>
+            </div>
+            <div class="content">
+                <!-- 질문글 영역 -->
+                <div class="board_view" id="questionView">
+                    <!-- JavaScript로 동적 생성 -->
+                </div>
+
+                <!-- 답변글 영역 (여러 개 가능) -->
+                <div id="answersView">
+                    <!-- JavaScript로 동적 생성 -->
+                </div>
+
+                <div class="board_btn">
+                    <button class="type2" onclick="window.history.back()">Danh sách</button>
+                </div>
+            </div>
+        </div>
+    </section>
+    <div id="foot"></div>
+    <script>
+        $(function(){
+            $("#head").load("/head.html");
+            $("#foot").load("/foot.html");
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const questionId = urlParams.get('id');
+
+            if (!questionId) {
+                alert('Truy cập không hợp lệ.');
+                window.location.href = '/req/req2.html';
+                return;
+            }
+
+            loadQuestionDetail(questionId);
+        });
+
+        function loadQuestionDetail(id) {
+            $.ajax({
+                url: '/api/trial-questions/' + id,
+                method: 'GET',
+                success: function(data) {
+                    renderQuestionDetail(data);
+                },
+                error: function(error) {
+                    console.error('Lỗi tải dữ liệu:', error);
+                    alert('Không thể tải dữ liệu.');
+                    window.location.href = '/req/req2.html';
+                }
+            });
+        }
+
+        function renderQuestionDetail(data) {
+            const questionHtml = `
+                <div class="bd_tit">
+                    <div class="tit">${data.title}</div>
+                    <div class="sub">
+                        <span class="date">${formatDateTime(data.createdAt)}</span>
+                        <span class="name">${data.representativeName}</span>
+                    </div>
+                </div>
+                <div class="bd_cnt">
+                    <div class="question-info">
+                        <p><strong>Tên công ty:</strong> ${data.companyName || '-'}</p>
+                        <p><strong>Người phụ trách:</strong> ${data.representativeName} ${data.representativePosition || ''}</p>
+                        <p><strong>Số điện thoại:</strong> ${data.phone || '-'}</p>
+                        <p><strong>Email:</strong> ${data.email || '-'}</p>
+                        <p><strong>Loại sản phẩm:</strong> ${data.productType || '-'}</p>
+                    </div>
+                    <br>
+                    <div class="question-content">
+                        ${formatContent(data.content)}
+                    </div>
+                </div>
+            `;
+            $('#questionView').html(questionHtml);
+
+            if (data.answers && data.answers.length > 0) {
+                let answersHtml = '';
+                data.answers.forEach(function(answer) {
+                    answersHtml += `
+                        <div class="board_view" style="margin-top: 20px; background-color: #f9f9f9;">
+                            <div class="bd_tit">
+                                <div class="tit">Re: ${data.title}</div>
+                                <div class="sub">
+                                    <span class="date">${formatDateTime(answer.createdAt)}</span>
+                                    <span class="name">${answer.userName}</span>
+                                </div>
+                            </div>
+                            <div class="bd_cnt">
+                                ${formatContent(answer.content)}
+                            </div>
+                        </div>
+                    `;
+                });
+                $('#answersView').html(answersHtml);
+            }
+        }
+
+        function formatDateTime(dateString) {
+            const date = new Date(dateString);
+            const year = String(date.getFullYear()).slice(2);
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+            return year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds;
+        }
+
+        function formatContent(content) {
+            if (!content) return '';
+            return content.replace(/\n/g, '<br>');
+        }
+    </script>
+</body>
+</html>

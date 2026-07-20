@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Trung Tâm Thử Nghiệm Lâm Sàng HUMAN</title>
+    <link href="/css/main.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="/js/script.js"></script>
+</head>
+<body class="part2">
+    <div id="head"></div>
+    <div class="top_banner">
+        <div class="container">
+            <h1>Tham Gia Thử Nghiệm</h1>
+        </div>
+        <div class="scroll_down">
+            <span class="scroll_text">Scroll to down</span>
+            <div class="scroll_line_box"><div class="scroll_line_inner"></div></div>
+        </div>
+    </div>
+    <div class="tab_menu">
+        <div class="container">
+            <div class="wrap">
+                <a href="/part/part1.html">Cách Tham Gia</a>
+                <a href="/part/part2.html" class="active">Trải Nghiệm Mỹ Phẩm</a>
+                <a href="/part/part3.html">Câu Hỏi Thường Gặp (FAQ)</a>
+            </div>
+        </div>
+    </div>
+    <section class="sub1">
+        <div class="container">
+            <div class="title">
+                <h2>Trải Nghiệm Mỹ Phẩm</h2>
+            </div>
+            <div class="content">
+                <div class="content_div">
+                    <div class="alarm">
+                        <div class="wrap">
+                            <img src="/images/icon/alarm.svg" alt="">
+                            <p class="caution">Không thể tham gia đồng thời <br class="m_only">trải nghiệm tại tổ chức lâm sàng khác.</p>
+                        </div>
+                        <p>Nếu thuộc các trường hợp dưới đây, <br class="m_only">bạn có thể không đủ điều kiện tham gia hoặc bị loại giữa chừng.</p>
+                    </div>
+                    <div class="list6">
+                        <div class="item fade_up">
+                            <div class="wrap">
+                                <img src="/images/icon/error.svg" alt="">
+                                <p>Phụ nữ đang mang thai, cho con bú <br>hoặc có khả năng mang thai</p>
+                            </div>
+                        </div>
+                        <div class="item fade_up">
+                            <div class="wrap">
+                                <img src="/images/icon/error.svg" alt="">
+                                <p>Đã tham gia thử nghiệm tương tự <br>trong vòng 6 tháng gần đây</p>
+                            </div>
+                        </div>
+                        <div class="item fade_up">
+                            <div class="wrap">
+                                <img src="/images/icon/error.svg" alt="">
+                                <p>Da nhạy cảm hoặc có bệnh lý da liễu <br>như dị ứng</p>
+                            </div>
+                        </div>
+                        <div class="item fade_up">
+                            <div class="wrap">
+                                <img src="/images/icon/error.svg" alt="">
+                                <p>Đã sử dụng thuốc bôi ngoài da chứa steroid <br>để điều trị bệnh da liễu <br>trong hơn 1 tháng</p>
+                            </div>
+                        </div>
+                        <div class="item fade_up">
+                            <div class="wrap">
+                                <img src="/images/icon/error.svg" alt="">
+                                <p>Các trường hợp khác mà nghiên cứu viên <br>đánh giá là không phù hợp để tham gia thử nghiệm</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="sub2">
+        <div class="container">
+            <div class="title">
+                <h2>Thông Báo Tuyển Chọn</h2>
+            </div>
+            <div class="content">
+                <div class="board_tab2">
+                    <div class="wrap">
+                        <a href="#" class="tab-link active" data-field="SEOUL">Seoul</a>
+                        <a href="#" class="tab-link" data-field="DAEGU">Daegu</a>
+                        <a href="#" class="tab-link" data-field="JEJU">Jeju</a>
+                    </div>
+                    <div class="filter_calendar">
+                        <input type="date" id="dateFilter">
+                    </div>
+                </div>
+                <div class="board_content" id="recruitmentList">
+                    <!-- 동적으로 생성될 영역 -->
+                </div>
+                <!-- 페이지네이션 (동적 생성) -->
+            </div>
+        </div>
+    </section>
+    <div id="part_popup" class="popup_overlay">
+        <div class="popup_content">
+            <div class="wrap">
+                <img src="/images/part/part2/popup_pc.jpg" alt="" class="pc_only">
+                <img src="/images/part/part2/popup_m.jpg" alt="" class="m_only">
+            </div>
+            <div style="display: flex;">
+                <div style="background-color: var(--text-color); display:flex; margin-left:auto;">
+                    <input type="checkbox" style="cursor: pointer;margin-left:10px;" id="no_show_today">
+                    <span style="color: white; padding: 10px 10px;">Không hiển thị lại hôm nay</span>
+                </div>
+                <button onclick="closePopup()" class="popup_close" style="margin-left:0px;">Đóng</button>
+            </div>
+        </div>
+    </div>
+    <div id="foot"></div>
+    <script>
+        $(function(){
+            $("#head").load("/head.html");
+            $("#foot").load("/foot.html");
+        });
+
+        let currentField = 'SEOUL';
+        let allRecruitments = [];
+        let filteredRecruitments = [];
+        let currentPage = 1;
+        const itemsPerPage = 9;
+
+        function setCookieAtMidnight(name, value) {
+            const now = new Date();
+            const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+            document.cookie = name + "=" + value + "; expires=" + tomorrow.toUTCString() + "; path=/";
+        }
+
+        function getCookie(name) {
+            const value = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+            return value ? value[2] : null;
+        }
+
+        $(document).ready(function() {
+            if (getCookie("hide_part_popup") !== "Y") {
+                document.getElementById("part_popup").style.display = "block";
+            } else {
+                document.getElementById("part_popup").style.display = "none";
+            }
+
+            loadRecruitments();
+
+            $('.tab-link').on('click', function(e) {
+                e.preventDefault();
+                $('.tab-link').removeClass('active');
+                $(this).addClass('active');
+                currentField = $(this).data('field');
+                currentPage = 1;
+                loadRecruitments();
+            });
+
+            $('#dateFilter').on('change', function() {
+                currentPage = 1;
+                loadRecruitments();
+            });
+        });
+
+        function closePopup() {
+            if ($('#no_show_today').is(':checked')) {
+                setCookieAtMidnight("hide_part_popup", "Y");
+            }
+            document.getElementById("part_popup").style.display = "none";
+        }
+
+        function getDateField(item, fieldType) {
+            if (fieldType === 'start') {
+                return item.startDate || item.start_date || item.recruitmentStartDate || 
+                       item.recruitment_start_date || item.trialStartDate || null;
+            } else if (fieldType === 'end') {
+                return item.endDate || item.end_date || item.recruitmentEndDate || 
+                       item.recruitment_end_date || item.trialEndDate || null;
+            }
+            return null;
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return null;
+            if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+            if (dateStr.includes('T')) return dateStr.split('T')[0];
+
+            try {
+                const date = new Date(dateStr);
+                if (!isNaN(date.getTime())) {
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    return `${year}-${month}-${day}`;
+                }
+            } catch (e) {
+                console.error('Lỗi chuyển đổi ngày:', dateStr, e);
+            }
+            return null;
+        }
+
+        function loadRecruitments() {
+            const selectedDate = $('#dateFilter').val();
+            let apiUrl = '/api/recruitments/field/' + currentField;
+
+            $.ajax({
+                url: apiUrl,
+                method: 'GET',
+                success: function(data) {
+                    allRecruitments = data;
+
+                    if (selectedDate) {
+                        filteredRecruitments = allRecruitments.filter(item => {
+                            if (item.status === 'ALWAYS' || item.status === 'always') return true;
+                            const startDateStr = getDateField(item, 'start');
+                            const endDateStr = getDateField(item, 'end');
+                            if (!startDateStr || !endDateStr) return false;
+                            const start = new Date(startDateStr);
+                            const end = new Date(endDateStr);
+                            const selected = new Date(selectedDate);
+                            return selected >= start && selected <= end;
+                        }).sort((a, b) => (a.status === 'CLOSED' ? 1 : 0) - (b.status === 'CLOSED' ? 1 : 0));
+
+                    } else {
+                        filteredRecruitments = allRecruitments
+                            .slice()
+                            .sort((a, b) => (a.status === 'CLOSED' ? 1 : 0) - (b.status === 'CLOSED' ? 1 : 0));
+                    }
+
+                    renderRecruitments();
+                    renderPagination();
+                },
+                error: function(error) {
+                    console.error('Lỗi tải dữ liệu:', error);
+                    $('#recruitmentList').html('<p>Không thể tải dữ liệu.</p>');
+                }
+            });
+        }
+
+        function renderRecruitments() {
+            const startIdx = (currentPage - 1) * itemsPerPage;
+            const endIdx = startIdx + itemsPerPage;
+            const pageData = filteredRecruitments.slice(startIdx, endIdx);
+
+            let html = '<div class="board_card2">';
+
+            if (pageData.length === 0) {
+                html += '<p style="text-align: center; padding: 50px;">Chưa có thông báo tuyển chọn nào.</p>';
+            } else {
+                pageData.forEach(item => {
+                    html += createRecruitmentCard(item);
+                });
+            }
+
+            html += '</div>';
+            $('#recruitmentList').html(html);
+        }
+
+        function renderPagination() {
+            const totalPages = Math.ceil(filteredRecruitments.length / itemsPerPage);
+            $('.sub2 .content .pagination').remove();
+            if (totalPages <= 1) return;
+
+            let pageButtons = '';
+            for (let i = 1; i <= totalPages; i++) {
+                const activeClass = i === currentPage ? 'active' : '';
+                pageButtons += `<button class="page-num ${activeClass}" data-page="${i}">${i}</button>`;
+            }
+
+            const paginationHtml = `
+                <div class="pagination">
+                    <button class="prev" ${currentPage === 1 ? 'disabled' : ''}>
+                        <img src="/images/icon/prev.svg" alt="">Trước
+                    </button>
+                    <div class="num">${pageButtons}</div>
+                    <button class="next" ${currentPage === totalPages ? 'disabled' : ''}>
+                        Sau<img src="/images/icon/next.svg" alt="">
+                    </button>
+                </div>
+            `;
+
+            $('.sub2 .content').append(paginationHtml);
+            attachPaginationEvents(totalPages);
+        }
+
+        function attachPaginationEvents(totalPages) {
+            $('.page-num').on('click', function() {
+                currentPage = $(this).data('page');
+                renderRecruitments();
+                renderPagination();
+                $('html, body').animate({ scrollTop: $('.sub2').offset().top - 100 }, 300);
+            });
+
+            $('.pagination .prev').on('click', function() {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderRecruitments();
+                    renderPagination();
+                    $('html, body').animate({ scrollTop: $('.sub2').offset().top - 100 }, 300);
+                }
+            });
+
+            $('.pagination .next').on('click', function() {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderRecruitments();
+                    renderPagination();
+                    $('html, body').animate({ scrollTop: $('.sub2').offset().top - 100 }, 300);
+                }
+            });
+        }
+
+        function createRecruitmentCard(item) {
+            let statusClass = '';
+            let statusText = '';
+
+            if (item.isNotification) {
+                statusClass = 'notice';
+                statusText = 'Tuyển gấp';
+            } else if (item.status === 'ALWAYS') {
+                statusClass = 'always';
+                statusText = 'Tuyển thường xuyên';
+            } else if (item.status === 'OPEN') {
+                statusClass = '';
+                statusText = 'Đang tuyển';
+            } else if (item.status === 'CLOSED') {
+                statusClass = 'finish';
+                statusText = 'Đã đóng';
+            }
+
+            let html = `<a href="/part/part_detail.html?id=${item.id}&field=${currentField}" class="item ${statusClass}">`;
+
+            html += '<div class="badge">';
+            if (!item.isNotification) {
+                html += `<span>[ ${item.trialCode || ''} ]</span>`;
+            }
+            html += `<span>${statusText}</span>`;
+            html += '</div>';
+
+            html += '<div class="text">';
+            html += '<div class="main">';
+            html += `<p>${item.title || item.trialName || ''}</p>`;
+            html += '<span class="line"></span>';
+            html += '</div>';
+
+            html += '<div class="sub">';
+
+            if (item.participationGroup) {
+                html += '<div class="wrap">';
+                html += '<span class="tit">Đối tượng tham gia</span>';
+                html += `<span class="txt">${item.participationGroup}</span>`;
+                html += '</div>';
+            }
+
+            if (item.trialPart) {
+                html += '<div class="wrap">';
+                html += '<span class="tit">Vị trí thử nghiệm</span>';
+                html += `<span class="txt">${item.trialPart}</span>`;
+                html += '</div>';
+            }
+
+            if (item.participationCost) {
+                html += '<div class="wrap">';
+                html += '<span class="tit">Chi phí tham gia</span>';
+                html += `<span class="txt">${item.participationCost}</span>`;
+                html += '</div>';
+            }
+
+            html += '<div class="wrap">';
+            html += '<span class="tit">Lịch thử nghiệm</span>';
+            if (item.status === 'ALWAYS') {
+                html += '<span class="txt">Tuyển thường xuyên</span>';
+            } else {
+                const startDate = getDateField(item, 'start');
+                const endDate = getDateField(item, 'end');
+                if (startDate && endDate) {
+                    html += `<span class="txt">${formatDate(startDate)} ~ ${formatDate(endDate)}</span>`;
+                } else {
+                    html += '<span class="txt">Xem thông báo và hướng dẫn riêng sau</span>';
+                }
+            }
+            html += '</div>';
+
+            html += '</div></div>';
+            html += '</a>';
+
+            return html;
+        }
+    </script>
+</body>
+</html>

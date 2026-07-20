@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Trung Tâm Thử Nghiệm Lâm Sàng HUMAN</title>
+    <link href="/css/main.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="/js/script.js"></script>
+</head>
+<body class="irb">
+    <div id="head"></div>
+    <div class="top_banner">
+        <div class="container">
+            <h1>E-IRB</h1>
+        </div>
+        <div class="scroll_down">
+            <span class="scroll_text">Scroll to down</span>
+            <div class="scroll_line_box"><div class="scroll_line_inner"></div></div>
+        </div>
+    </div>
+    <section class="login">
+        <div class="container">
+            <div class="title">
+                <div class="top">
+                    <img src="/images/icon/symbol.svg" alt="" class="symbol">
+                    <h2>Đăng Nhập</h2>
+                </div>
+            </div>
+            <form class="content" id="loginForm">
+                <div class="login_box">
+                    <div class="account">
+                        <input type="email" id="email" placeholder="Email" required>
+                        <input type="password" id="password" placeholder="Mật khẩu" required>
+                        <button class="login_btn" type="submit">Đăng nhập</button>
+                    </div>
+                    <div class="login_bottom">
+                        <div class="form_check">
+                            <input type="checkbox" id="id_remember">
+                            <label for="id_remember">Lưu tài khoản</label>
+                        </div>
+                        <ul>
+                            <li><a href="/irb/irb_pwreset.html">Đặt lại mật khẩu</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </section>
+    <div id="foot"></div>
+<script>
+    $(function(){
+        $("#head").load("/head.html");
+        $("#foot").load("/foot.html");
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const redirectUrl = urlParams.get('redirect') || '/irb/irb.html';
+
+        $('#loginForm').on('submit', function(e) {
+            e.preventDefault();
+
+            const email = $('#email').val();
+            const password = $('#password').val();
+            const rememberMe = $('#id_remember').is(':checked');
+
+            $.ajax({
+                url: '/api/auth/login',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    email: email,
+                    password: password,
+                    rememberMe: rememberMe
+                }),
+                success: function(response) {
+
+                    if (rememberMe) {
+                        localStorage.setItem('savedEmail', email);
+                    } else {
+                        localStorage.removeItem('savedEmail');
+                    }
+
+                    sessionStorage.setItem('isLoggedIn', 'true');
+                    sessionStorage.setItem('userEmail', email);
+
+                    window.location.href = redirectUrl;
+                },
+                error: function(error) {
+                    console.error('Đăng nhập thất bại:', error);
+                    const message = error.responseJSON?.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại email và mật khẩu.';
+                    alert(message);
+                }
+            });
+        });
+
+        const savedEmail = localStorage.getItem('savedEmail');
+        if (savedEmail) {
+            $('#email').val(savedEmail);
+            $('#id_remember').prop('checked', true);
+        }
+    });
+</script>
+</body>
+</html>

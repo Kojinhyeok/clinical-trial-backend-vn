@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Trung Tâm Thử Nghiệm Lâm Sàng HUMAN</title>
+    <link href="/css/main.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="/js/script.js"></script>
+</head>
+<body class="irb">
+    <div id="head"></div>
+    <div class="top_banner">
+        <div class="container">
+            <h1>E-IRB</h1>
+        </div>
+        <div class="scroll_down">
+            <span class="scroll_text">Scroll to down</span>
+            <div class="scroll_line_box"><div class="scroll_line_inner"></div></div>
+        </div>
+    </div>
+    <section class="sub1">
+        <div class="container">
+            <div class="title">
+                <div class="top">
+                    <img src="/images/icon/symbol.svg" alt="" class="symbol">
+                    <h2>E-IRB</h2>
+                </div>
+            </div>
+            <div class="content">
+                <!-- 관리자만 보이는 버튼 -->
+                <div class="board_btn" id="adminButtons" style="display: none;">
+                    <button type="button" class="type1" onclick="location.href='/admin/index.html'">Quản trị</button>
+                    <button type="button" class="type3" onclick="location.href='/irb/irb_write.html'">Viết bài</button>
+                </div>
+
+                <table class="table1">
+                    <thead>
+                        <tr>
+                            <!-- 관리자만 체크박스 표시 -->
+                            <td class="select" id="selectColumn" style="display: none;">
+                                <div class="custom_check">
+                                    <input type="checkbox" id="select_all">
+                                    <label for="select_all"></label>
+                                </div>
+                            </td>
+                            <td class="num">STT</td>
+                            <td class="state">Trạng thái</td>
+                            <td class="sort">Hạng mục</td>
+                            <td class="tit">Tiêu đề</td>
+                            <td class="date">Thời gian tham gia</td>
+                            <td class="part">Tham gia</td>
+                        </tr>
+                    </thead>
+                    <tbody id="irbListBody">
+                        <!-- 동적 로딩 -->
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 50px;">
+                                Đang tải...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- 하단 버튼 -->
+                <div class="board_btn">
+                    <!-- 관리자만 보이는 버튼 -->
+                    <div id="adminBottomButtons" style="display: none;">
+                        <button type="button" class="type2" id="deleteSelected">Xóa mục đã chọn</button>
+                    </div>
+                    <button type="button" class="type3" id="writeButton" style="display: none;" onclick="location.href='/irb/irb_write.html'">Viết bài</button>
+                </div>
+
+                <div class="pagination" id="pagination">
+                    <!-- 동적 페이지네이션 -->
+                </div>
+            </div>
+        </div>
+    </section>
+    <div id="foot"></div>
+
+    <script>
+    let currentUser = null;
+    let isAdmin = false;
+    let irbList = [];
+    let categoryMap = {};
+
+    $(function () {
+        $("#head").load("/head.html");
+        $("#foot").load("/foot.html");
+
+        checkLoginAndLoadData();
+    });
+
+    function sortByRootThenReplies(items) {
+        function timeOf(x) {
+        var t = new Date(x && x.createdAt ? x.createdAt : 0).getTime();
+        return isNaN(t) ? 0 : t;
+        }
+
+        if (!Array.isArray(items) || items.length === 0) return [];
+
+        var roots = items.filter(function (it) {
+        return (it.depth || 0) === 0;
+        });
+
+        roots.sort(function (a, b) {
+        return timeOf(b) - timeOf(a);
+        });
+
+        var result = [];
+
+        roots.forEach(function (root) {
+        var threadItems = items.filter(function (x) {
+            return x.irbTestId === root.irbTestId;
+        });
+
+        var childrenMap = {};
+        threadItems.forEach(function (x) {
+            var parentId = x.irbTestIdRef;
+            if (parentId == null) return;
+            if (!childrenMap[parentId]) childrenMap[parentId] = [];
+            childrenMap[parentId].push(x);
+        });
+
+        Object.keys(childrenMap).forEach(function (pid) {
+            childrenMap[pid].sort(function (a, b) {
+            return timeOf(b) - timeOf(a);
+            });
+        });
+
+        function walk(parentId) {
+            var kids = childrenMap[parentId] || [];
+            kids.forEach(function (child) {
+            result.push(child);
+            walk(child.id);
+            });
+        }
+
+        result.push(root);
+        walk(root.id);
+        });
+
+        var used = new Set(result.map(function (x) { return x.id; }));
+        var orphans = items.filter(function (x) { return !used.has(x.id); });
+        orphans.sort(function (a, b) { return timeOf(b) - timeOf(a); });
+        orphans.forEach(function (x) { result.push(x); });
+
+        return result;
+    }
+
+    function checkLoginAndLoadData() {
+        $.ajax({
+        url: "/api/auth/check",
+        method: "GET",
+        success: function (response) {
+            if (!response.isLoggedIn) {
+                alert("Vui lòng đăng nhập.");
+                window.location.href =
+                    "/irb/irb_login.html?redirect=" + encodeURIComponent(window.location.pathname + window.location.search);
+                return;
+            }
+
+            getCurrentUser();
+        },
+        error: function () {
+            alert("Vui lòng đăng nhập.");
+            window.location.href =
+            "/irb/irb_login.html?redirect=" + encodeURIComponent(window.location.pathname);
+        },
+        });
+    }
+
+    function getCurrentUser() {
+        $.ajax({
+        url: "/api/auth/current-user",
+        method: "GET",
+        success: function (user) {
+            currentUser = user;
+            isAdmin = user && user.position === "ADMIN";
+
+            if (isAdmin) {
+            $("#adminButtons").show();
+            $("#adminBottomButtons").show();
+            $("#writeButton").show();
+            $("#selectColumn").show();
+            $("tbody td.select").show();
+            } else {
+            $("td.select").hide();
+            }
+
+            loadCategories();
+            loadIrbList();
+        },
+        error: function () {
+            const userEmail = sessionStorage.getItem("userEmail");
+            isAdmin = false;
+
+            loadCategories();
+            loadIrbList();
+        },
+        });
+    }
+
+    function loadCategories() {
+        $.ajax({
+        url: "/api/irb-categories",
+        method: "GET",
+        success: function (categories) {
+            categories.forEach((cat) => {
+            categoryMap[cat.id] = cat.category;
+            });
+        },
+        error: function (error) {
+            console.error("Lỗi tải danh mục:", error);
+        },
+        });
+    }
+
+    function loadIrbList() {
+        $.ajax({
+        url: "/api/irbs/active",
+        method: "GET",
+        success: function (data) {
+            irbList = Array.isArray(data) ? data : [];
+            renderIrbList();
+        },
+        error: function (error) {
+            console.error("Lỗi tải danh sách IRB:", error);
+            $("#irbListBody").html(`
+            <tr>
+                <td colspan="7" style="text-align: center; padding: 50px;">
+                Không thể tải dữ liệu.
+                </td>
+            </tr>
+            `);
+        },
+        });
+    }
+
+    function renderIrbList() {
+        if (!Array.isArray(irbList) || irbList.length === 0) {
+        $("#irbListBody").html(`
+            <tr>
+            <td colspan="${isAdmin ? 7 : 6}" style="text-align: center; padding: 50px;">
+                Chưa có bài đăng nào.
+            </td>
+            </tr>
+        `);
+        return;
+        }
+
+        const sorted = sortByRootThenReplies(irbList);
+
+        let html = "";
+        sorted.forEach((irb, index) => {
+        const replyPrefix = getReplyPrefix(irb.depth);
+        const categoryName = categoryMap[irb.categoryId] || "Kế hoạch/Thay đổi nghiên cứu";
+        const statusText = irb.status === "IN_REVIEW" ? "Đang thẩm định" : "Hoàn tất";
+        const dateRange = formatDateRange(irb.startDate, irb.endDate);
+
+        html += `
+            <tr>
+            ${
+                isAdmin
+                ? `
+            <td class="select">
+                <div class="custom_check">
+                <input type="checkbox" class="irb-check" data-id="${irb.id}" id="select${irb.id}">
+                <label for="select${irb.id}"></label>
+                </div>
+            </td>
+            `
+                : ""
+            }
+            <td class="num">${sorted.length - index}</td>
+            <td class="state">${statusText}</td>
+            <td class="sort">${categoryName}</td>
+            <td class="tit">
+                <a href="/irb/irb_detail.html?id=${irb.id}">
+                ${replyPrefix}${escapeHtml(irb.title)}
+                </a>
+            </td>
+            <td class="date">${dateRange}</td>
+            <td class="part">
+                <a href="/irb/irb_part.html?id=${irb.id}">
+                <span class="pc_only">Thẩm định </span>Tham gia
+                </a>
+            </td>
+            </tr>
+        `;
+        });
+
+        $("#irbListBody").html(html);
+    }
+
+    function escapeHtml(str) {
+        if (!str) return "";
+        return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function getReplyPrefix(depth) {
+        if (depth === 0) return "";
+
+        const indent = "&ensp;".repeat(depth);
+        const reText = "Re:".repeat(depth);
+        return `<span class="reply">${indent}ㄴ${reText}</span>`;
+    }
+
+    function formatDateRange(startDate, endDate) {
+        if (!startDate || !endDate) return "-";
+        return `${startDate} ~ ${endDate}`;
+    }
+
+    $("#select_all").on("change", function () {
+        $(".irb-check").prop("checked", $(this).prop("checked"));
+    });
+
+    $("#deleteSelected").on("click", function () {
+        const selectedIds = [];
+        $(".irb-check:checked").each(function () {
+        selectedIds.push($(this).data("id"));
+        });
+
+        if (selectedIds.length === 0) {
+        alert("Vui lòng chọn bài đăng cần xóa.");
+        return;
+        }
+
+        if (!confirm(`Bạn có muốn xóa ${selectedIds.length} bài đăng đã chọn không?`)) {
+        return;
+        }
+
+        deleteIrbs(selectedIds);
+    });
+
+    function deleteIrbs(ids) {
+        let completed = 0;
+        const total = ids.length;
+
+        ids.forEach((id) => {
+        $.ajax({
+            url: `/api/irbs/${id}`,
+            method: "DELETE",
+            success: function () {
+            completed++;
+            if (completed === total) {
+                alert("Đã xóa thành công.");
+                loadIrbList();
+            }
+            },
+            error: function (error) {
+            console.error("Lỗi khi xóa:", error);
+            alert("Đã xảy ra lỗi khi xóa.");
+            },
+        });
+        });
+    }
+    </script>
+</body>
+</html>

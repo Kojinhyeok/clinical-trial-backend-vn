@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Trung Tâm Thử Nghiệm Lâm Sàng HUMAN</title>
+    <link href="css/main.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="js/script.js"></script>
+</head>
+<body class="irb">
+    <div id="head"></div>
+    <div class="top_banner">
+        <div class="container">
+            <h1>E-IRB</h1>
+        </div>
+        <div class="scroll_down">
+            <span class="scroll_text">Scroll to down</span>
+            <div class="scroll_line_box"><div class="scroll_line_inner"></div></div>
+        </div>
+    </div>
+    <section class="sub1">
+        <div class="container">
+            <div class="title">
+                <div class="top">
+                    <img src="images/icon/symbol.svg" alt="" class="symbol">
+                    <h2>Tiếp Nhận Hoàn Tất</h2>
+                </div>
+            </div>
+            <div class="content">
+                <div class="confirm">
+                    <div class="circle"><img src="images/icon/check.svg" alt=""></div>
+                    <h2>“Yêu cầu của bạn đã được tiếp nhận”</h2>
+                    <div class="wrap">
+                        <p>Đăng ký tham gia thẩm định đã hoàn tất.</p>
+                        <p>Nếu có thắc mắc, vui lòng liên hệ với chúng tôi bất cứ lúc nào.</p>
+                    </div>
+                </div>
+                <div class="btn_group">
+                    <button type="button" class="back" onclick="location.href='index.html'">Về trang chủ</button>
+                    <button type="button" class="submit" onclick="location.href='irb.html'">Tham gia thẩm định thêm</button>
+                </div>
+            </div>
+        </div>
+    </section>
+    <div id="foot"></div>
+    <script>
+        $(function(){
+            $("#head").load("head.html");
+            $("#foot").load("foot.html");
+        });
+    </script>
+</body>
+</html>

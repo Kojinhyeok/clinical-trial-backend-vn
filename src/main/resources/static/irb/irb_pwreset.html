@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Trung Tâm Thử Nghiệm Lâm Sàng HUMAN</title>
+    <link href="/css/main.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="/js/script.js"></script>
+</head>
+<body class="irb">
+    <div id="head"></div>
+    <div class="top_banner">
+        <div class="container">
+            <h1>E-IRB</h1>
+        </div>
+        <div class="scroll_down">
+            <span class="scroll_text">Scroll to down</span>
+            <div class="scroll_line_box"><div class="scroll_line_inner"></div></div>
+        </div>
+    </div>
+    <section class="login">
+        <div class="container">
+            <div class="title">
+                <div class="top">
+                    <img src="/images/icon/symbol.svg" alt="" class="symbol">
+                    <h2>Đặt Lại Mật Khẩu</h2>
+                </div>
+            </div>
+            <!-- 이메일 링크 방식 -->
+            <form class="content" id="emailResetForm">
+                <div class="login_box">
+                    <div class="account">
+                        <input type="email" id="resetEmail" placeholder="Email" required>
+                        <button class="login_btn" type="submit">Gửi liên kết đặt lại mật khẩu</button>
+                    </div>
+                    <div class="login_bottom">
+                        <ul>
+                            <li><a href="#" id="toggleVerifyMode" style="color:#666;text-decoration:underline;">Đặt lại bằng xác thực danh tính</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </form>
+            <!-- 본인 인증 방식 (기존) -->
+            <form class="content" id="verifyForm" style="display:none;">
+                <div class="login_box">
+                    <div class="account">
+                        <input type="email" id="email" placeholder="Email" required>
+                        <input type="text" id="name" placeholder="Họ tên" required>
+                        <input type="text" id="phone" placeholder="010-1234-5678" maxlength="13" required>
+                        <button class="login_btn" type="submit">Xác thực danh tính</button>
+                    </div>
+                    <div class="login_bottom">
+                        <ul>
+                            <li><a href="#" id="toggleEmailMode" style="color:#666;text-decoration:underline;">Đặt lại qua email</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </section>
+    <div id="foot"></div>
+<script>
+    $(function(){
+        $("#head").load("/head.html");
+        $("#foot").load("/foot.html");
+
+        $('#toggleVerifyMode').on('click', function(e) {
+            e.preventDefault();
+            $('#emailResetForm').hide();
+            $('#verifyForm').show();
+        });
+        $('#toggleEmailMode').on('click', function(e) {
+            e.preventDefault();
+            $('#verifyForm').hide();
+            $('#emailResetForm').show();
+        });
+
+        $('#emailResetForm').on('submit', function(e) {
+            e.preventDefault();
+
+            var email = $('#resetEmail').val().trim();
+            if (!email) {
+                alert('Vui lòng nhập email.');
+                return;
+            }
+
+            var btn = $(this).find('button[type="submit"]');
+            btn.prop('disabled', true).text('Đang gửi...');
+
+            $.ajax({
+                url: '/api/auth/password-reset/send-email',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ email: email }),
+                success: function(response) {
+                    alert('Liên kết đặt lại mật khẩu đã được gửi qua email.\nVui lòng kiểm tra email của bạn.');
+                },
+                error: function(error) {
+                    var message = error.responseJSON?.message || 'Gửi email thất bại.';
+                    alert(message);
+                },
+                complete: function() {
+                    btn.prop('disabled', false).text('Gửi liên kết đặt lại mật khẩu');
+                }
+            });
+        });
+
+        $('#phone').on('input', function() {
+            var value = $(this).val().replace(/[^0-9]/g, '');
+            var result = '';
+
+            if (value.length <= 3) {
+                result = value;
+            } else if (value.length <= 7) {
+                result = value.slice(0, 3) + '-' + value.slice(3);
+            } else if (value.length <= 11) {
+                result = value.slice(0, 3) + '-' + value.slice(3, 7) + '-' + value.slice(7);
+            } else {
+                result = value.slice(0, 3) + '-' + value.slice(3, 7) + '-' + value.slice(7, 11);
+            }
+
+            $(this).val(result);
+        });
+
+        $('#verifyForm').on('submit', function(e) {
+            e.preventDefault();
+
+            var email = $('#email').val().trim();
+            var name = $('#name').val().trim();
+            var phone = $('#phone').val().trim();
+
+            if (!email || !name || !phone) {
+                alert('Vui lòng nhập đầy đủ thông tin.');
+                return;
+            }
+
+            var phonePattern = /^\d{3}-\d{3,4}-\d{4}$/;
+            if (!phonePattern.test(phone)) {
+                alert('Vui lòng nhập đúng định dạng số điện thoại. (VD: 010-1234-5678)');
+                return;
+            }
+
+            $.ajax({
+                url: '/api/auth/password-reset/verify',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    email: email,
+                    name: name,
+                    phone: phone
+                }),
+                success: function(response) {
+                    window.location.href = '/irb/irb_pwreset2.html?userId=' + response.userId + '&email=' + encodeURIComponent(email);
+                },
+                error: function(error) {
+                    var message = error.responseJSON?.message || 'Không tìm thấy thông tin người dùng khớp.';
+                    alert(message);
+                    window.location.href = '/irb/irb_pwreset4.html';
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>

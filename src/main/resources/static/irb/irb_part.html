@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Trung Tâm Thử Nghiệm Lâm Sàng HUMAN</title>
+    <link href="/css/main.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="/js/script.js"></script>
+</head>
+<body class="irb_part">
+    <div id="head"></div>
+    <div class="top_banner">
+        <div class="container">
+            <h1>E-IRB</h1>
+        </div>
+        <div class="scroll_down">
+            <span class="scroll_text">Scroll to down</span>
+            <div class="scroll_line_box"><div class="scroll_line_inner"></div></div>
+        </div>
+    </div>
+    <section class="sub1">
+        <div class="container">
+            <div class="content">
+                <!-- 첨부파일 테이블 -->
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <td>Tệp đính kèm</td>
+                        </tr>
+                    </thead>
+                    <tbody id="filesList">
+                        <tr>
+                            <td style="text-align: center; padding: 20px;">Đang tải...</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- 설문 질문들 (동적 생성) -->
+                <div id="surveyQuestions">
+                    <div style="text-align: center; padding: 50px;">
+                        Đang tải...
+                    </div>
+                </div>
+
+                <!-- 심사 결과 -->
+                <table class="table2">
+                    <tbody>
+                        <tr class="mix">
+                            <td class="tit">Kết quả thẩm định</td>
+                            <td>
+                                <div class="custom_radio">
+                                    <input type="radio" id="form1" name="result" value="APPROVED">
+                                    <label for="form1">Chấp thuận</label>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="custom_radio">
+                                    <input type="radio" id="form2" name="result" value="CONDITIONALLY_APPROVED">
+                                    <label for="form2">Chấp thuận có điều kiện</label>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="custom_radio">
+                                    <input type="radio" id="form3" name="result" value="REVISION_REQUIRED">
+                                    <label for="form3">Bổ sung và thẩm định lại</label>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="custom_radio">
+                                    <input type="radio" id="form4" name="result" value="REJECTED">
+                                    <label for="form4">Từ chối</label>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="custom_radio">
+                                    <input type="radio" id="form5" name="result" value="ON_HOLD">
+                                    <label for="form5">Tạm hoãn thẩm định</label>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="custom_radio">
+                                    <input type="radio" id="form6" name="result" value="SUSPENDED">
+                                    <label for="form6">Tạm dừng thử nghiệm</label>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="8"><textarea id="resultComment" placeholder="Vui lòng nhập nội dung."></textarea></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="btn_group">
+                    <button type="button" class="back" onclick="window.history.back()">Quay lại</button>
+                    <button type="button" class="submit" id="submitBtn">Nộp</button>
+                </div>
+            </div>
+        </div>
+    </section>
+    <div id="foot"></div>
+
+    <script>
+        let irbTestId = null;
+        let currentUser = null;
+        let templateData = null;
+        let irbData = null;
+
+        $(function(){
+            $("#head").load("/head.html");
+            $("#foot").load("/foot.html");
+
+            const urlParams = new URLSearchParams(window.location.search);
+            irbTestId = urlParams.get('id');
+
+            if (!irbTestId) {
+                alert('Truy cập không hợp lệ.');
+                window.location.href = '/irb/irb.html';
+                return;
+            }
+
+            checkLoginAndLoadData();
+        });
+
+        function checkLoginAndLoadData() {
+            $.ajax({
+                url: '/api/auth/check',
+                method: 'GET',
+                success: function(response) {
+                    if (!response.isLoggedIn) {
+                        alert('Vui lòng đăng nhập.');
+                        window.location.href = '/irb/irb_login.html?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
+                        return;
+                    }
+                    getCurrentUser();
+                },
+                error: function() {
+                    alert('Vui lòng đăng nhập.');
+                    window.location.href = '/irb/irb_login.html';
+                }
+            });
+        }
+
+        function getCurrentUser() {
+            $.ajax({
+                url: '/api/auth/current-user',
+                method: 'GET',
+                success: function(user) {
+                    currentUser = user;
+                    loadIrbDetail();
+                },
+                error: function() {
+                    alert('Không thể lấy thông tin người dùng.');
+                    window.location.href = '/irb/irb.html';
+                }
+            });
+        }
+
+        function loadIrbDetail() {
+            $.ajax({
+                url: `/api/irbs/${irbTestId}`,
+                method: 'GET',
+                success: function(data) {
+                    irbData = data;
+                    renderFiles();
+
+                    verifyEmailPermission();
+                },
+                error: function(error) {
+                    console.error('Lỗi tải IRB:', error);
+                    alert('Bạn không có quyền truy cập.');
+                    window.location.href = '/irb/irb.html';
+                }
+            });
+        }
+
+        function verifyEmailPermission() {
+    if (currentUser.position === 'ADMIN') {
+        loadTemplate();
+        return;
+    }
+
+    $.ajax({
+        url: `/api/irb-emails/logs/${irbTestId}`,
+        method: 'GET',
+        success: function(logs) {
+            const isAuthorized = logs.some(log => {
+                if (!log.userList || !Array.isArray(log.userList)) return false;
+
+                return log.userList.some(user =>
+                    user.email === currentUser.email ||
+                    user.userId === currentUser.id
+                );
+            });
+
+            if (isAuthorized) {
+                loadTemplate();
+            } else {
+                alert('Bạn không có quyền truy cập. (Bạn không phải là đối tượng thẩm định.)');
+                window.location.href = '/irb/irb.html';
+            }
+        },
+        error: function(error) {
+            console.error('Lỗi tải nhật ký email:', error);
+            alert('Không thể xác nhận thông tin quyền truy cập.');
+            window.location.href = '/irb/irb.html';
+        }
+    });
+}
+
+        function renderFiles() {
+            let html = '<tr><td><ol>';
+
+            if (irbData.attachedFiles && irbData.attachedFiles.length > 0) {
+                irbData.attachedFiles.forEach(file => {
+                    const downloadUrl = file.s3Url || file.downloadUrl;
+                    if (downloadUrl) {
+                        html += `<li><button type="button" onclick="window.open('${downloadUrl}', '_blank')">${file.originalFilename}</button></li>`;
+                    } else {
+                        html += `<li><span>${file.originalFilename}</span></li>`;
+                    }
+                });
+            } else {
+                html += '<li>Không có tệp đính kèm.</li>';
+            }
+
+            html += '</ol></td></tr>';
+            $('#filesList').html(html);
+        }
+
+        function loadTemplate() {
+            $.ajax({
+                url: `/api/irb-templates/${irbTestId}`,
+                method: 'GET',
+                data: { surveyName: 'BASIC' },
+                success: function(data) {
+                    templateData = data;
+
+                    renderSurvey();
+                },
+                error: function(error) {
+                    console.error('Lỗi tải mẫu khảo sát:', error);
+                    $('#surveyQuestions').html('<div style="text-align: center; padding: 50px;">Không thể tải khảo sát.</div>');
+                }
+            });
+        }
+
+        function renderSurvey() {
+            const questions = templateData.questionList || [];
+
+            const categories = {
+                'DOCUMENTS': { title: 'Tất cả tài liệu đã được nộp và đủ thông tin để tiến hành thẩm định', questions: [] },
+                'PLAN': { title: 'Part A: Kế hoạch thử nghiệm', questions: [] },
+                'AGREEMENTS': { title: 'Part B: Tiêu chí chấp thuận bản giải thích và đồng ý tham gia thử nghiệm', questions: [] }
+            };
+
+            questions.forEach(q => {
+                const question = {
+                    questionText: q.question_text || q.questionText,
+                    questionType: q.question_type || q.questionType,
+                    questionCategory: q.question_category || q.questionCategory,
+                    questionOrder: q.question_order || q.questionOrder
+                };
+
+                if (categories[question.questionCategory]) {
+                    categories[question.questionCategory].questions.push(question);
+                }
+            });
+
+            let html = '';
+            let questionIndex = 0;
+
+            Object.keys(categories).forEach((catKey, catIndex) => {
+                const cat = categories[catKey];
+                if (cat.questions.length === 0) return;
+
+                html += `
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <td>${cat.title}</td>
+                                <td>
+                                    <div class="custom_radio">
+                                        <input type="radio" id="all_yes_${catIndex}" class="select-all-yes" data-category="${catKey}">
+                                        <label for="all_yes_${catIndex}">Tất cả Có</label>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="custom_radio">
+                                        <input type="radio" id="all_no_${catIndex}" class="select-all-no" data-category="${catKey}">
+                                        <label for="all_no_${catIndex}">Tất cả Không</label>
+                                    </div>
+                                </td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                cat.questions.forEach(q => {
+                    html += `
+                        <tr>
+                            <td>${q.questionText}</td>
+                            <td>
+                                <div class="custom_radio">
+                                    <input type="radio" id="yes_${questionIndex}" class="answer-radio answer-yes" name="question_${questionIndex}" value="Y" data-category="${catKey}" required>
+                                    <label for="yes_${questionIndex}">Có</label>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="custom_radio">
+                                    <input type="radio" id="no_${questionIndex}" class="answer-radio answer-no" name="question_${questionIndex}" value="N" data-category="${catKey}" required>
+                                    <label for="no_${questionIndex}">Không</label>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    questionIndex++;
+                });
+
+                html += `
+                        </tbody>
+                    </table>
+                `;
+            });
+
+            $('#surveyQuestions').html(html);
+            setupSelectAllButtons();
+        }
+
+        function setupSelectAllButtons() {
+            $('.select-all-yes').on('click', function() {
+                const category = $(this).data('category');
+                $(`.answer-yes[data-category="${category}"]`).prop('checked', true);
+            });
+
+            $('.select-all-no').on('click', function() {
+                const category = $(this).data('category');
+                $(`.answer-no[data-category="${category}"]`).prop('checked', true);
+            });
+        }
+
+        $('#submitBtn').on('click', function() {
+            const totalQuestions = $('.answer-radio').length / 2;
+            const answeredQuestions = $('input[type="radio"]:checked[name^="question_"]').length;
+
+            if (answeredQuestions < totalQuestions) {
+                alert('Vui lòng trả lời tất cả các câu hỏi.');
+                return;
+            }
+
+            const result = $('input[name="result"]:checked').val();
+            if (!result) {
+                alert('Vui lòng chọn kết quả thẩm định.');
+                return;
+            }
+
+            const comment = $('#resultComment').val().trim();
+            if (!comment) {
+                alert('Vui lòng nhập ý kiến thẩm định.');
+                return;
+            }
+
+            const answerMap = {};
+            for (let i = 0; i < totalQuestions; i++) {
+                const answer = $(`input[name="question_${i}"]:checked`).val();
+                answerMap[`q${i}`] = (answer === 'Y');
+            }
+
+            const submitData = {
+                answerDTO: {
+                    userId: currentUser.id,
+                    irbTestId: parseInt(irbTestId),
+                    surveyTemplateId: templateData.id,
+                    answerList: answerMap
+                },
+                resultDTO: {
+                    userId: currentUser.id,
+                    irbTestId: parseInt(irbTestId),
+                    surveyTemplateId: templateData.id,
+                    reviewResult: result,
+                    reviewText: comment
+                }
+            };
+
+            $.ajax({
+                url: '/api/irb-surveys',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(submitData),
+                success: function() {
+                    alert('Đã nộp kết quả thẩm định.');
+                    window.location.href = '/irb/irb.html';
+                },
+                error: function(error) {
+                    console.error('Nộp thất bại:', error);
+                    if (error.responseJSON && error.responseJSON.message) {
+                        alert('Nộp thất bại: ' + error.responseJSON.message);
+                    } else {
+                        alert('Nộp thất bại.');
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

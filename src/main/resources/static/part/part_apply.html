@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Trung Tâm Thử Nghiệm Lâm Sàng HUMAN</title>
+    <link href="/css/main.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="/js/script.js"></script>
+</head>
+<body class="part2">
+    <div id="head"></div>
+    <div class="top_banner">
+        <div class="container">
+            <h1>Tham Gia Thử Nghiệm</h1>
+        </div>
+        <div class="scroll_down">
+            <span class="scroll_text">Scroll to down</span>
+            <div class="scroll_line_box"><div class="scroll_line_inner"></div></div>
+        </div>
+    </div>
+    <div class="tab_menu">
+        <div class="container">
+            <div class="wrap">
+                <a href="/part/part1.html">Cách Tham Gia</a>
+                <a href="/part/part2.html" class="active">Trải Nghiệm Mỹ Phẩm</a>
+                <a href="/part/part3.html">Câu Hỏi Thường Gặp (FAQ)</a>
+            </div>
+        </div>
+    </div>
+    <section class="sub1">
+        <div class="container">
+            <div class="title">
+                <div class="top">
+                    <img src="/images/icon/symbol.svg" alt="" class="symbol">
+                    <h2>Thông Báo Tuyển Chọn và Đăng Ký Trải Nghiệm Mỹ Phẩm</h2>
+                </div>
+            </div>
+            <div class="content">
+                <div class="content_div">
+                    <div class="div_tit">
+                        <h3>Chọn Lịch Trình</h3>
+                    </div>
+                    <div class="list2">
+                        <div class="item">
+                            <div class="tit required">Thời gian trải nghiệm</div>
+                            <div class="txt" style="align-items: baseline;">
+                                <div class="select" id="date_select">
+                                    <button class="toggle" aria-haspopup="listbox" aria-expanded="false">Vui lòng chọn ngày trải nghiệm mong muốn.<span class="icon"><img src="/images/icon/calendar.svg" alt=""></span>
+                                    </button>
+                                    <ul class="option" role="listbox" hidden id="dateOptions">
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="tit required">Thời gian mong muốn</div>
+                            <div class="txt">
+                                <input id="startTime" placeholder="VD: 10 giờ sáng, sau 14:00 giờ nào cũng được" style="width:100%;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="content">
+                <div class="list_title">
+                    <p class="tit">Thông tin người đăng ký</p>
+                    <p class="sub">Mục có dấu * là bắt buộc.</p>
+                </div>
+                <div class="list2">
+                    <div class="item">
+                        <div class="tit required">Họ tên</div>
+                        <div class="txt"><input id="name" placeholder=""></div>
+                    </div>
+                    <div class="item">
+                        <div class="tit required">Giới tính</div>
+                        <div class="txt">
+                            <div class="custom_radio">
+                                <input type="radio" id="male" name="gender" value="MALE" checked>
+                                <label for="male">Nam</label>
+                            </div>
+                            <div class="custom_radio">
+                                <input type="radio" id="female" name="gender" value="FEMALE">
+                                <label for="female">Nữ</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="item">
+                        <div class="tit required">Ngày sinh</div>
+                        <div class="txt"><input id="birth" placeholder="Chỉ nhập số. (VD: 19991212)" maxlength="8"></div>
+                    </div>
+                    <div class="item">
+                        <div class="tit required">Số điện thoại</div>
+                        <div class="txt phone">
+                            <div class="select" id="phone_select">
+                                <button class="toggle" aria-haspopup="listbox" aria-expanded="false">010<span class="icon"><img src="/images/icon/dropdown.svg" alt=""></span>
+                                </button>
+                                <ul class="option" role="listbox" hidden>
+                                    <li role="option" data-value="010" class="active">010</li>
+                                </ul>
+                            </div>
+                            -
+                            <input id="phone2" placeholder="" maxlength="4">
+                            -
+                            <input id="phone3" placeholder="" maxlength="4">
+                        </div>
+                    </div>
+                </div>
+                <div class="term">
+                    <div class="term_cnt">
+                        <div class="wrap">
+                            <p>[Đồng ý thu thập và sử dụng thông tin cá nhân]</p>
+                            <p>Trung Tâm Thử Nghiệm Lâm Sàng Da Liễu HUMAN (sau đây gọi là "Công ty") tuân thủ pháp luật về bảo vệ thông tin cá nhân và các quy định liên quan, xử lý thông tin cá nhân của đối tượng thử nghiệm lâm sàng như sau để bảo vệ quyền lợi của họ.</p>
+                            <p>Chính sách này có hiệu lực từ ngày 10 tháng 2 năm 2020.</p>
+                            <p>1. Hạng mục và phương thức thu thập thông tin cá nhân</p>
+                            <p>Công ty thu thập các thông tin cá nhân sau để tuyển chọn đối tượng thử nghiệm lâm sàng và vận hành thử nghiệm.</p>
+                            <p>- Hạng mục thu thập (bắt buộc): Họ tên, giới tính, ngày sinh, số điện thoại</p>
+                            <p>- Phương thức thu thập: Nhập liệu qua trang đăng ký thử nghiệm lâm sàng trên website</p>
+                            <p>2. Mục đích thu thập và sử dụng thông tin cá nhân</p>
+                            <p>Công ty sử dụng thông tin cá nhân đã thu thập cho các mục đích sau.</p>
+                            <p>- Tuyển chọn đối tượng thử nghiệm lâm sàng và xác nhận việc tham gia</p>
+                            <p>- Lựa chọn đối tượng thử nghiệm và hướng dẫn lịch trình thử nghiệm</p>
+                            <p>- Liên hệ và xử lý các thắc mắc liên quan đến quá trình thử nghiệm</p>
+                            <p>3. Thời gian lưu giữ và sử dụng thông tin cá nhân</p>
+                            <p>Công ty sẽ hủy bỏ thông tin cá nhân ngay không chậm trễ sau khi đạt được mục đích thu thập và sử dụng.</p>
+                            <p>Tuy nhiên, có thể lưu giữ theo tiêu chuẩn quản lý nội bộ như sau.</p>
+                            <p>- Thời gian lưu giữ: 3 năm sau khi kết thúc thử nghiệm lâm sàng</p>
+                            <p>- Lý do lưu giữ: Quản lý vận hành thử nghiệm và xác minh sự việc khi có tranh chấp</p>
+                            <p>4. Cung cấp thông tin cá nhân cho bên thứ ba</p>
+                            <p>Về nguyên tắc, Công ty không cung cấp thông tin cá nhân của chủ thể thông tin cho bên ngoài.</p>
+                            <p>Tuy nhiên, trường hợp pháp luật yêu cầu sẽ là ngoại lệ.</p>
+                            <p>5. Quyền của chủ thể thông tin và cách thức thực hiện</p>
+                            <p>Chủ thể thông tin có thể yêu cầu xem, chỉnh sửa, xóa, ngừng xử lý thông tin cá nhân bất cứ lúc nào, và Công ty sẽ xử lý ngay không chậm trễ theo quy định pháp luật liên quan.</p>
+                            <p>6. Hủy bỏ thông tin cá nhân</p>
+                            <p>Công ty sẽ hủy bỏ thông tin cá nhân ngay không chậm trễ khi hết thời hạn lưu giữ hoặc đạt được mục đích xử lý.</p>
+                            <p>- Tệp điện tử: Xóa bằng phương pháp không thể khôi phục</p>
+                            <p>- Tài liệu giấy: Nghiền hoặc đốt hủy</p>
+                            <p>7. Người phụ trách bảo vệ thông tin cá nhân</p>
+                            <p>Công ty chỉ định người phụ trách bảo vệ thông tin cá nhân để phụ trách chung công việc liên quan đến bảo vệ thông tin cá nhân như sau.</p>
+                            <p>- Người phụ trách bảo vệ thông tin cá nhân: Người phụ trách bảo vệ thông tin cá nhân</p>
+                            <p>- Liên hệ: 070-5222-9663</p>
+                            <p>- Email: skin@humantest.co.kr</p>
+                            <p>8. Quyền từ chối đồng ý và bất lợi</p>
+                            <p>Chủ thể thông tin có thể từ chối đồng ý thu thập, sử dụng thông tin cá nhân; nếu từ chối, việc đăng ký và tham gia thử nghiệm lâm sàng có thể bị hạn chế.</p>
+                        </div>
+                    </div>
+                    <div class="term_chk">
+                        <p>※ Bạn có quyền từ chối đồng ý, tuy nhiên nếu từ chối sẽ không thể sử dụng dịch vụ.</p>
+                        <div class="wrap">
+                            <div class="custom_radio">
+                                <input type="radio" id="term_agree" name="term_chk" value="agree" checked>
+                                <label for="term_agree">Đồng ý</label>
+                            </div>
+                            <div class="custom_radio">
+                                <input type="radio" id="term_disagree" name="term_chk" value="disagree">
+                                <label for="term_disagree">Không đồng ý</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="btn_group">
+                    <button type="button" class="back" onclick="window.history.back()">Quay lại</button>
+                    <button type="button" class="submit" id="submitBtn">Đăng ký</button>
+                </div>
+            </div>
+        </div>
+    </section>
+    <div id="part_popup" class="popup_overlay">
+        <div class="popup_content">
+            <div class="wrap">
+                <img src="/images/part/part2/popup2_pc.jpg" alt="" class="pc_only">
+                <img src="/images/part/part2/popup2_m.jpg" alt="" class="m_only">
+            </div>
+            <button onclick="closePopup()" class="popup_close">Đóng</button>
+        </div>
+    </div>
+    <div id="foot"></div>
+    <script>
+        $(function(){
+            $("#head").load("/head.html");
+            $("#foot").load("/foot.html");
+        });
+
+        let recruitmentId = null;
+        let selectedFieldId = null;
+        let selectedDate = null;
+        let scheduleData = [];
+
+        $(document).ready(function() {
+            document.getElementById("part_popup").style.display = "block";
+
+            const urlParams = new URLSearchParams(window.location.search);
+            recruitmentId = urlParams.get('id');
+
+            if (!recruitmentId) {
+                alert('Truy cập không hợp lệ.');
+                window.location.href = '/part/part2.html';
+                return;
+            }
+
+            resolveFieldFromTab();
+
+            $('#birth').on('input', function() {
+                this.value = this.value.replace(/[^0-9]/g, '');
+            });
+
+            $('#phone2, #phone3').on('input', function() {
+                this.value = this.value.replace(/[^0-9]/g, '');
+            });
+
+            $('#submitBtn').on('click', submitApplication);
+
+            loadRecruitmentData();
+        });
+
+        function closePopup() {
+            document.getElementById("part_popup").style.display = "none";
+        }
+
+        function resolveFieldFromTab() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const fieldCode = urlParams.get('field');
+
+            if (!fieldCode) {
+                console.warn('Không có mã khu vực (field) trong URL.');
+                return;
+            }
+
+            $.ajax({
+                url: '/api/recruitment-fields',
+                method: 'GET',
+                success: function(fields) {
+                    const matched = (fields || []).find(function(f) {
+                        return f.fieldCode === fieldCode;
+                    });
+                    if (matched) {
+                        selectedFieldId = matched.id;
+                    }
+                }
+            });
+        }
+
+        function loadRecruitmentData() {
+            $.when(
+                $.ajax({ url: '/api/recruitments/' + recruitmentId, method: 'GET' }),
+                $.ajax({ url: '/api/recruitment-schedules/recruitment/' + recruitmentId, method: 'GET' })
+            ).done(function(recRes, schRes) {
+                scheduleData = schRes[0] || [];
+                generateDateOptions();
+            }).fail(function(error) {
+                console.error('Lỗi tải dữ liệu:', error);
+                $('#dateOptions').html('<li role="option" class="disabled">Không thể tải thông tin lịch trình.</li>');
+            });
+        }
+
+        function generateDateOptions() {
+            let html = '';
+            const weekdays = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+
+            if (scheduleData.length > 0) {
+                scheduleData.forEach(function(sch) {
+                    const dateStr = sch.scheduleDate;
+                    const date = new Date(dateStr);
+                    const weekday = weekdays[date.getDay()];
+                    const label = dateStr + ' (' + weekday + ')';
+                    html += '<li role="option" data-value="' + dateStr + '">' + label + '</li>';
+                });
+            } else {
+                html = '<li role="option" class="disabled">Chưa có lịch trình nào được đăng ký.</li>';
+            }
+
+            $('#dateOptions').html(html);
+        }
+
+        $(document).on('click', '.toggle', function () {
+            const $wrapper = $(this).closest('.select');
+            const $options = $wrapper.find('.option');
+            const isOpen = !$options.prop('hidden');
+
+            $('.option').attr('hidden', true);
+            $('.select').removeClass('open');
+
+            if (!isOpen) {
+                $options.removeAttr('hidden');
+                $wrapper.addClass('open');
+            }
+        });
+
+        $(document).on('click', '.option li', function () {
+            const $this = $(this);
+            if ($this.hasClass('disabled')) return;
+
+            const value = $this.data('value');
+            const label = $this.text();
+            const $wrapper = $this.closest('.select');
+            const selectId = $wrapper.attr('id');
+
+            $this.addClass('active').siblings().removeClass('active');
+            $wrapper.find('.toggle').contents().first()[0].textContent = label + ' ';
+            $this.parent().attr('hidden', true);
+            $wrapper.removeClass('open');
+
+            if (selectId === 'date_select') {
+                selectedDate = value;
+            }
+        });
+
+        $(document).on('click', function (e) {
+            if (!$(e.target).closest('.select').length) {
+                $('.option').attr('hidden', true);
+                $('.select').removeClass('open');
+            }
+        });
+
+        function submitApplication() {
+            const startDate = selectedDate;
+            const startTime = $('#startTime').val().trim();
+            const name = $('#name').val().trim();
+            const gender = $('input[name="gender"]:checked').val();
+            const birth = $('#birth').val().trim();
+            const phone1 = '010';
+            const phone2 = $('#phone2').val().trim();
+            const phone3 = $('#phone3').val().trim();
+            const termAgree = $('input[name="term_chk"]:checked').val();
+
+            if (!selectedFieldId) {
+                alert('Không có thông tin khu vực. Vui lòng thực hiện lại từ danh sách thông báo tuyển chọn.');
+                return;
+            }
+
+            if (!startDate) {
+                alert('Vui lòng chọn ngày thử nghiệm.');
+                return;
+            }
+
+            if (!startTime) {
+                alert('Vui lòng nhập thời gian mong muốn.');
+                $('#startTime').focus();
+                return;
+            }
+
+            if (!name) {
+                alert('Vui lòng nhập họ tên.');
+                $('#name').focus();
+                return;
+            }
+
+            if (!birth || birth.length !== 8) {
+                alert('Vui lòng nhập ngày sinh gồm 8 chữ số. (VD: 19991212)');
+                $('#birth').focus();
+                return;
+            }
+
+            if (!phone2 || !phone3) {
+                alert('Vui lòng nhập số điện thoại.');
+                return;
+            }
+
+            if (termAgree !== 'agree') {
+                alert('Vui lòng đồng ý thu thập, sử dụng thông tin cá nhân.');
+                return;
+            }
+
+            const phone = phone1 + '-' + phone2 + '-' + phone3;
+
+            $.ajax({
+                url: '/api/trial-applications/duplicate',
+                method: 'GET',
+                data: {
+                    recruitmentId: recruitmentId,
+                    phone: phone
+                },
+                success: function(isDuplicate) {
+                    if (isDuplicate) {
+                        alert('Bạn đã đăng ký thông báo tuyển chọn này rồi.');
+                        return;
+                    }
+                    submitApplicationData(startDate, startTime, name, gender, birth, phone);
+                },
+                error: function(error) {
+                    console.error('Lỗi kiểm tra trùng lặp:', error);
+                    alert('Đã xảy ra lỗi trong quá trình xử lý đăng ký.');
+                }
+            });
+        }
+
+        function submitApplicationData(startDate, startTime, name, gender, birth, phone) {
+            const applicationData = {
+                recruitmentId: parseInt(recruitmentId),
+                recruitmentFieldId: parseInt(selectedFieldId),
+                startDate: startDate,
+                startTime: startTime,
+                name: name,
+                gender: gender,
+                birth: birth,
+                phone: phone
+            };
+
+            $.ajax({
+                url: '/api/trial-applications',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(applicationData),
+                success: function(response) {
+                    alert('Đăng ký đã hoàn tất.');
+                    location.href = '/part/part_confirm.html';
+                },
+                error: function(error) {
+                    console.error('Đăng ký thất bại:', error);
+                    if (error.responseJSON && error.responseJSON.message) {
+                        alert(error.responseJSON.message);
+                    } else {
+                        alert('Đã xảy ra lỗi trong quá trình xử lý đăng ký.');
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Trung Tâm Thử Nghiệm Lâm Sàng HUMAN</title>
+    <link href="/css/main.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="/js/script.js"></script>
+</head>
+<body class="req5">
+    <div id="head"></div>
+    <div class="top_banner">
+        <div class="container">
+            <h1>Yêu Cầu Thử Nghiệm</h1>
+        </div>
+        <div class="scroll_down">
+            <span class="scroll_text">Scroll to down</span>
+            <div class="scroll_line_box"><div class="scroll_line_inner"></div></div>
+        </div>
+    </div>
+    <div class="tab_menu">
+        <div class="container">
+            <div class="wrap">
+                <a href="/req/req1.html">Quy Trình Thử Nghiệm</a>
+                <a href="/req/req2.html">Tư Vấn Thử Nghiệm</a>
+                <a href="/req/req3.html">Thông Báo</a>
+                <a href="/req/req4.html">Câu Hỏi Thường Gặp (FAQ)</a>
+                <a href="/req/req5.html" class="active">Tải Xuống</a>
+            </div>
+        </div>
+    </div>
+    <section class="sub1">
+        <div class="container">
+            <div class="title">
+                <div class="top">
+                    <img src="/images/icon/symbol.svg" alt="" class="symbol">
+                    <h2>Tải Xuống</h2>
+                </div>
+            </div>
+            <div class="content">
+                <div class="board_view" id="fileDetail">
+                    <!-- JavaScript로 동적 생성 -->
+                </div>
+            </div>
+        </div>
+    </section>
+    <div id="foot"></div>
+    <script>
+        $(function(){
+            $("#head").load("/head.html");
+            $("#foot").load("/foot.html");
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const fileId = urlParams.get('id');
+
+            if (!fileId) {
+                alert('Truy cập không hợp lệ.');
+                window.location.href = '/req/req5.html';
+                return;
+            }
+
+            loadFileDetail(fileId);
+        });
+
+        function loadFileDetail(id) {
+            $.ajax({
+                url: '/api/trial-files/' + id,
+                method: 'GET',
+                success: function(data) {
+                    renderFileDetail(data);
+                },
+                error: function(error) {
+                    console.error('Lỗi tải dữ liệu:', error);
+                    alert('Không thể tải dữ liệu.');
+                    window.location.href = '/req/req5.html';
+                }
+            });
+        }
+
+        function renderFileDetail(data) {
+            const date = formatDate(data.createdAt);
+            const viewCount = data.view || 0;
+            const userName = data.userName || 'Quản trị viên';
+            const content = data.content || '<p>Không có nội dung.</p>';
+
+            let fileHtml = '';
+            if (data.attachedFiles && data.attachedFiles.length > 0) {
+                fileHtml = `
+                    <div class="bd_file">
+                        <p class="tit">Tệp đính kèm</p>
+                        <div class="item">
+                            ${data.attachedFiles.map(file => `
+                                <ul>
+                                    <li class="tit">
+                                        <a href="${file.s3Url}" download="${file.originalFilename}">
+                                            ${file.originalFilename}
+                                        </a>
+                                        <img src="/images/icon/download.svg" alt="">
+                                    </li>
+                                    <li class="size">${formatFileSize(file.fileSize)}</li>
+                                </ul>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            const html = `
+                <div class="bd_tit">
+                    <div class="tit">${data.title}</div>
+                    <div class="sub">
+                        <span class="date">${date}</span>
+                        <span class="view"><img src="/images/icon/view.svg" alt="">${viewCount}</span>
+                        <span class="name">${userName}</span>
+                    </div>
+                </div>
+                <div class="bd_cnt">
+                    ${content}
+                </div>
+                ${fileHtml}
+                <div class="board_btn">
+                    <button class="type2" onclick="window.location.href='/req/req5.html'">Danh sách</button>
+                </div>
+            `;
+
+            $('#fileDetail').html(html);
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const year = String(date.getFullYear()).slice(2);
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return year + '.' + month + '.' + day;
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+    </script>
+</body>
+</html>

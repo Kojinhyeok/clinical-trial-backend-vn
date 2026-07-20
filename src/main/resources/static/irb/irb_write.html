@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Trung Tâm Thử Nghiệm Lâm Sàng HUMAN</title>
+    <link href="/css/main.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="/js/script.js"></script>
+</head>
+<body class="irb_write">
+    <div id="head"></div>
+    <div class="top_banner">
+        <div class="container">
+            <h1>E-IRB</h1>
+        </div>
+        <div class="scroll_down">
+            <span class="scroll_text">Scroll to down</span>
+            <div class="scroll_line_box"><div class="scroll_line_inner"></div></div>
+        </div>
+    </div>
+    <section class="sub1">
+        <div class="container">
+            <div class="content">
+                <div class="list2">
+                    <div class="item">
+                        <div class="tit">Tiêu đề</div>
+                        <div class="txt">
+                            <input id="irbTitle" placeholder="Vui lòng nhập tiêu đề.">
+                        </div>
+                    </div>
+                    <div class="item">
+                        <div class="tit">Thời gian tham gia thẩm định</div>
+                        <div class="txt time">
+                            <input type="date" id="startDate">
+                            <span>-</span>
+                            <input type="date" id="endDate">
+                        </div>
+                    </div>
+                    <div class="item w50">
+                        <div class="tit required">Phân loại thử nghiệm</div>
+                        <div class="txt">
+                            <div class="select" id="category_select">
+                                <button class="toggle" aria-haspopup="listbox" aria-expanded="false">Chọn<span class="icon"><img src="/images/icon/dropdown.svg" alt=""></span>
+                                </button>
+                                <ul class="option" role="listbox" hidden id="categoryList">
+                                    <!-- 동적 로드 -->
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="item w50">
+                        <div class="tit">Trạng thái</div>
+                        <div class="txt">
+                            <div class="custom_radio">
+                                <input type="radio" id="review_ing" name="review_chk" value="IN_REVIEW" checked>
+                                <label for="review_ing">Đang thẩm định</label>
+                            </div>
+                            <div class="custom_radio">
+                                <input type="radio" id="review_complete" name="review_chk" value="COMPLETED">
+                                <label for="review_complete">Đã thẩm định</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="item">
+                        <div class="tit">Người nhận email</div>
+                        <div class="txt check" id="emailList">
+                            <!-- 동적 로드 -->
+                        </div>
+                    </div>
+                    <div class="item">
+                        <div class="tit">Đính kèm tệp</div>
+                        <div class="txt file">
+                            <input type="file" id="file1" multiple>
+                        </div>
+                        <div id="fileList" style="margin-top: 10px; padding-left: 10px;">
+                            <!-- 선택된 파일 목록 표시 -->
+                        </div>
+                    </div>
+                </div>
+                <div class="btn_group">
+                    <button type="button" class="back" onclick="window.history.back()">Hủy</button>
+                    <button type="button" class="submit" id="submitBtn">Hoàn tất</button>
+                </div>
+            </div>
+        </div>
+    </section>
+    <div id="foot"></div>
+    <script>
+        let selectedCategoryId = null;
+        let currentUserId = null;
+        let parentId = null;
+        let parentData = null;
+
+        $(function(){
+            $("#head").load("/head.html");
+            $("#foot").load("/foot.html");
+
+            const urlParams = new URLSearchParams(window.location.search);
+            parentId = urlParams.get('parentId');
+
+            checkLoginAndLoadData();
+        });
+
+        function checkLoginAndLoadData() {
+            $.ajax({
+                url: '/api/auth/check',
+                method: 'GET',
+                success: function(response) {
+                    if (!response.isLoggedIn) {
+                        alert('Vui lòng đăng nhập.');
+                        window.location.href = '/irb/irb_login.html';
+                        return;
+                    }
+                    getCurrentUser();
+                },
+                error: function() {
+                    alert('Vui lòng đăng nhập.');
+                    window.location.href = '/irb/irb_login.html';
+                }
+            });
+        }
+
+        function getCurrentUser() {
+            $.ajax({
+                url: '/api/auth/current-user',
+                method: 'GET',
+                success: function(user) {
+                    currentUserId = user.id;
+                    loadCategories();
+                    loadProfessors();
+
+                    if (parentId) {
+                        loadParentData();
+                    }
+                },
+                error: function() {
+                    alert('Không thể lấy thông tin người dùng.');
+                }
+            });
+        }
+
+        function loadParentData() {
+            $.ajax({
+                url: `/api/irbs/${parentId}`,
+                method: 'GET',
+                success: function(data) {
+                    parentData = data;
+                    setupReplyMode();
+                },
+                error: function() {
+                    alert('Không thể tải thông tin bài viết gốc.');
+                    window.location.href = '/irb/irb.html';
+                }
+            });
+        }
+
+        function setupReplyMode() {
+            $('#irbTitle').val(parentData.title);
+
+            $('#startDate').val(parentData.startDate || '');
+            $('#endDate').val(parentData.endDate || '');
+
+            selectedCategoryId = parentData.categoryId;
+
+            if (parentData.status === 'COMPLETED') {
+                $('#review_complete').prop('checked', true);
+            } else {
+                $('#review_ing').prop('checked', true);
+            }
+        }
+
+        $('#file1').on('change', function() {
+            const fileList = this.files;
+            const fileListContainer = $('#fileList');
+
+            if (fileList.length === 0) {
+                fileListContainer.html('');
+                return;
+            }
+
+            let html = '<div style="font-size: 14px; color: #666;">';
+            html += '<div style="margin-bottom: 5px;"><strong>Tệp đã chọn (' + fileList.length + ')</strong></div>';
+            html += '<ul style="margin: 0; padding-left: 20px;">';
+
+            for (let i = 0; i < fileList.length; i++) {
+                const file = fileList[i];
+                const fileSize = (file.size / 1024).toFixed(1);
+                html += '<li style="margin-bottom: 3px;">';
+                html += file.name + ' <span style="color: #999;">(' + fileSize + ' KB)</span>';
+                html += '</li>';
+            }
+
+            html += '</ul></div>';
+            fileListContainer.html(html);
+        });
+
+        function loadCategories() {
+            return $.ajax({
+                url: '/api/irb-categories',
+                method: 'GET',
+                success: function(categories) {
+                    let html = '';
+                    categories.forEach(function(cat) {
+                        html += `<li role="option" data-value="${cat.id}">${cat.category}</li>`;
+                    });
+                    $('#categoryList').html(html);
+                },
+                error: function() {
+                    console.error('Lỗi tải danh mục');
+                }
+            });
+        }
+
+        function loadProfessors() {
+            $.ajax({
+                url: '/api/users/professors',
+                method: 'GET',
+                success: function(professors) {
+                    let html = '';
+                    professors.forEach(function(prof, index) {
+                        html += `
+                            <div class="custom_check">
+                                <input type="checkbox" id="mail${index}" value="${prof.email}" data-user-id="${prof.id}" data-name="${prof.name}">
+                                <label for="mail${index}">${prof.name} (${prof.email})</label>
+                            </div>
+                        `;
+                    });
+                    $('#emailList').html(html);
+                },
+                error: function() {
+                    console.error('Lỗi tải danh sách giáo sư');
+                }
+            });
+        }
+
+        $('#submitBtn').on('click', function() {
+            const title = $('#irbTitle').val().trim();
+            const startDate = $('#startDate').val();
+            const endDate = $('#endDate').val();
+            const status = $('input[name="review_chk"]:checked').val();
+
+            if (!title) {
+                alert('Vui lòng nhập tiêu đề.');
+                return;
+            }
+
+            if (!selectedCategoryId) {
+                alert('Vui lòng chọn phân loại thử nghiệm.');
+                return;
+            }
+
+            const selectedEmails = [];
+            $('#emailList input[type="checkbox"]:checked').each(function() {
+                selectedEmails.push({
+                    name: $(this).data('name'),
+                    email: $(this).val()
+                });
+            });
+
+            if (selectedEmails.length === 0) {
+                alert('Vui lòng chọn ít nhất 1 người nhận email.');
+                return;
+            }
+
+            const fileInput = $('#file1')[0];
+            const files = [];
+
+            if (fileInput.files.length > 0) {
+                for (let i = 0; i < fileInput.files.length; i++) {
+                    files.push({
+                        originalFilename: fileInput.files[i].name,
+                        fileSize: fileInput.files[i].size,
+                        contentType: fileInput.files[i].type
+                    });
+                }
+            }
+
+            const requestData = {
+                userId: currentUserId,
+                title: title,
+                categoryId: selectedCategoryId,
+                startDate: startDate || null,
+                endDate: endDate || null,
+                status: status,
+                isTemp: 0,
+                depth: parentData ? (parentData.depth || 0) + 1 : 0,
+                emails: selectedEmails,
+                files: files.length > 0 ? files : null
+            };
+
+            if (parentId && parentData) {
+                requestData.irbTestIdRef = parentData.id;
+                requestData.irbTestId = parentData.irbTestId || parentData.id;
+            }
+
+            const apiUrl = parentId ? `/api/irbs/${parentId}/reply` : '/api/irbs';
+
+            $.ajax({
+                url: apiUrl,
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(requestData),
+                success: function(response) {
+                    if (response.attachedFiles && response.attachedFiles.length > 0) {
+                        uploadFilesToS3(response.attachedFiles, fileInput.files).then(() => {
+                            alert('Đã đăng ký IRB.');
+                            window.location.href = '/irb/irb.html';
+                        });
+                    } else {
+                        alert('Đã đăng ký IRB.');
+                        window.location.href = '/irb/irb.html';
+                    }
+                },
+                error: function(error) {
+                    console.error('Đăng ký thất bại:', error);
+                    if (error.responseJSON && error.responseJSON.message) {
+                        alert('Đăng ký thất bại: ' + error.responseJSON.message);
+                    } else {
+                        alert('Đăng ký thất bại.');
+                    }
+                }
+            });
+        });
+
+        function uploadFilesToS3(uploadLinks, files) {
+            const promises = [];
+
+            uploadLinks.forEach((link, index) => {
+                const file = files[index];
+                if (file && link.uploadUrl) {
+                    const promise = fetch(link.uploadUrl, {
+                        method: 'PUT',
+                        body: file,
+                        headers: {
+                            'Content-Type': file.type
+                        }
+                    });
+                    promises.push(promise);
+                }
+            });
+
+            return Promise.all(promises);
+        }
+
+        $(document).on('click', '.toggle', function () {
+            const $wrapper = $(this).closest('.select');
+            const $options = $wrapper.find('.option');
+            const isOpen = !$options.prop('hidden');
+
+            $('.option').attr('hidden', true);
+            $('.select').removeClass('open');
+
+            if (!isOpen) {
+                $options.removeAttr('hidden');
+                $wrapper.addClass('open');
+            }
+        });
+
+        $(document).on('click', '.option li', function () {
+            const $this = $(this);
+            const value = $this.data('value');
+            const label = $this.text();
+            const $wrapper = $this.closest('.select');
+
+            $this.addClass('active').siblings().removeClass('active');
+            $wrapper.find('.toggle').contents().first()[0].textContent = label + ' ';
+            selectedCategoryId = value;
+            $this.parent().attr('hidden', true);
+            $wrapper.removeClass('open');
+        });
+
+        function updateCategoryDropdown() {
+            if (parentId && selectedCategoryId) {
+                const selectedLi = $(`.option li[data-value="${selectedCategoryId}"]`);
+                if (selectedLi.length > 0) {
+                    const label = selectedLi.text();
+                    $('.toggle').contents().first()[0].textContent = label + ' ';
+                    selectedLi.addClass('active').siblings().removeClass('active');
+                }
+            }
+        }
+
+        const originalLoadCategories = loadCategories;
+        loadCategories = function() {
+            return originalLoadCategories().then(() => {
+                setTimeout(updateCategoryDropdown, 100);
+            });
+        };
+
+        $(document).on('click', function (e) {
+            if (!$(e.target).closest('.select').length) {
+                $('.option').attr('hidden', true);
+                $('.select').removeClass('open');
+            }
+        });
+    </script>
+</body>
+</html>

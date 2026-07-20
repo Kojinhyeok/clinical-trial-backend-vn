@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Trung Tâm Thử Nghiệm Lâm Sàng HUMAN</title>
+    <link href="/css/main.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="/js/script.js"></script>
+</head>
+<body class="entry1">
+<div id="head"></div>
+<div class="top_banner">
+    <div class="container">
+        <h1>Hạng Mục Thử Nghiệm</h1>
+    </div>
+    <div class="scroll_down">
+        <span class="scroll_text">Scroll to down</span>
+        <div class="scroll_line_box"><div class="scroll_line_inner"></div></div>
+    </div>
+</div>
+<div class="tab_menu">
+    <div class="container">
+        <div class="wrap">
+            <a href="/entry/entry1.html" class="active">Đánh Giá An Toàn</a>
+            <a href="/entry/entry2.html">Đánh Giá Hiệu Quả</a>
+            <a href="/entry/entry4.html">IN VITRO Đánh Giá</a>
+        </div>
+    </div>
+</div>
+<section class="sub0">
+    <div class="container">
+        <div class="title">
+            <h2 class="normal">Hành trình khám phá giá trị thực sự của sản phẩm, <br><span class="bold purple">lĩnh vực nghiên cứu</span> của HUMAN</h2>
+        </div>
+        <div class="image">
+            <h3>“Hành trình sản phẩm gặp gỡ thế giới, <br class="m_only">bắt đầu từ lâm sàng.” <br>HUMAN chứng minh giá trị mà thương hiệu muốn truyền tải <br class="m_only">bằng ngôn ngữ khoa học.</h3>
+        </div>
+    </div>
+</section>
+<section class="sub1">
+    <div class="container">
+        <div class="title">
+            <div class="top">
+                <img src="/images/icon/symbol.svg" alt="" class="symbol">
+                <h2>An Toàn</h2>
+            </div>
+            <p>Thử nghiệm đánh giá mức độ kích ứng và phản ứng bất thường trên da</p>
+        </div>
+        <div class="content">
+            <div class="list1" id="safetyListContainer">
+                <!-- 샘플 데이터로 고정 렌더링 (백엔드 연동 전) -->
+                <div class="item">
+                    <div class="text">
+                        <div class="tit">Đánh giá kích ứng da (Patch Test)</div>
+                        <div class="txt">
+                            <p>Thời gian thử nghiệm : 4 tuần</p><br>
+                            <p>Số lượng người tham gia : 30 người</p><br>
+                            <p>Vị trí thử nghiệm : Cánh tay trên / Lưng</p><br>
+                            <p>Sản phẩm bàn giao : Báo cáo kết quả thử nghiệm</p>
+                        </div>
+                    </div>
+                    <div class="img"><img src="/images/icon/symbol.svg" alt="Đánh giá kích ứng da"></div>
+                </div>
+                <div class="item">
+                    <div class="text">
+                        <div class="tit">Đánh giá độ nhạy cảm da</div>
+                        <div class="txt">
+                            <p>Thời gian thử nghiệm : 2 tuần</p><br>
+                            <p>Số lượng người tham gia : 30 người</p><br>
+                            <p>Vị trí thử nghiệm : Mặt</p><br>
+                            <p>Sản phẩm bàn giao : Báo cáo kết quả thử nghiệm</p>
+                        </div>
+                    </div>
+                    <div class="img"><img src="/images/icon/symbol.svg" alt="Đánh giá độ nhạy cảm da"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<div id="foot"></div>
+
+<script>
+    $(function(){
+        // 1. 레이아웃 로드
+        $("#head").load("/head.html");
+        $("#foot").load("/foot.html");
+
+        // 2단계(백엔드 연동)에서 /api/trial-safety 붙이면서
+        // 위 샘플 렌더링을 다시 loadSafetyData() AJAX 호출로 교체 예정.
+        setTimeout(function() {
+            $(window).trigger('scroll');
+        }, 100);
+    });
+</script>
+</body>
+</html>

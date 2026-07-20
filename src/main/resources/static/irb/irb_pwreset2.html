@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Trung Tâm Thử Nghiệm Lâm Sàng HUMAN</title>
+    <link href="/css/main.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="/js/script.js"></script>
+</head>
+<body class="irb">
+    <div id="head"></div>
+    <div class="top_banner">
+        <div class="container">
+            <h1>E-IRB</h1>
+        </div>
+        <div class="scroll_down">
+            <span class="scroll_text">Scroll to down</span>
+            <div class="scroll_line_box"><div class="scroll_line_inner"></div></div>
+        </div>
+    </div>
+    <section class="login">
+        <div class="container">
+            <div class="title">
+                <div class="top">
+                    <img src="/images/icon/symbol.svg" alt="" class="symbol">
+                    <h2>Đặt Lại Mật Khẩu</h2>
+                </div>
+                <p id="userInfo">Xác thực danh tính đã hoàn tất. <br>Vui lòng nhập mật khẩu mới.</p>
+            </div>
+            <form class="content" id="resetForm">
+                <div class="login_box">
+                    <div class="account">
+                        <input type="password" id="newPassword" placeholder="Mật khẩu mới" required>
+                        <input type="password" id="newPasswordConfirm" placeholder="Nhập lại mật khẩu mới" required>
+                        <button class="login_btn" type="submit">Đặt lại mật khẩu</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </section>
+    <div id="foot"></div>
+    <script>
+        $(function(){
+            $("#head").load("/head.html");
+            $("#foot").load("/foot.html");
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const userId = urlParams.get('userId');
+            const userEmail = urlParams.get('email');
+
+            if (!userId) {
+                alert('Truy cập không hợp lệ.');
+                window.location.href = '/irb/irb_pwreset.html';
+                return;
+            }
+
+            if (userEmail) {
+                const maskedEmail = maskEmail(userEmail);
+                $('#userInfo').html(maskedEmail + ', xin chào. <br>Vui lòng nhập mật khẩu mới.');
+            }
+
+            $('#resetForm').on('submit', function(e) {
+                e.preventDefault();
+
+                const newPassword = $('#newPassword').val();
+                const newPasswordConfirm = $('#newPasswordConfirm').val();
+
+                if (!newPassword || !newPasswordConfirm) {
+                    alert('Vui lòng nhập mật khẩu.');
+                    return;
+                }
+
+                if (newPassword !== newPasswordConfirm) {
+                    alert('Mật khẩu không khớp.');
+                    return;
+                }
+
+                if (newPassword.length < 4) {
+                    alert('Mật khẩu phải có ít nhất 4 ký tự.');
+                    return;
+                }
+
+                $.ajax({
+                    url: '/api/auth/password-reset/' + userId,
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        newPassword: newPassword,
+                        newPasswordConfirm: newPasswordConfirm
+                    }),
+                    success: function(response) {
+                        window.location.href = '/irb/irb_pwreset3.html';
+                    },
+                    error: function(error) {
+                        console.error('Đổi mật khẩu thất bại:', error);
+                        const message = error.responseJSON?.message || 'Đổi mật khẩu thất bại.';
+                        alert(message);
+                    }
+                });
+            });
+
+            function maskEmail(email) {
+                const [local, domain] = email.split('@');
+                const visibleChars = Math.min(3, local.length);
+                const masked = local.substring(0, visibleChars) + '***';
+                return masked + '@' + domain;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Trung Tâm Thử Nghiệm Lâm Sàng HUMAN</title>
+    <link href="/css/main.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="/js/script.js"></script>
+</head>
+<body class="irb_detail">
+    <div id="head"></div>
+    <div class="top_banner">
+        <div class="container">
+            <h1>E-IRB</h1>
+        </div>
+        <div class="scroll_down">
+            <span class="scroll_text">Scroll to down</span>
+            <div class="scroll_line_box"><div class="scroll_line_inner"></div></div>
+        </div>
+    </div>
+    <section class="sub1">
+        <div class="container">
+            <div class="content">
+                <div class="list2" id="irbDetail">
+                    <!-- 동적 로딩 -->
+                    <div style="text-align: center; padding: 50px;">
+                        Đang tải...
+                    </div>
+                </div>
+
+                <div class="board_btn_group">
+                    <div class="board_btn">
+                        <button class="type2" onclick="window.location.href='/irb/irb.html'">Danh sách</button>
+
+                        <!-- 관리자만 보이는 버튼 -->
+                        <button class="type2" id="replyBtn" style="display: none;">Trả lời</button>
+                        <button class="type3" id="writeBtn" style="display: none;" onclick="location.href='/irb/irb_write.html'">Viết bài</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <div id="foot"></div>
+
+    <script>
+        let irbData = null;
+        let isAdmin = false;
+        let categoryMap = {};
+
+        $(function(){
+            $("#head").load("/head.html");
+            $("#foot").load("/foot.html");
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const irbId = urlParams.get('id');
+
+            if (!irbId) {
+                alert('Truy cập không hợp lệ.');
+                window.location.href = '/irb/irb.html';
+                return;
+            }
+
+            checkLoginAndLoadData(irbId);
+        });
+
+        function checkLoginAndLoadData(irbId) {
+            $.ajax({
+                url: '/api/auth/check',
+                method: 'GET',
+                success: function(response) {
+                    if (!response.isLoggedIn) {
+                        alert('Vui lòng đăng nhập.');
+                        window.location.href = '/irb/irb_login.html?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
+                        return;
+                    }
+
+                    getCurrentUser(irbId);
+                },
+                error: function() {
+                    alert('Vui lòng đăng nhập.');
+                    window.location.href = '/irb/irb_login.html?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
+                }
+            });
+        }
+
+        function getCurrentUser(irbId) {
+            $.ajax({
+                url: '/api/auth/current-user',
+                method: 'GET',
+                success: function(user) {
+                    isAdmin = (user.position === 'ADMIN');
+
+                    if (isAdmin) {
+                        $('#replyBtn').show();
+                        $('#writeBtn').show();
+                    }
+
+                    loadCategories(irbId);
+                }
+            });
+        }
+
+        function loadCategories(irbId) {
+            $.ajax({
+                url: '/api/irb-categories',
+                method: 'GET',
+                success: function(categories) {
+                    categories.forEach(cat => {
+                        categoryMap[cat.id] = cat.category;
+                    });
+                    loadIrbDetail(irbId);
+                },
+                error: function(error) {
+                    console.error('Lỗi tải danh mục:', error);
+                    loadIrbDetail(irbId);
+                }
+            });
+        }
+
+        function loadIrbDetail(irbId) {
+            $.ajax({
+                url: `/api/irbs/${irbId}`,
+                method: 'GET',
+                success: function(data) {
+                    irbData = data;
+                    renderIrbDetail();
+                },
+                error: function(error) {
+                    console.error('Lỗi tải chi tiết IRB:', error);
+                    if (error.status === 403) {
+                        alert('Bạn không có quyền truy cập. Chỉ người nhận email mới có thể xem.');
+                    } else {
+                        alert('Không thể tải dữ liệu.');
+                    }
+                    window.location.href = '/irb/irb.html';
+                }
+            });
+        }
+
+        function renderIrbDetail() {
+            const categoryName = categoryMap[irbData.categoryId] || 'Kế hoạch/Thay đổi nghiên cứu';
+            const statusText = irbData.status === 'IN_REVIEW' ? 'Đang thẩm định' : 'Hoàn tất';
+            const dateRange = `${irbData.startDate} ~ ${irbData.endDate}`;
+
+            let filesHtml = '';
+            if (irbData.attachedFiles && irbData.attachedFiles.length > 0) {
+                irbData.attachedFiles.forEach(file => {
+                    const fileSizeKB = (file.fileSize / 1024).toFixed(1);
+                    const downloadCount = file.downloadCount || 0;
+                    const uploadDate = file.createdAt ? new Date(file.createdAt).toLocaleString('vi-VN') : '-';
+
+                    const downloadUrl = file.s3Url || file.downloadUrl;
+
+                    if (downloadUrl) {
+                        filesHtml += `
+                            <div class="wrap">
+                                <a href="${downloadUrl}" target="_blank">
+                                    <span class="file_tit">${file.originalFilename}</span>
+                                    <span class="file_bite">(${fileSizeKB} KB)</span>
+                                </a>
+                                <div>
+                                    <span>${downloadCount} lượt tải</span> ｜
+                                    <span>DATE : ${uploadDate}</span>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        filesHtml += `
+                            <div class="wrap">
+                                <span style="cursor: default;">
+                                    <span class="file_tit">${file.originalFilename}</span>
+                                    <span class="file_bite">(${fileSizeKB} KB)</span>
+                                </span>
+                                <div>
+                                    <span>${downloadCount} lượt tải</span> ｜
+                                    <span>DATE : ${uploadDate}</span>
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+            } else {
+                filesHtml = '<div class="wrap">Không có tệp đính kèm.</div>';
+            }
+
+            const html = `
+                <div class="item">
+                    <div class="tit">Tiêu đề</div>
+                    <div class="txt">${irbData.title}</div>
+                </div>
+                <div class="item">
+                    <div class="tit">Thời gian tham gia thẩm định</div>
+                    <div class="txt">${dateRange} (${statusText})</div>
+                </div>
+                <div class="item">
+                    <div class="tit">Loại</div>
+                    <div class="txt">${categoryName}</div>
+                </div>
+                <div class="item file">
+                    <div class="tit">Tệp đính kèm</div>
+                    <div class="txt">
+                        ${filesHtml}
+                    </div>
+                </div>
+            `;
+
+            $('#irbDetail').html(html);
+        }
+
+        $('#replyBtn').on('click', function() {
+            if (!irbData) return;
+            window.location.href = `/irb/irb_write.html?parentId=${irbData.id}`;
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Trung Tâm Thử Nghiệm Lâm Sàng HUMAN</title>
+    <link href="/css/main.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="/js/script.js"></script>
+</head>
+<body class="req2">
+    <div id="head"></div>
+    <div class="top_banner">
+        <div class="container">
+            <h1>Yêu Cầu Thử Nghiệm</h1>
+        </div>
+        <div class="scroll_down">
+            <span class="scroll_text">Scroll to down</span>
+            <div class="scroll_line_box"><div class="scroll_line_inner"></div></div>
+        </div>
+    </div>
+    <div class="tab_menu">
+        <div class="container">
+            <div class="wrap">
+                <a href="/req/req1.html">Quy Trình Thử Nghiệm</a>
+                <a href="/req/req2.html" class="active">Tư Vấn Thử Nghiệm</a>
+                <a href="/req/req3.html">Thông Báo</a>
+                <a href="/req/req4.html">Câu Hỏi Thường Gặp (FAQ)</a>
+                <a href="/req/req5.html">Tải Xuống</a>
+            </div>
+        </div>
+    </div>
+    <section class="sub1">
+        <div class="container">
+            <div class="title">
+                <div class="top">
+                    <img src="/images/icon/symbol.svg" alt="" class="symbol">
+                    <h2>Tư Vấn Thử Nghiệm</h2>
+                </div>
+            </div>
+            <div class="content">
+                <div class="content_div">
+                    <div class="div_tit">
+                        <h3>Thông tin yêu cầu</h3>
+                        <p>Mục có dấu * là bắt buộc.</p>
+                    </div>
+                    <div class="list2">
+                        <div class="item">
+                            <div class="tit required">Tên công ty</div>
+                            <div class="txt"><input placeholder=""></div>
+                        </div>
+                        <div class="item">
+                            <div class="tit">Mã số đăng ký kinh doanh</div>
+                            <div class="txt"><input placeholder=""></div>
+                        </div>
+                        <div class="item">
+                            <div class="tit required">Người phụ trách</div>
+                            <div class="txt"><input placeholder=""></div>
+                        </div>
+                        <div class="item">
+                            <div class="tit">Chức vụ</div>
+                            <div class="txt"><input placeholder=""></div>
+                        </div>
+                        <div class="item">
+                            <div class="tit required">Số điện thoại</div>
+                            <div class="txt phone">
+                                <div class="select" id="phone_select">
+                                    <button class="toggle" aria-haspopup="listbox" aria-expanded="false">010<span class="icon"><img src="/images/icon/dropdown.svg" alt=""></span>
+                                    </button>
+                                    <ul class="option" role="listbox" hidden>
+                                        <li role="option" data-value="010" class="active">010</li>
+                                    </ul>
+                                </div>
+                                -
+                                <input type="tel" maxlength="4" placeholder="">
+                                -
+                                <input type="tel" maxlength="4" placeholder="">
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="tit required">Email</div>
+                            <div class="txt email">
+                                <input placeholder="">
+                                @
+                                <div class="select" id="email_select">
+                                    <button class="toggle" aria-haspopup="listbox" aria-expanded="false">Chọn<span class="icon"><img src="/images/icon/dropdown.svg" alt=""></span>
+                                    </button>
+                                    <ul class="option" role="listbox" hidden>
+                                        <li role="option" data-value="" class="active">Chọn</li>
+                                        <li role="option" data-value="naver.com">naver.com</li>
+                                        <li role="option" data-value="gmail.com">gmail.com</li>
+                                        <li role="option" data-value="daum.net">daum.net</li>
+                                        <li role="option" data-value="kakao.com">kakao.com</li>
+                                        <li role="option" data-value="hanmail.net">hanmail.net</li>
+                                        <li role="option" data-value="nate.com">nate.com</li>
+                                        <li role="option" data-value="hotmail.com">hotmail.com</li>
+                                        <li role="option" data-value="outlook.com">outlook.com</li>
+                                        <li role="option" data-value="yahoo.com">yahoo.com</li>
+                                        <li role="option" data-value="direct">Nhập trực tiếp</li>
+                                    </ul>
+                                </div>
+                                <input type="text" class="direct-input" placeholder="Nhập tên miền" style="display: none;">
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="tit required">Loại sản phẩm</div>
+                            <div class="txt"><input placeholder="vd. Kem dưỡng mắt"></div>
+                        </div>
+                        <div class="item">
+                            <div class="tit">Ngày mong muốn bắt đầu thử nghiệm</div>
+                            <div class="txt"><input type="date" placeholder=""></div>
+                        </div>
+                        <div class="item">
+                            <div class="tit">Ngày mong muốn nhận báo cáo kết quả</div>
+                            <div class="txt"><input type="date" placeholder=""></div>
+                        </div>
+                        <div class="item">
+                            <div class="tit required">Hình thức tư vấn mong muốn</div>
+                            <div class="txt">
+                                <div class="custom_radio">
+                                    <input type="radio" id="contact_phone" name="contact_type" value="PHONE" checked>
+                                    <label for="contact_phone">Tư vấn qua điện thoại</label>
+                                </div>
+                                <div class="custom_radio">
+                                    <input type="radio" id="contact_email" name="contact_type" value="EMAIL">
+                                    <label for="contact_email">Tư vấn qua email</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="tit required">Mật khẩu</div>
+                            <div class="txt"><input type="password" maxlength="4" placeholder="Vui lòng nhập 4 chữ số."></div>
+                        </div>
+                    </div>
+                    <textarea placeholder="Khác - Vui lòng ghi nội dung bạn muốn hỏi."></textarea>
+                </div>
+                <div class="term">
+                    <div class="term_cnt">
+                        <div class="wrap">
+                            <p>[Đồng ý thu thập và sử dụng thông tin cá nhân]</p>
+                            <br>
+                            <p>Trung Tâm Thử Nghiệm Lâm Sàng Da Liễu HUMAN (https://www.humantest.co.kr/kor/main/)</p>
+                            <p>thu thập và sử dụng thông tin cá nhân như sau để phục vụ tư vấn và trả lời các câu hỏi về thử nghiệm lâm sàng.</p>
+                            <br>
+                            <p>1. Mục đích thu thập</p>
+                            <p>- Tư vấn và phản hồi các câu hỏi về thử nghiệm lâm sàng</p>
+                            <p>- Hướng dẫn về hạng mục thử nghiệm, lịch trình, báo giá</p>
+                            <p>- Giao tiếp thuận tiện theo yêu cầu của khách hàng</p>
+                            <br>
+                            <p>2. Hạng mục thu thập</p>
+                            <p>- Mục bắt buộc: Tên công ty, người phụ trách, số điện thoại, email, loại sản phẩm</p>
+                            <br>
+                            <p>3. Thời gian lưu giữ và sử dụng</p>
+                            <p>- Lưu giữ trong 3 năm sau khi xử lý xong yêu cầu</p>
+                            <p>  (Trường hợp pháp luật yêu cầu lưu giữ, sẽ lưu giữ theo thời gian đó)</p>
+                            <br>
+                            <p>※ Bạn có thể từ chối đồng ý thu thập, sử dụng thông tin cá nhân; nếu từ chối, việc tiếp nhận câu hỏi thử nghiệm lâm sàng có thể bị hạn chế.</p>
+                        </div>
+                    </div>
+                    <div class="term_chk">
+                        <p>※ Bạn có quyền từ chối đồng ý, tuy nhiên nếu từ chối sẽ không thể sử dụng dịch vụ.</p>
+                        <div class="wrap">
+                            <div class="custom_radio">
+                                <input type="radio" id="term_agree" name="term_chk" checked>
+                                <label for="term_agree">Đồng ý</label>
+                            </div>
+                            <div class="custom_radio">
+                                <input type="radio" id="term_disagree" name="term_chk">
+                                <label for="term_disagree">Không đồng ý</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="btn_group">
+                    <button type="button" class="back" onclick="window.history.back()">Hủy</button>
+                    <button type="submit" class="submit">Gửi câu hỏi</button>
+                </div>
+            </div>
+        </div>
+    </section>
+    <div id="foot"></div>
+    <script>
+        $(function(){
+            $("#head").load("/head.html");
+            $("#foot").load("/foot.html");
+
+            $(document).on('click', '.toggle', function () {
+                const $wrapper = $(this).closest('.select');
+                const $options = $wrapper.find('.option');
+                const isOpen = !$options.prop('hidden');
+
+                $('.option').attr('hidden', true);
+                $('.select').removeClass('open');
+
+                if (!isOpen) {
+                    $options.removeAttr('hidden');
+                    $wrapper.addClass('open');
+                }
+            });
+
+            $(document).on('click', '.option li', function () {
+                const $this = $(this);
+                const value = $this.data('value');
+                const label = $this.text();
+                const $wrapper = $this.closest('.select');
+
+                $this.addClass('active').siblings().removeClass('active');
+                $wrapper.find('.toggle').contents().first()[0].textContent = label + ' ';
+                $this.parent().attr('hidden', true);
+                $wrapper.removeClass('open');
+
+                if ($wrapper.attr('id') === 'email_select') {
+                    const $directInput = $('.email .direct-input');
+                    if (value === 'direct') {
+                        $directInput.show();
+                        $directInput.focus();
+                    } else {
+                        $directInput.hide();
+                        $directInput.val('');
+                    }
+                }
+            });
+
+            $(document).on('click', function (e) {
+                if (!$(e.target).closest('.select').length) {
+                    $('.option').attr('hidden', true);
+                    $('.select').removeClass('open');
+                }
+            });
+
+            $('.phone input').on('input', function() {
+                this.value = this.value.replace(/[^0-9]/g, '');
+            });
+        });
+
+        $('.submit').on('click', function(e) {
+            e.preventDefault();
+
+            if (!$('#term_agree').is(':checked')) {
+                alert('Vui lòng đồng ý thu thập, sử dụng thông tin cá nhân.');
+                return;
+            }
+
+            const formData = collectFormData();
+
+            if (!validateForm(formData)) {
+                return;
+            }
+
+            submitQuestion(formData);
+        });
+
+        function collectFormData() {
+            const companyName = $('.list2 .item').eq(0).find('input').val().trim();
+            const companyId = $('.list2 .item').eq(1).find('input').val().trim();
+            const representativeName = $('.list2 .item').eq(2).find('input').val().trim();
+            const representativePosition = $('.list2 .item').eq(3).find('input').val().trim();
+
+            const phone1 = $('#phone_select .toggle').text().trim();
+            const phone2 = $('.phone input').eq(0).val().trim();
+            const phone3 = $('.phone input').eq(1).val().trim();
+
+            const email1 = $('.email input').eq(0).val().trim();
+            const emailSelect = $('#email_select .toggle').text().trim();
+            const emailDirect = $('.email .direct-input').val().trim();
+
+            let email2 = '';
+            if (emailSelect === 'Nhập trực tiếp') {
+                email2 = emailDirect;
+            } else if (emailSelect !== 'Chọn') {
+                email2 = emailSelect;
+            }
+
+            const productType = $('.list2 .item').eq(6).find('input').val().trim();
+            const startDate = $('.list2 .item').eq(7).find('input').val() || null;
+            const endDate = $('.list2 .item').eq(8).find('input').val() || null;
+
+            const contactType = $('input[name="contact_type"]:checked').val();
+
+            const password = $('.list2 .item').eq(10).find('input').val().trim();
+
+            return {
+                title: 'Bài viết riêng tư',
+                companyName: companyName,
+                companyId: companyId,
+                representativeName: representativeName,
+                representativePosition: representativePosition,
+                phone: phone1 + '-' + phone2 + '-' + phone3,
+                email: email1 + '@' + email2,
+                productType: productType,
+                startDate: startDate,
+                endDate: endDate,
+                password: password,
+                contactType: contactType,
+                content: $('textarea').val().trim()
+            };
+        }
+
+        function validateForm(data) {
+            if (!data.companyName) {
+                alert('Vui lòng nhập tên công ty.');
+                return false;
+            }
+
+            if (!data.representativeName) {
+                alert('Vui lòng nhập tên người phụ trách.');
+                return false;
+            }
+
+            const phonePattern = /^\d{3}-\d{3,4}-\d{4}$/;
+            if (!phonePattern.test(data.phone)) {
+                alert('Vui lòng nhập đúng số điện thoại.');
+                return false;
+            }
+
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailPattern.test(data.email)) {
+                alert('Vui lòng nhập đúng địa chỉ email.');
+                return false;
+            }
+
+            if (!data.productType) {
+                alert('Vui lòng nhập loại sản phẩm.');
+                return false;
+            }
+
+            const passwordPattern = /^\d{4}$/;
+            if (!passwordPattern.test(data.password)) {
+                alert('Vui lòng nhập mật khẩu gồm 4 chữ số.');
+                return false;
+            }
+
+            return true;
+        }
+
+        function submitQuestion(data) {
+            $.ajax({
+                url: '/api/trial-questions',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function(response) {
+                    window.location.href = '/req/req_confirm.html';
+                },
+                error: function(error) {
+                    console.error('Gửi thất bại:', error);
+                    alert('Đăng ký câu hỏi thất bại. Vui lòng thử lại.');
+                }
+            });
+        }
+    </script>
+</body>
+</html>

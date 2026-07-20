@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Trung Tâm Thử Nghiệm Lâm Sàng HUMAN</title>
+    <link href="/css/main.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="/js/script.js"></script>
+</head>
+<body class="req3">
+    <div id="head"></div>
+    <div class="top_banner">
+        <div class="container">
+            <h1>Yêu Cầu Thử Nghiệm</h1>
+        </div>
+        <div class="scroll_down">
+            <span class="scroll_text">Scroll to down</span>
+            <div class="scroll_line_box"><div class="scroll_line_inner"></div></div>
+        </div>
+    </div>
+    <div class="tab_menu">
+        <div class="container">
+            <div class="wrap">
+                <a href="/req/req1.html">Quy Trình Thử Nghiệm</a>
+                <a href="/req/req2.html">Tư Vấn Thử Nghiệm</a>
+                <a href="/req/req3.html" class="active">Thông Báo</a>
+                <a href="/req/req4.html">Câu Hỏi Thường Gặp (FAQ)</a>
+                <a href="/req/req5.html">Tải Xuống</a>
+            </div>
+        </div>
+    </div>
+    <section class="sub1">
+        <div class="container">
+            <div class="title">
+                <div class="top">
+                    <img src="/images/icon/symbol.svg" alt="" class="symbol">
+                    <h2>Thông Báo</h2>
+                </div>
+            </div>
+            <div class="content">
+                <div class="bd_search">
+                    <div class="select" id="search_field_wrapper">
+                        <button class="toggle" aria-haspopup="listbox" aria-expanded="false">Tiêu đề<span class="icon"><img src="/images/icon/dropdown.svg" alt=""></span>
+                        </button>
+                        <ul class="option" role="listbox" hidden>
+                            <li role="option" data-value="subject" class="active">Tiêu đề</li>
+                            <li role="option" data-value="content">Nội dung</li>
+                            <li role="option" data-value="all">Tất cả</li>
+                        </ul>
+                    </div>
+                    <input type="hidden" id="search_field" value="subject">
+                    <div class="search_input">
+                        <input type="text" id="search_keyword" placeholder="Nhập từ khóa tìm kiếm.">
+                        <button id="search_btn"><img src="/images/icon/search.svg" alt=""></button>
+                    </div>
+                </div>
+                <table class="table1">
+                    <thead>
+                        <tr>
+                            <td class="num">STT</td>
+                            <td class="tit">Tiêu đề</td>
+                            <td class="name">Người đăng</td>
+                            <td class="date">Ngày đăng</td>
+                            <td class="view">Lượt xem</td>
+                            <td class="file">Tệp <span class="pc_only">đính kèm</span></td>
+                        </tr>
+                    </thead>
+                    <tbody id="notificationList">
+                        <!-- JavaScript로 동적 생성 -->
+                    </tbody>
+                </table>
+                <div class="pagination" id="pagination">
+                    <!-- JavaScript로 동적 생성 -->
+                </div>
+            </div>
+        </div>
+    </section>
+    <div id="foot"></div>
+    <script>
+        $(function(){
+            $("#head").load("/head.html");
+            $("#foot").load("/foot.html");
+        });
+
+        let allNotifications = [];
+        let currentPage = 1;
+        const itemsPerPage = 10;
+        let isSearchMode = false;
+
+        $(document).ready(function() {
+            loadNotifications();
+
+            $('#search_btn').click(function() {
+                searchNotifications();
+            });
+
+            $('#search_keyword').keypress(function(e) {
+                if (e.which === 13) {
+                    searchNotifications();
+                }
+            });
+        });
+
+        function loadNotifications() {
+            $.ajax({
+                url: '/api/notifications/all',
+                method: 'GET',
+                success: function(data) {
+                    allNotifications = data;
+                    isSearchMode = false;
+                    currentPage = 1;
+                    renderNotifications();
+                },
+                error: function(error) {
+                    console.error('Lỗi tải dữ liệu:', error);
+                    alert('Không thể tải dữ liệu.');
+                }
+            });
+        }
+
+        function searchNotifications() {
+            const field = $('#search_field').val();
+            const keyword = $('#search_keyword').val().trim();
+
+            if (!keyword) {
+                alert('Vui lòng nhập từ khóa tìm kiếm.');
+                return;
+            }
+
+            $.ajax({
+                url: '/api/notifications/search',
+                method: 'GET',
+                data: { 
+                    field: field, 
+                    keyword: keyword 
+                },
+                success: function(data) {
+                    if (data.length === 0) {
+                        alert('Không có kết quả tìm kiếm.');
+                        return;
+                    }
+                    allNotifications = data;
+                    isSearchMode = true;
+                    currentPage = 1;
+                    renderNotifications();
+                },
+                error: function(error) {
+                    console.error('Lỗi tìm kiếm:', error);
+                    alert('Tìm kiếm thất bại.');
+                }
+            });
+        }
+
+        function renderNotifications() {
+
+            const noticeList = allNotifications.filter(n => {
+                return n.isNotification === true || 
+                       n.isNotification === 1 || 
+                       n.isNotification === '1' || 
+                       n.isNotification === 'true';
+            });
+            const normalList = allNotifications.filter(n => {
+                return !(n.isNotification === true || 
+                         n.isNotification === 1 || 
+                         n.isNotification === '1' || 
+                         n.isNotification === 'true');
+            });
+
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageNormalList = normalList.slice(startIndex, endIndex);
+
+            let html = '';
+
+            noticeList.forEach(function(notification) {
+                const date = formatDate(notification.createdAt);
+                const hasFile = notification.attachedFiles && notification.attachedFiles.length > 0;
+                const fileIcon = hasFile ? '<img src="/images/icon/file.svg" alt="">' : '';
+
+                html += `
+                    <tr class="notice-row">
+                        <td class="num notice">[Thông báo]</td>
+                        <td class="tit">
+                            <a href="/req/req_detail.html?id=${notification.id}">${notification.title}</a>
+                        </td>
+                        <td class="name">${notification.userName || 'Quản trị viên'}</td>
+                        <td class="date">${date}</td>
+                        <td class="view">${notification.view || 0}</td>
+                        <td class="file">${fileIcon}</td>
+                    </tr>
+                `;
+            });
+
+            if (pageNormalList.length === 0 && noticeList.length === 0) {
+                html += '<tr><td colspan="6" style="text-align: center; padding: 40px;">Chưa có thông báo nào.</td></tr>';
+            } else if (pageNormalList.length === 0 && noticeList.length > 0) {
+                html += '<tr><td colspan="6" style="text-align: center; padding: 20px; color: #999;">Không có bài viết thông thường.</td></tr>';
+            } else {
+                const totalNormalCount = normalList.length;
+
+                pageNormalList.forEach(function(notification, index) {
+                    const date = formatDate(notification.createdAt);
+                    const hasFile = notification.attachedFiles && notification.attachedFiles.length > 0;
+                    const fileIcon = hasFile ? '<img src="/images/icon/file.svg" alt="">' : '';
+
+                    const currentNumber = totalNormalCount - (startIndex + index);
+
+                    html += `
+                        <tr>
+                            <td class="num">${currentNumber}</td>
+                            <td class="tit">
+                                <a href="/req/req_detail.html?id=${notification.id}">${notification.title}</a>
+                            </td>
+                            <td class="name">${notification.userName || 'Quản trị viên'}</td>
+                            <td class="date">${date}</td>
+                            <td class="view">${notification.view || 0}</td>
+                            <td class="file">${fileIcon}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            $('#notificationList').html(html);
+            renderPagination(normalList.length);
+        }
+
+        function renderPagination(normalCount) {
+            const totalPages = Math.ceil(normalCount / itemsPerPage);
+
+            if (totalPages <= 1) {
+                $('#pagination').html('');
+                return;
+            }
+
+            let html = '';
+
+            if (currentPage > 1) {
+                html += '<button class="prev" onclick="changePage(' + (currentPage - 1) + ')"><img src="/images/icon/prev.svg" alt="">Trước</button>';
+            } else {
+                html += '<button class="prev" disabled><img src="/images/icon/prev.svg" alt="">Trước</button>';
+            }
+
+            html += '<div class="num">';
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === currentPage) {
+                    html += '<button class="active">' + i + '</button>';
+                } else {
+                    html += '<button onclick="changePage(' + i + ')">' + i + '</button>';
+                }
+            }
+            html += '</div>';
+
+            if (currentPage < totalPages) {
+                html += '<button class="next" onclick="changePage(' + (currentPage + 1) + ')">Sau<img src="/images/icon/next.svg" alt=""></button>';
+            } else {
+                html += '<button class="next" disabled>Sau<img src="/images/icon/next.svg" alt=""></button>';
+            }
+
+            $('#pagination').html(html);
+        }
+
+        function changePage(page) {
+            currentPage = page;
+            renderNotifications();
+            $('html, body').animate({ scrollTop: 0 }, 300);
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const year = String(date.getFullYear()).slice(2);
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return year + '.' + month + '.' + day;
+        }
+
+        $(document).on('click', '.toggle', function () {
+            const $wrapper = $(this).closest('.select');
+            const $options = $wrapper.find('.option');
+            const isOpen = !$options.prop('hidden');
+
+            $('.option').attr('hidden', true);
+            $('.select').removeClass('open');
+
+            if (!isOpen) {
+                $options.removeAttr('hidden');
+                $wrapper.addClass('open');
+            }
+        });
+
+        $(document).on('click', '.option li', function () {
+            const $this = $(this);
+            const value = $this.data('value');
+            const label = $this.text();
+            const $wrapper = $this.closest('.select');
+
+            $this.addClass('active').siblings().removeClass('active');
+            $wrapper.find('.toggle').contents().first()[0].textContent = label + ' ';
+            $('#search_field').val(value);
+            $this.parent().attr('hidden', true);
+            $wrapper.removeClass('open');
+        });
+
+        $(document).on('click', function (e) {
+            if (!$(e.target).closest('.select').length) {
+                $('.option').attr('hidden', true);
+                $('.select').removeClass('open');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,388 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Trung Tâm Thử Nghiệm Lâm Sàng HUMAN</title>
+    <link href="/css/main.css" rel="stylesheet" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="/js/script.js"></script>
+  </head>
+  <body class="main">
+    <div id="head"></div>
+
+    <!-- 팝업 모달 (샘플 고정 데이터) -->
+    <div class="modal_overlay" id="popup" style="display: none">
+      <div class="modal_content is-single">
+        <button class="modal_nav prev" aria-label="Slide trước">
+          <img src="/images/icon/popup_prev.svg" alt="" />
+        </button>
+        <button class="modal_nav next" aria-label="Slide sau">
+          <img src="/images/icon/popup_next.svg" alt="" />
+        </button>
+        <div class="modal_wrap">
+          <div class="modal_track">
+            <div class="modal_slide">
+              <img src="/images/main/popup1.jpg" alt="Thông báo HUMAN">
+            </div>
+          </div>
+        </div>
+        <div class="modal_bottom">
+          <div class="modal_btn">
+            <button class="modal_close today">Không hiển thị lại hôm nay</button>
+            <button class="modal_close">Đóng</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <section class="main_slide">
+      <div
+        class="video-background"
+        style="
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          overflow: hidden;
+          z-index: 0;
+        "
+      >
+        <iframe
+          src="https://player.vimeo.com/video/1170917034?h=2b7c35dad7&autoplay=1&loop=1&muted=1&background=1&controls=0"
+          frameborder="0"
+          allow="autoplay; fullscreen"
+          style="
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+          "
+        >
+        </iframe>
+      </div>
+
+      <div
+        style="
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          z-index: 1;
+        "
+      ></div>
+
+      <div class="slide_wrap" style="display: none">
+        <div class="slide active"></div>
+        <div class="slide"></div>
+      </div>
+
+      <div class="slide_control" style="display: none">
+        <div class="control">
+          <button class="prev">
+            <img src="/images/icon/prev.svg" alt="Trước" />
+          </button>
+          <button class="next">
+            <img src="/images/icon/next.svg" alt="Sau" />
+          </button>
+        </div>
+        <div class="bar_container">
+          <div class="bar"></div>
+        </div>
+        <div class="page">
+          <span class="current">01</span> / <span class="total">02</span>
+        </div>
+        <div class="replay">
+          <button class="toggle">
+            <img src="/images/icon/pause.svg" alt="Tạm dừng" />
+          </button>
+          <button class="toggle">
+            <img src="/images/icon/play.svg" alt="Phát" />
+          </button>
+        </div>
+      </div>
+    </section>
+    <section class="main1">
+      <div class="container">
+        <div class="title">
+          <div class="top">
+            <h2 class="normal">
+              Từ lâm sàng đến marketing, HUMAN đồng hành cùng hành trình thương hiệu của bạn.
+            </h2>
+            <h2 class="normal">
+              <span class="bold purple">Cùng HUMAN</span>,
+              <br class="m_only" />thử nghiệm lâm sàng không chỉ là kết quả mà còn là <br class="m_only" /><span
+                class="bold purple"
+                >'sự phát triển'</span
+              >.
+            </h2>
+          </div>
+          <img src="/images/icon/symbol.svg" alt="" class="symbol" />
+          <h3 class="normal">
+            Hãy chọn loại mỹ phẩm cần thử nghiệm lâm sàng.
+          </h3>
+        </div>
+        <div class="content">
+          <div class="search_wrap">
+            <div class="dropdown_tabs" id="trialTabDropdown">
+                <button type="button" class="dropdown_toggle" id="dropdownToggleBtn">
+                    Vui lòng chọn loại mỹ phẩm <span class="arrow">▼</span>
+                </button>
+                <ul class="dropdown_list" id="dropdownList" style="display:none;">
+                    <li data-tab-id="" class="active">Tất cả</li>
+                </ul>
+            </div>
+            <div style="display: flex; justify-content: center; margin-top: 20px;">
+              <h4 class="normal" style="display: flex; align-items: center; justify-content: center; gap: 15px; flex-wrap: wrap; text-align: center; line-height: 1.5;">
+                Chỉ hiển thị các hạng mục thử nghiệm chính của loại mỹ phẩm đã chọn. Hãy xem toàn bộ hạng mục lâm sàng.
+                <a href="/entry/entry2.html"
+                   style="display: inline-flex; align-items: center; gap: 8px; background: var(--main-color); color: #FFF; padding: 8px 16px; border-radius: 10px; font-size: 16px; font-weight: 500; text-decoration: none;">
+                  Xem tất cả
+                  <img src="/images/icon/next.svg" alt="" style="width: 12px; height: 12px;">
+                </a>
+              </h4>
+            </div>
+        </div>
+          <div class="card_slide">
+            <div class="board_card" id="main_trial_cards">
+              <a href="/entry/entry_sample.html" class="item">
+                <div class="badge"><span>Đánh giá hiệu quả</span></div>
+                <div class="img">
+                  <div class="thumb"><img src="/images/board/sample.jpg" alt="Trước thử nghiệm"></div>
+                  <div class="thumb"><img src="/images/board/sample.jpg" alt="Sau thử nghiệm"></div>
+                </div>
+                <div class="txt">
+                  <span class="tit">Đánh giá hiệu quả dưỡng ẩm da</span>
+                  <span class="caution">Cải thiện độ ẩm da rõ rệt sau 4 tuần</span>
+                </div>
+              </a>
+              <a href="/entry/entry_sample.html" class="item">
+                <div class="badge"><span>Đánh giá an toàn</span></div>
+                <div class="img">
+                  <div class="thumb"><img src="/images/board/sample.jpg" alt="Trước thử nghiệm"></div>
+                  <div class="thumb"><img src="/images/board/sample.jpg" alt="Sau thử nghiệm"></div>
+                </div>
+                <div class="txt">
+                  <span class="tit">Đánh giá kích ứng da</span>
+                  <span class="caution">Không phát hiện phản ứng kích ứng</span>
+                </div>
+              </a>
+              <a href="/entry/entry_sample.html" class="item">
+                <div class="badge"><span>Đánh giá chức năng</span></div>
+                <div class="img">
+                  <div class="thumb"><img src="/images/board/sample.jpg" alt="Trước thử nghiệm"></div>
+                  <div class="thumb"><img src="/images/board/sample.jpg" alt="Sau thử nghiệm"></div>
+                </div>
+                <div class="txt">
+                  <span class="tit">Đánh giá hiệu quả làm sáng da</span>
+                  <span class="caution">Cải thiện sắc tố da sau 8 tuần sử dụng</span>
+                </div>
+              </a>
+            </div>
+            <div class="slide_index"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="main2">
+      <div class="container">
+        <div class="title">
+          <h2 class="normal">
+            Trung Tâm Thử Nghiệm Lâm Sàng HUMAN <br />xây dựng <span class="bold">tiêu chuẩn kiểm chứng</span
+            ><br />từ <span class="bold">dữ liệu tích lũy</span>
+          </h2>
+        </div>
+        <div class="content">
+          <div class="wrap">
+            <div class="data">
+              <div class="item">
+                <div class="img">
+                  <img src="/images/main/data_icon1.svg" alt="" />
+                </div>
+                <div class="tit">Số lượt thử nghiệm tích lũy</div>
+                <div class="num">
+                  <span class="count" data-value="5773">5,773</span>
+                </div>
+              </div>
+              <div class="item">
+                <div class="img">
+                  <img src="/images/main/data_icon2.svg" alt="" />
+                </div>
+                <div class="tit">Số sản phẩm tích lũy</div>
+                <div class="num">
+                  <span class="count" data-value="15281">15,281</span>
+                </div>
+              </div>
+              <div class="item">
+                <div class="img">
+                  <img src="/images/main/data_icon3.svg" alt="" />
+                </div>
+                <div class="tit">Số khách hàng tích lũy</div>
+                <div class="num">
+                  <span class="count" data-value="4502">4,502</span>
+                </div>
+              </div>
+            </div>
+            <div class="video">
+              <p class="tit">
+                Dữ liệu lâm sàng càng tích lũy, <br class="m_only" />niềm tin với HUMAN càng sâu sắc.
+              </p>
+              <div style="padding: 56.25% 0 0 0; position: relative">
+                <iframe
+                  src="https://player.vimeo.com/video/1170917034?h=2b7c35dad7&autoplay=1&loop=1&muted=1&background=1"
+                  frameborder="0"
+                  allow="autoplay; fullscreen; picture-in-picture"
+                  style="
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    border-radius: 10px;
+                  "
+                  title="HUMAN Clinical Video"
+                >
+                </iframe>
+              </div>
+              <script src="https://player.vimeo.com/api/player.js"></script>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <div id="foot"></div>
+<style>
+  /* 팝업이 1개일 때의 스타일 */
+
+.modal_content.is-single {
+    max-width: 585px;
+}
+
+.modal_content.is-single .modal_track {
+    display: flex;
+    justify-content: center;
+    transform: none !important;
+}
+
+.modal_content.is-single .modal_nav {
+    display: none !important;
+}
+
+.modal_content.is-single .modal_slide {
+    width: 100% !important;
+    text-align: center;
+}
+
+.modal_content.is-single .modal_slide img {
+    margin: 0 auto;
+}
+.dropdown_tabs {
+  position: relative;
+  margin: 0 auto;
+}
+.dropdown_toggle {
+    width: 100%;
+    padding: 14px 20px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    text-align: left;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.dropdown_toggle .arrow {
+    font-size: 12px;
+    color: #999;
+}
+.dropdown_list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-top: 4px;
+    list-style: none;
+    padding: 8px 0;
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.dropdown_list li {
+    padding: 12px 20px;
+    cursor: pointer;
+    font-size: 15px;
+}
+.dropdown_list li:hover,
+.dropdown_list li.active {
+    background: #f5f5f5;
+    color: #6a3de8;
+    font-weight: 600;
+}
+</style>
+<script>
+  $(function () {
+    $("#head").load("/head.html");
+    $("#foot").load("/foot.html");
+
+    // 2단계(백엔드 연동)에서 /api/popups, /api/trials, /api/statistics
+    // 붙이면서 아래 샘플 렌더링을 다시 AJAX 호출로 교체 예정.
+
+    checkPopupDisplay();
+
+    $(".modal_close")
+      .off("click")
+      .on("click", function () {
+        if ($(this).hasClass("today")) setPopupCookie();
+        $("#popup").hide();
+      });
+
+    function checkPopupDisplay() {
+      const hidePopup = getCookie("hidePopupToday");
+      if (hidePopup === "true") {
+        $("#popup").hide();
+        return;
+      }
+      $("#popup").show();
+    }
+
+    function setPopupCookie() {
+      const now = new Date();
+      const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
+      document.cookie = `hidePopupToday=true; expires=${midnight.toUTCString()}; path=/`;
+    }
+
+    function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(";").shift();
+      return null;
+    }
+
+    $("#dropdownToggleBtn").on("click", function (e) {
+      e.stopPropagation();
+      $("#dropdownList").toggle();
+    });
+    $(document).on("click", function () {
+      $("#dropdownList").hide();
+    });
+    $("#dropdownList li").on("click", function () {
+      $("#dropdownList li").removeClass("active");
+      $(this).addClass("active");
+      $("#dropdownToggleBtn").html($(this).text() + ' <span class="arrow">▼</span>');
+      $("#dropdownList").hide();
+    });
+  });
+</script>
+  </body>
+</html>

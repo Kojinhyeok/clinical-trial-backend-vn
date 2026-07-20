@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Trung Tâm Thử Nghiệm Lâm Sàng HUMAN</title>
+    <link href="/css/main.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="/js/script.js"></script>
+</head>
+<body class="req2">
+    <div id="head"></div>
+    <div class="top_banner">
+        <div class="container">
+            <h1>Yêu Cầu Thử Nghiệm</h1>
+        </div>
+        <div class="scroll_down">
+            <span class="scroll_text">Scroll to down</span>
+            <div class="scroll_line_box"><div class="scroll_line_inner"></div></div>
+        </div>
+    </div>
+    <div class="tab_menu">
+        <div class="container">
+            <div class="wrap">
+                <a href="/req/req1.html">Quy Trình Thử Nghiệm</a>
+                <a href="/req/req2.html" class="active">Tư Vấn Thử Nghiệm</a>
+                <a href="/req/req3.html">Thông Báo</a>
+                <a href="/req/req4.html">Câu Hỏi Thường Gặp (FAQ)</a>
+                <a href="/req/req5.html">Tải Xuống</a>
+            </div>
+        </div>
+    </div>
+    <section class="sub1">
+        <div class="container">
+            <div class="title">
+                <div class="top">
+                    <img src="/images/icon/symbol.svg" alt="" class="symbol">
+                    <h2>Tư Vấn Thử Nghiệm</h2>
+                </div>
+            </div>
+            <div class="content">
+                <div class="filter">
+                    <span class="label">Số điện thoại</span>
+                    <div class="filter_phone">
+                        <div class="select" id="phone_select">
+                            <button class="toggle" aria-haspopup="listbox" aria-expanded="false">010<span class="icon"><img src="/images/icon/dropdown.svg" alt=""></span>
+                            </button>
+                            <ul class="option" role="listbox" hidden>
+                                <li role="option" data-value="010" class="active">010</li>
+                            </ul>
+                        </div>
+                        <span>-</span>
+                        <input type="text" id="phone_middle" maxlength="4">
+                        <span>-</span>
+                        <input type="text" id="phone_last" maxlength="4">
+                    </div>
+                    <div class="filter_btn">
+                        <button type="button" class="back" id="searchBtn">Tra cứu</button>
+                    </div>
+                </div>
+                <div class="req_btn">
+                    <p class="tit">Gửi câu hỏi</p>
+                    <a href="/req/req_write.html" class="btn">Đi tới<img src="/images/icon/next_color.svg" alt=""></a>
+                </div>
+                <table class="table1">
+                    <thead>
+                        <tr>
+                            <td class="date">Ngày</td>
+                            <td class="tit">Tiêu đề</td>
+                            <td class="name">Người gửi</td>
+                            <td class="state">Trạng thái</td>
+                        </tr>
+                    </thead>
+                    <tbody id="questionList">
+                        <!-- JavaScript로 동적 생성 -->
+                    </tbody>
+                </table>
+                <div class="pagination" id="pagination">
+                    <!-- JavaScript로 동적 생성 -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 비밀번호 인증 팝업 -->
+    <div id="req_popup" class="popup_overlay">
+        <div class="popup_content">
+            <div class="wrap">
+                <p class="tit">Xác thực mật khẩu</p>
+                <p class="sub">Vui lòng nhập mật khẩu.</p>
+                <input type="password" id="passwordInput">
+                <button class="submit" id="verifyBtn">Xác nhận</button>
+            </div>
+            <button onclick="closePopup()" class="popup_close">
+                <img src="/images/icon/menu_close.svg" alt="Đóng">
+            </button>
+        </div>
+    </div>
+
+    <div id="foot"></div>
+    <script>
+        $(function(){
+            $("#head").load("/head.html");
+            $("#foot").load("/foot.html");
+        });
+
+        let allQuestions = [];
+        let currentPage = 1;
+        const itemsPerPage = 10;
+        let selectedQuestionId = null;
+        let selectedIsAnswer = false;
+        let selectedAnswerId = null;
+        let isSearchMode = false;
+
+        $(document).ready(function() {
+            loadAllQuestions();
+
+            $('#searchBtn').click(function() {
+                searchByPhone();
+            });
+
+            $('#phone_middle, #phone_last').keypress(function(e) {
+                if (e.which === 13) {
+                    searchByPhone();
+                }
+            });
+
+            $('#verifyBtn').click(function() {
+                verifyPassword();
+            });
+
+            $('#passwordInput').keypress(function(e) {
+                if (e.which === 13) {
+                    verifyPassword();
+                }
+            });
+        });
+
+        function loadAllQuestions() {
+            $.ajax({
+                url: '/api/trial-questions',
+                method: 'GET',
+                success: function(data) {
+                    allQuestions = data;
+                    isSearchMode = false;
+                    currentPage = 1;
+                    renderQuestions();
+                },
+                error: function(error) {
+                    console.error('Lỗi tải dữ liệu:', error);
+                    alert('Không thể tải dữ liệu.');
+                }
+            });
+        }
+
+        function searchByPhone() {
+            const phoneMiddle = $('#phone_middle').val().trim();
+            const phoneLast = $('#phone_last').val().trim();
+
+            if (!phoneMiddle || !phoneLast) {
+                alert('Vui lòng nhập đầy đủ số điện thoại.');
+                return;
+            }
+
+            const phone = '010' + phoneMiddle + phoneLast;
+
+            $.ajax({
+                url: '/api/trial-questions/by-phone',
+                method: 'GET',
+                data: { phone: phone },
+                success: function(data) {
+                    if (data.length === 0) {
+                        alert('Không tìm thấy câu hỏi nào với số điện thoại này.');
+                        return;
+                    }
+                    allQuestions = data;
+                    isSearchMode = true;
+                    currentPage = 1;
+                    renderQuestions();
+                },
+                error: function(error) {
+                    console.error('Lỗi tìm kiếm:', error);
+                    alert('Tìm kiếm thất bại.');
+                }
+            });
+        }
+
+        function renderQuestions() {
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageQuestions = allQuestions.slice(startIndex, endIndex);
+
+            let html = '';
+
+            if (pageQuestions.length === 0) {
+                html = '<tr><td colspan="4" style="text-align: center; padding: 40px;">Không có câu hỏi nào.</td></tr>';
+            } else {
+                pageQuestions.forEach(function(question) {
+                    const date = formatDate(question.createdAt);
+                    const statusText = question.status === 'ANSWERED' ? 'Đã trả lời' : 'Chờ trả lời';
+
+                    let titleDisplay = '';
+                    if (question.isAnswer) {
+                        titleDisplay = '&ensp;ㄴ ' + question.title;
+                    } else {
+                        titleDisplay = question.title;
+                    }
+
+                    const rowClass = question.isAnswer ? 'answer-row' : '';
+
+                    html += `
+                        <tr class="${rowClass}" data-id="${question.id}" data-is-answer="${question.isAnswer}" data-question-id="${question.questionId || question.id}">
+                            <td class="date">${date}</td>
+                            <td class="tit">
+                                <a href="#" class="question-link" data-id="${question.id}" data-is-answer="${question.isAnswer}">
+                                    ${titleDisplay}
+                                </a>
+                            </td>
+                            <td class="name">${question.representativeName}</td>
+                            <td class="state">${statusText}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            $('#questionList').html(html);
+
+            $('.question-link').click(function(e) {
+                e.preventDefault();
+                const questionId = $(this).data('id');
+                const isAnswer = $(this).data('is-answer');
+
+                if (isAnswer) {
+                    const originalQuestionId = $(this).closest('tr').data('question-id');
+                    openPasswordPopup(originalQuestionId, true, questionId);
+                } else {
+                    openPasswordPopup(questionId, false, null);
+                }
+            });
+
+            renderPagination();
+        }
+
+        function openPasswordPopup(questionId, isAnswer, answerId) {
+            selectedQuestionId = questionId;
+            selectedIsAnswer = isAnswer || false;
+            selectedAnswerId = answerId || null;
+            $('#passwordInput').val('');
+            $('#req_popup').fadeIn(300).css('display', 'flex');
+        }
+
+        function verifyPassword() {
+            const password = $('#passwordInput').val();
+
+            if (!password) {
+                alert('Vui lòng nhập mật khẩu.');
+                return;
+            }
+
+            $.ajax({
+                url: '/api/trial-questions/' + selectedQuestionId + '/verify',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ password: password }),
+                success: function(response) {
+                    if (response.verified) {
+                        const isAnswer = selectedIsAnswer;
+                        const answerId = selectedAnswerId;
+                        const questionId = selectedQuestionId;
+
+                        closePopup();
+
+                        if (isAnswer) {
+                            window.location.href = '/req/req_detail4.html?id=' + answerId;
+                        } else {
+                            window.location.href = '/req/req_detail3.html?id=' + questionId;
+                        }
+                    } else {
+                        alert('Mật khẩu không đúng.');
+                        $('#passwordInput').val('').focus();
+                    }
+                },
+                error: function(error) {
+                    console.error('Lỗi xác thực:', error);
+                    alert('Xác thực mật khẩu thất bại.');
+                }
+            });
+        }
+
+        function renderPagination() {
+            const totalPages = Math.ceil(allQuestions.length / itemsPerPage);
+
+            if (totalPages <= 1) {
+                $('#pagination').html('');
+                return;
+            }
+
+            let html = '';
+
+            if (currentPage > 1) {
+                html += '<button class="prev" onclick="changePage(' + (currentPage - 1) + ')"><img src="/images/icon/prev.svg" alt="">Trước</button>';
+            } else {
+                html += '<button class="prev" disabled><img src="/images/icon/prev.svg" alt="">Trước</button>';
+            }
+
+            html += '<div class="num">';
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === currentPage) {
+                    html += '<button class="active">' + i + '</button>';
+                } else {
+                    html += '<button onclick="changePage(' + i + ')">' + i + '</button>';
+                }
+            }
+            html += '</div>';
+
+            if (currentPage < totalPages) {
+                html += '<button class="next" onclick="changePage(' + (currentPage + 1) + ')">Sau<img src="/images/icon/next.svg" alt=""></button>';
+            } else {
+                html += '<button class="next" disabled>Sau<img src="/images/icon/next.svg" alt=""></button>';
+            }
+
+            $('#pagination').html(html);
+        }
+
+        function changePage(page) {
+            currentPage = page;
+            renderQuestions();
+            $('html, body').animate({ scrollTop: 0 }, 300);
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return year + '.' + month + '.' + day;
+        }
+
+        function closePopup() {
+            $('#req_popup').fadeOut(300);
+            $('#passwordInput').val('');
+            selectedQuestionId = null;
+            selectedIsAnswer = false;
+            selectedAnswerId = null;
+        }
+
+        $(document).on('click', '.toggle', function () {
+            const $wrapper = $(this).closest('.select');
+            const $options = $wrapper.find('.option');
+            const isOpen = !$options.prop('hidden');
+
+            $('.option').attr('hidden', true);
+            $('.select').removeClass('open');
+
+            if (!isOpen) {
+                $options.removeAttr('hidden');
+                $wrapper.addClass('open');
+            }
+        });
+
+        $(document).on('click', '.option li', function () {
+            const $this = $(this);
+            const value = $this.data('value');
+            const label = $this.text();
+            const $wrapper = $this.closest('.select');
+
+            $this.addClass('active').siblings().removeClass('active');
+            $wrapper.find('.toggle').contents().first()[0].textContent = label + ' ';
+            $this.parent().attr('hidden', true);
+            $wrapper.removeClass('open');
+        });
+
+        $(document).on('click', function (e) {
+            if (!$(e.target).closest('.select').length) {
+                $('.option').attr('hidden', true);
+                $('.select').removeClass('open');
+            }
+        });
+    </script>
+</body>
+</html>

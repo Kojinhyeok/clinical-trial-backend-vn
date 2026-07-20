@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>휴먼피부임상시험센터</title>
+    <link href="/css/main.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="/js/script.js"></script>
+</head>
+<body class="promo">
+    <div id="head"></div>
+    <div class="top_banner">
+        <div class="container">
+            <h1>홍보 센터</h1>
+        </div>
+        <div class="scroll_down">
+            <span class="scroll_text">Scroll to down</span>
+            <div class="scroll_line_box"><div class="scroll_line_inner"></div></div>
+        </div>
+    </div>
+    <div class="tab_menu">
+        <div class="container">
+            <div class="wrap">
+                <a href="/promo/promo1.html">인증마크</a>
+                <a href="/promo/promo4.html">휴먼 이야기</a>
+                <a href="/promo/promo5.html" class="active">휴먼 임상소식</a>
+            </div>
+        </div>
+    </div>
+    <section class="sub1">
+        <div class="container">
+            <div class="title">
+                <div class="top">
+                    <img src="/images/icon/symbol.svg" alt="" class="symbol">
+                    <h2>휴먼 임상소식</h2>
+                </div>
+            </div>
+            <div class="content">
+                <div class="board_view" id="newsDetail">
+                    <!-- JavaScript로 동적 생성 -->
+                </div>
+            </div>
+        </div>
+    </section>
+    <div id="foot"></div>
+    <script>
+        $(function(){
+            $("#head").load("/head.html");
+            $("#foot").load("/foot.html");
+            
+            // URL에서 ID 가져오기
+            const urlParams = new URLSearchParams(window.location.search);
+            const newsId = urlParams.get('id');
+            
+            if (!newsId) {
+                alert('잘못된 접근입니다.');
+                window.location.href = '/promo/promo5.html';
+                return;
+            }
+            
+            loadNewsDetail(newsId);
+        });
+        
+        /**
+         * 휴먼 임상소식 상세 로드
+         */
+        function loadNewsDetail(id) {
+            $.ajax({
+                url: '/api/human-news/' + id,
+                method: 'GET',
+                success: function(data) {
+                    renderNewsDetail(data);
+                },
+                error: function(error) {
+                    console.error('데이터 로드 실패:', error);
+                    alert('데이터를 불러오는데 실패했습니다.');
+                    window.location.href = '/promo/promo5.html';
+                }
+            });
+        }
+        
+        /**
+         * 상세 페이지 렌더링
+         */
+        function renderNewsDetail(data) {
+            const date = formatDate(data.createdAt);
+            const content = data.content || '<p>내용이 없습니다.</p>';
+            
+            const html = `
+                <div class="bd_tit">
+                    <div class="tit">${data.title}</div>
+                    <div class="sub">
+                        <span class="date">${date}</span>
+                        <span class="view"><img src="/images/icon/view.svg" alt="">${data.view || 0}</span>
+                    </div>
+                </div>
+                <div class="bd_cnt">
+                    ${content}
+                </div>
+                <div class="board_btn">
+                    <button class="type2" onclick="window.location.href='/promo/promo5.html'">목록</button>
+                </div>
+            `;
+            
+            $('#newsDetail').html(html);
+        }
+        
+        /**
+         * 날짜 포맷 (YY.MM.DD)
+         */
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const year = String(date.getFullYear()).slice(2);
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return year + '.' + month + '.' + day;
+        }
+    </script>
+</body>
+</html>

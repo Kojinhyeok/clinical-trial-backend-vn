@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Trung Tâm Thử Nghiệm Lâm Sàng HUMAN</title>
+    <link rel="icon" href="/images/favicon.png" type="image/png">
+    <link href="/css/main.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="/js/script.js"></script>
+
+    <!-- 구글 번역 스크립트 -->
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'vi',
+                includedLanguages: 'ko,en,zh-CN,ja,vi',
+                layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+                autoDisplay: false
+            }, 'google_translate_element');
+        }
+    </script>
+    <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+    <style>
+        .goog-te-banner-frame.skiptranslate { display: none !important; }
+        body { top: 0 !important; }
+        #google_translate_element { display: none !important; }
+        .goog-te-banner-frame { display: none !important; }
+        iframe.goog-te-banner-frame { display: none !important; }
+        .goog-te-balloon-frame { display: none !important; }
+        div#goog-gt- { display: none !important; }
+        div#goog-gt-tt { display: none !important; }
+        .skiptranslate { display: none !important; }
+        header.pc_menu .lang { position: relative; }
+        .lang-list {
+            display: none; position: absolute; top: 100%; right: 0;
+            background: #fff; border: 1px solid #ccc; list-style: none;
+            margin: 0; padding: 0; z-index: 9999; width: 150px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+        .lang-list.show { display: block !important; }
+        .lang-list li {
+            padding: 12px 15px; color: #000; font-size: 14px; cursor: pointer;
+            border-bottom: 1px solid #eee; text-align: left; display: flex; align-items: center;
+        }
+        .lang-list li:last-child { border-bottom: none; }
+        .lang-list li:hover { background-color: #f5f5f5; }
+        .lang-list li img { width: 18px; margin-right: 8px; }
+        .m-lang-list {
+            display: none; position: fixed; top: 70px; right: 20px;
+            background: #fff; border: 1px solid #ccc; list-style: none;
+            margin: 0; padding: 0; z-index: 10000; width: 180px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15); border-radius: 8px;
+        }
+        .m-lang-list.show { display: block !important; }
+        .m-lang-list li {
+            padding: 15px; color: #000; font-size: 15px; cursor: pointer;
+            border-bottom: 1px solid #eee; text-align: left; display: flex; align-items: center;
+        }
+        .m-lang-list li:first-child { border-radius: 8px 8px 0 0; }
+        .m-lang-list li:last-child { border-bottom: none; border-radius: 0 0 8px 8px; }
+        .m-lang-list li:hover { background-color: #f5f5f5; }
+        .m-lang-list li img { width: 20px; margin-right: 10px; }
+        .lang-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.3); z-index: 9999;
+        }
+        .lang-overlay.show { display: block !important; }
+    </style>
+</head>
+<body>
+    <div id="google_translate_element"></div>
+    <div class="lang-overlay" id="lang_overlay"></div>
+
+    <header class="pc_menu">
+        <div class="container">
+            <div class="wrap">
+                <div class="logo"><a href="/index.html"><img src="/images/logo/humantest_color.svg" alt="Trung Tâm Thử Nghiệm Lâm Sàng Da Liễu HUMAN" class="w100"></a></div>
+                <ul class="menu">
+                    <li class="depth1">
+                        <div class="item">Giới Thiệu Trung Tâm</div>
+                        <div class="depth2">
+                            <div class="menu_wrap">
+                                <div class="heading"><div class="tit">Giới Thiệu Trung Tâm</div></div>
+                                <div class="link">
+                                    <ul>
+                                        <li><a href="/center/center1.html">Giới Thiệu HUMAN</a></li>
+                                        <li><a href="/center/center2.html">Giới Thiệu CI</a></li>
+                                        <li><a href="/center/center3.html">Lịch Sử Phát Triển</a></li>
+                                        <li><a href="/center/center4.html">Sơ Đồ Tổ Chức</a></li>
+                                        <li><a href="/center/center5.html">Đội Ngũ Chuyên Gia</a></li>
+                                        <li><a href="/center/center6.html">Chỉ Đường</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="depth1">
+                        <div class="item">Hạng Mục Thử Nghiệm</div>
+                        <div class="depth2">
+                            <div class="menu_wrap">
+                                <div class="heading"><div class="tit">Hạng Mục Thử Nghiệm</div></div>
+                                <div class="link">
+                                    <ul>
+                                        <li><a href="/entry/entry1.html">Đánh Giá An Toàn</a></li>
+                                        <li><a href="/entry/entry2.html">Đánh Giá Hiệu Quả</a></li>
+                                        <li><a href="/entry/entry4.html"><span style="font-style: italic; margin-right: 5px;">IN VITRO</span> Đánh Giá</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="depth1">
+                        <div class="item">Yêu Cầu Thử Nghiệm</div>
+                        <div class="depth2">
+                            <div class="menu_wrap">
+                                <div class="heading"><div class="tit">Yêu Cầu Thử Nghiệm</div></div>
+                                <div class="link">
+                                    <ul>
+                                        <li><a href="/req/req1.html">Quy Trình Thử Nghiệm</a></li>
+                                        <li><a href="/req/req2.html">Tư Vấn Thử Nghiệm</a></li>
+                                        <li><a href="/req/req3.html">Thông Báo</a></li>
+                                        <li><a href="/req/req4.html">Câu Hỏi Thường Gặp (FAQ)</a></li>
+                                        <li><a href="/req/req5.html">Tải Xuống</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="depth1">
+                        <div class="item">Trải Nghiệm Mỹ Phẩm</div>
+                        <div class="depth2">
+                            <div class="menu_wrap">
+                                <div class="heading"><div class="tit">Trải Nghiệm Mỹ Phẩm</div></div>
+                                <div class="link">
+                                    <ul>
+                                        <li><a href="/part/part1.html">Cách Tham Gia</a></li>
+                                        <li><a href="/part/part2.html">Trải Nghiệm Mỹ Phẩm</a></li>
+                                        <li><a href="/part/part3.html">Câu Hỏi Thường Gặp (FAQ)</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="depth1">
+                        <div class="item" style="cursor: pointer;" onclick="location.href='/irb/irb.html'">E-IRB</div>
+                    </li>
+                    <li class="lang">
+                        <div class="item" id="lang_btn_pc" style="cursor: pointer;">Language</div>
+                        <ul id="lang_list" class="lang-list">
+                            <li data-lang="ko"><img src="/images/icon/Korea.png" alt="Korean" onerror="this.style.display='none'">한국어</li>
+                            <li data-lang="en"><img src="/images/icon/English.png" alt="English" onerror="this.style.display='none'">English</li>
+                            <li data-lang="ja"><img src="/images/icon/Japan.png" alt="Japanese" onerror="this.style.display='none'">日本語</li>
+                            <li data-lang="zh-CN"><img src="/images/icon/China.png" alt="Chinese" onerror="this.style.display='none'">中文(简体)</li>
+                            <li data-lang="vi"><img src="/images/icon/Vietnam.png" alt="Vietnamese" onerror="this.style.display='none'">Tiếng Việt</li>
+                        </ul>
+                    </li>
+                </ul>
+                <div class="badge"><a href="http://www.humanheal.co.kr/kor/main/" target="_blank">HUMAN HILL <br>Truy Cập</a></div>
+            </div>
+        </div>
+    </header>
+
+    <header class="m_menu">
+        <div class="container">
+            <div class="wrap">
+                <div class="logo"><a href="/index.html"><img src="/images/logo/humantest_color.svg" alt="Trung Tâm Thử Nghiệm Lâm Sàng Da Liễu HUMAN" class="w100"></a></div>
+                <div class="m_btn">
+                    <button class="m_lang" id="lang_btn_mobile"></button>
+                    <button class="m_open"></button>
+                    <button class="m_close"></button>
+                    <div class="badge"><a href="http://www.humanheal.co.kr/kor/main/" target="_blank">HUMAN HILL <br>Truy Cập</a></div>
+                </div>
+            </div>
+
+            <ul id="m_lang_list" class="m-lang-list">
+                <li data-lang="ko"><img src="/images/icon/Korea.png" alt="Korean" onerror="this.style.display='none'">한국어</li>
+                <li data-lang="en"><img src="/images/icon/English.png" alt="English" onerror="this.style.display='none'">English</li>
+                <li data-lang="ja"><img src="/images/icon/Japan.png" alt="Japanese" onerror="this.style.display='none'">日本語</li>
+                <li data-lang="zh-CN"><img src="/images/icon/China.png" alt="Chinese" onerror="this.style.display='none'">中文(简体)</li>
+                <li data-lang="vi"><img src="/images/icon/Vietnam.png" alt="Vietnamese" onerror="this.style.display='none'">Tiếng Việt</li>
+            </ul>
+
+            <nav class="menu" id="m_menu">
+                <div class="depth1">
+                    <a href="center1.html">Giới Thiệu Trung Tâm</a>
+                    <div class="depth2">
+                        <a href="/center/center1.html">Giới Thiệu HUMAN</a>
+                        <a href="/center/center2.html">Giới Thiệu CI</a>
+                        <a href="/center/center3.html">Lịch Sử Phát Triển</a>
+                        <a href="/center/center4.html">Sơ Đồ Tổ Chức</a>
+                        <a href="/center/center5.html">Đội Ngũ Chuyên Gia</a>
+                        <a href="/center/center6.html">Chỉ Đường</a>
+                    </div>
+                </div>
+                <div class="depth1">
+                    <a href="/center/center1.html">Hạng Mục Thử Nghiệm</a>
+                    <div class="depth2">
+                        <a href="/entry/entry1.html">Đánh Giá An Toàn</a>
+                        <a href="/entry/entry2.html">Đánh Giá Hiệu Quả</a>
+                        <a href="/entry/entry4.html"><span style="font-style: italic; margin-right: 5px;">IN VITRO</span> Đánh Giá</a>
+                    </div>
+                </div>
+                <div class="depth1">
+                    <a href="/center/center1.html">Yêu Cầu Thử Nghiệm</a>
+                    <div class="depth2">
+                        <a href="/req/req1.html">Quy Trình Thử Nghiệm</a>
+                        <a href="/req/req2.html">Tư Vấn Thử Nghiệm</a>
+                        <a href="/req/req3.html">Thông Báo</a>
+                        <a href="/req/req4.html">Câu Hỏi Thường Gặp (FAQ)</a>
+                        <a href="/req/req5.html">Tải Xuống</a>
+                    </div>
+                </div>
+                <div class="depth1">
+                    <a href="/part/part1.html">Trải Nghiệm Mỹ Phẩm</a>
+                    <div class="depth2">
+                        <a href="/part/part1.html">Cách Tham Gia</a>
+                        <a href="/part/part2.html">Trải Nghiệm Mỹ Phẩm</a>
+                        <a href="/part/part3.html">Câu Hỏi Thường Gặp (FAQ)</a>
+                    </div>
+                </div>
+                <div class="depth1">
+                    <a href="#">E-IRB</a>
+                    <div class="depth2">
+                        <a href="/irb/irb.html">E-IRB</a>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+</body>
+</html>

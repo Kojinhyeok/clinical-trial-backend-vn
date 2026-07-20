@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>휴먼피부임상시험센터</title>
+    <link href="/css/main.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="/js/script.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</head>
+<body class="promo1">
+    <div id="head"></div>
+    <div class="top_banner">
+        <div class="container">
+            <h1>홍보 센터</h1>
+        </div>
+        <div class="scroll_down">
+            <span class="scroll_text">Scroll to down</span>
+            <div class="scroll_line_box"><div class="scroll_line_inner"></div></div>
+        </div>
+    </div>
+    <div class="tab_menu">
+        <div class="container">
+            <div class="wrap">
+                <a href="/promo/promo1.html" class="active">인증마크</a>
+                <a href="/promo/promo4.html">휴먼 이야기</a>
+                <a href="/promo/promo5.html">휴먼 임상소식</a>
+            </div>
+        </div>
+    </div>
+    <section class="sub1">
+        <div class="container">
+            <div class="title">
+                <div class="top">
+                    <img src="/images/icon/symbol.svg" alt="" class="symbol">
+                    <h2>인증마크</h2>
+                </div>
+            </div>
+            <div class="content">
+                <div class="content_div">
+                    <div class="bd_search">
+                        <div class="search_input">
+                            <input type="text" id="search_keyword" placeholder="검색어를 입력하세요.">
+                            <button id="search_btn"><img src="/images/icon/search.svg" alt=""></button>
+                        </div>
+                    </div>
+                    <div class="capsule" id="category_filter">
+                        <!-- JavaScript로 동적 렌더링 -->
+                    </div>
+                </div>
+                <div id="marks_container">
+                    <!-- JavaScript로 동적 렌더링 -->
+                </div>
+                <div class="pagination" id="pagination_container" style="display: none;">
+                    <!-- 필요시 페이지네이션 -->
+                </div>
+            </div>
+        </div>
+    </section>
+    <div id="foot"></div>
+<script>
+    $(function(){
+        $("#head").load("/head.html");
+        $("#foot").load("/foot.html");
+        
+        let allMarks = [];
+        let allCategoriesMap = new Map(); // 카테고리별로 데이터 재구성
+        let currentFilter = 'all';
+        let searchKeyword = '';
+        
+        // 페이지 로드 시 전체 인증마크 불러오기
+        loadAllMarks();
+        
+        /**
+         * 인증마크 전체 조회
+         */
+        function loadAllMarks() {
+            $.ajax({
+                url: '/api/marks',
+                method: 'GET',
+                success: function(response) {
+                    allMarks = response;
+                    
+                    // 각 인증마크의 상세 정보(카테고리 포함) 로드
+                    loadAllMarkDetails();
+                },
+                error: function(error) {
+                    console.error('데이터 로드 실패:', error);
+                    $('#marks_container').html('<p style="text-align: center; padding: 40px;">데이터를 불러오는데 실패했습니다.</p>');
+                }
+            });
+        }
+        
+        /**
+         * 모든 인증마크의 상세 정보 로드
+         */
+        function loadAllMarkDetails() {
+            if (!allMarks || allMarks.length === 0) {
+                $('#marks_container').html('<p style="text-align: center; padding: 40px;">등록된 인증마크가 없습니다.</p>');
+                return;
+            }
+            
+            let loadedCount = 0;
+            const detailedMarks = [];
+            
+            allMarks.forEach((mark, index) => {
+                $.ajax({
+                    url: '/api/marks/' + mark.id,
+                    method: 'GET',
+                    success: function(detailResponse) {
+                        detailedMarks[index] = detailResponse;
+                        loadedCount++;
+                        
+                        // 모든 상세 정보 로드 완료
+                        if (loadedCount === allMarks.length) {
+                            allMarks = detailedMarks.filter(m => m != null);
+                            
+                            // 카테고리별로 데이터 재구성
+                            reorganizeByCategory();
+                            renderCategoryFilters();
+                            renderMarks();
+                        }
+                    },
+                    error: function(error) {
+                        console.error('상세 로드 실패:', error);
+                        loadedCount++;
+                        
+                        if (loadedCount === allMarks.length) {
+                            allMarks = detailedMarks.filter(m => m != null);
+                            reorganizeByCategory();
+                            renderCategoryFilters();
+                            renderMarks();
+                        }
+                    }
+                });
+            });
+        }
+        
+        /**
+         * 카테고리별로 데이터 재구성
+         * Map<카테고리명, Array<{markTitle, category}>>
+         */
+        function reorganizeByCategory() {
+            allCategoriesMap.clear();
+            
+            allMarks.forEach(mark => {
+                if (mark.categories && mark.categories.length > 0) {
+                    mark.categories.forEach(category => {
+                        const categoryTitle = category.title;
+                        
+                        if (!allCategoriesMap.has(categoryTitle)) {
+                            allCategoriesMap.set(categoryTitle, []);
+                        }
+                        
+                        // 카테고리에 인증마크 정보 추가
+                        allCategoriesMap.get(categoryTitle).push({
+                            markId: mark.id,
+                            markTitle: mark.title,
+                            markImageUrl: mark.imageUrl,
+                            category: category
+                        });
+                    });
+                }
+            });
+            
+        }
+        
+        /**
+         * 카테고리 필터 버튼 렌더링
+         */
+        function renderCategoryFilters() {
+            // 카테고리 정렬
+            const sortedCategories = Array.from(allCategoriesMap.keys()).sort();
+            
+            let html = '<button class="active" data-category="all">전체</button>';
+            
+            sortedCategories.forEach(category => {
+                html += `<button data-category="${category}">${category}</button>`;
+            });
+            
+            $('#category_filter').html(html);
+            
+            // 필터 버튼 이벤트 연결
+            attachFilterEvents();
+        }
+        
+        /**
+         * 필터 버튼 이벤트
+         */
+        function attachFilterEvents() {
+            $('#category_filter button').on('click', function() {
+                $('#category_filter button').removeClass('active');
+                $(this).addClass('active');
+                
+                currentFilter = $(this).data('category');
+                renderMarks();
+            });
+        }
+        
+        /**
+         * 검색 기능
+         */
+        $('#search_btn').on('click', function() {
+            searchKeyword = $('#search_keyword').val().trim();
+            renderMarks();
+        });
+        
+        $('#search_keyword').on('keypress', function(e) {
+            if (e.which === 13) {
+                searchKeyword = $(this).val().trim();
+                renderMarks();
+            }
+        });
+        
+        /**
+         * 인증마크 렌더링 (카테고리별 그룹핑)
+         */
+        function renderMarks() {
+            let categoriesToShow = allCategoriesMap;
+            
+            // 검색어 필터링
+            if (searchKeyword) {
+                categoriesToShow = new Map();
+                
+                allCategoriesMap.forEach((items, categoryTitle) => {
+                    // 카테고리명 또는 인증마크 제목에 검색어 포함 여부 확인
+                    const filteredItems = items.filter(item => 
+                        categoryTitle.toLowerCase().includes(searchKeyword.toLowerCase()) ||
+                        item.markTitle.toLowerCase().includes(searchKeyword.toLowerCase())
+                    );
+                    
+                    if (filteredItems.length > 0) {
+                        categoriesToShow.set(categoryTitle, filteredItems);
+                    }
+                });
+            }
+            
+            // 카테고리 필터링
+            if (currentFilter !== 'all') {
+                categoriesToShow = new Map();
+                if (allCategoriesMap.has(currentFilter)) {
+                    categoriesToShow.set(currentFilter, allCategoriesMap.get(currentFilter));
+                }
+            }
+            
+            // 렌더링
+            if (categoriesToShow.size === 0) {
+                $('#marks_container').html('<p style="text-align: center; padding: 40px;">검색 결과가 없습니다.</p>');
+                return;
+            }
+            
+            let html = '';
+            
+            // 카테고리별로 섹션 생성
+            categoriesToShow.forEach((items, categoryTitle) => {
+                html += `
+                    <div class="content_div">
+                        <div class="div_tit">
+                            <h3>${categoryTitle}</h3>
+                        </div>
+                        <div class="board_mark">
+                `;
+                
+                // 해당 카테고리의 모든 인증마크 아이템 추가
+                items.forEach(item => {
+                    const imageUrl = item.category.imageUrl || item.markImageUrl || '/images/board/mark1.png';
+                    const filesJson = item.category.files ? JSON.stringify(item.category.files) : '[]';
+                    
+                    html += `
+                        <div class="item">
+                            <div class="img">
+                                <div class="thumb">
+                                    <img src="${imageUrl}" alt="${item.markTitle}" onerror="this.src='/images/board/mark1.png'">
+                                </div>
+                            </div>
+                            <div class="txt mark_tit">
+                                <p class="tit">${item.markTitle}</p>
+                            </div>
+                            <button class="download-btn" 
+                                    data-files='${filesJson}' 
+                                    data-title="${item.markTitle}">
+                                다운받기
+                            </button>
+                        </div>
+                    `;
+                });
+                
+                html += `
+                        </div>
+                    </div>
+                `;
+            });
+            
+            $('#marks_container').html(html);
+            
+            // 다운로드 버튼 이벤트 연결
+            attachDownloadEvents();
+        }
+        
+        /**
+         * 다운로드 버튼 이벤트 (여러 파일 다운로드)
+         */
+        function attachDownloadEvents() {
+            $('.download-btn').off('click').on('click', async function() {
+                const filesData = $(this).data('files');
+                const title = $(this).data('title');
+
+                if (!filesData || filesData.length === 0) {
+                    alert('다운로드 가능한 파일이 없습니다.');
+                    return;
+                }
+
+                // 파일이 하나면 바로 다운로드
+                if (filesData.length === 1) {
+                    downloadFile(filesData[0].s3Url, filesData[0].fileName);
+                    return;
+                }
+
+                // 여러 파일이면 zip으로 압축
+                const $btn = $(this);
+                $btn.text('압축 중...').prop('disabled', true);
+
+                try {
+                    const zip = new JSZip();
+
+                    await Promise.all(filesData.map(async function(file) {
+                        const proxyUrl = '/api/files/download-proxy?url=' + encodeURIComponent(file.s3Url);
+                        const response = await fetch(proxyUrl);
+                        const blob = await response.blob();
+                        zip.file(file.fileName || 'file', blob);
+                    }));
+
+                    const zipBlob = await zip.generateAsync({ type: 'blob' });
+                    const zipUrl = URL.createObjectURL(zipBlob);
+                    downloadFile(zipUrl, title + '.zip');
+                    URL.revokeObjectURL(zipUrl);
+
+                } catch (e) {
+                    console.error('zip 생성 실패:', e);
+                    alert('파일 압축 중 오류가 발생했습니다.');
+                } finally {
+                    $btn.text('다운받기').prop('disabled', false);
+                }
+            });
+        }
+                
+        /**
+         * 파일 다운로드
+         */
+        function downloadFile(url, filename) {
+            if (!url) return;
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.target = '_blank';
+            link.download = filename || 'download';
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            
+            // 약간의 딜레이 후 제거 (브라우저 호환성)
+            setTimeout(() => {
+                document.body.removeChild(link);
+            }, 100);
+        }
+    });
+</script>
+</body>
+<style>
+    .mark_tit {
+        place-self: anchor-center;
+        margin-bottom: 10px;
+        text-align: center;
+    }
+</style>
+</html>

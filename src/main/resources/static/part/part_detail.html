@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Trung Tâm Thử Nghiệm Lâm Sàng HUMAN</title>
+    <link href="/css/main.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="/js/script.js"></script>
+</head>
+<body class="part_detail">
+    <div id="head"></div>
+    <div class="top_banner">
+        <div class="container">
+            <h1>Tham Gia Thử Nghiệm</h1>
+        </div>
+        <div class="scroll_down">
+            <span class="scroll_text">Scroll to down</span>
+            <div class="scroll_line_box"><div class="scroll_line_inner"></div></div>
+        </div>
+    </div>
+    <div class="tab_menu">
+        <div class="container">
+            <div class="wrap">
+                <a href="/part/part1.html">Cách Tham Gia</a>
+                <a href="/part/part2.html" class="active">Trải Nghiệm Mỹ Phẩm</a>
+                <a href="/part/part3.html">Câu Hỏi Thường Gặp (FAQ)</a>
+            </div>
+        </div>
+    </div>
+    <section class="sub1">
+        <div class="container">
+            <div class="title">
+                <div class="top">
+                    <img src="/images/icon/symbol.svg" alt="" class="symbol">
+                    <h2>Lưu ý khi đăng ký trải nghiệm mỹ phẩm</h2>
+                </div>
+                <div class="bottom">
+                    <p class="caution">Những người mong muốn trải nghiệm mỹ phẩm vui lòng đọc kỹ thông báo tuyển chọn trước khi đăng ký.</p>
+                    <p>Việc tham gia có thể không được chấp nhận hoặc bị loại giữa chừng tùy theo điều kiện lựa chọn và loại trừ được nêu trong từng thông báo trải nghiệm, <br>và những người không được chọn sẽ không nhận được liên hệ riêng.</p>
+                </div>
+            </div>
+            <div class="content">
+                <table class="table2" id="recruitmentDetail">
+                    <!-- 동적으로 생성될 영역 -->
+                </table>
+                <div class="btn_group">
+                    <button type="button" class="back" onclick="window.history.back()">Về danh sách</button>
+                    <button type="submit" class="submit" id="applyBtn">Đăng ký</button>
+                </div>
+            </div>
+        </div>
+    </section>
+    <div id="foot"></div>
+    <script>
+        $(function(){
+            $("#head").load("/head.html");
+            $("#foot").load("/foot.html");
+        });
+
+        $(document).ready(function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const recruitmentId = urlParams.get('id');
+            const fieldCode = urlParams.get('field');
+
+            if (!recruitmentId) {
+                alert('Truy cập không hợp lệ.');
+                window.location.href = '/part/part2.html';
+                return;
+            }
+
+            loadRecruitmentDetail(recruitmentId, fieldCode);
+            loadDetailImage(recruitmentId);
+        });
+
+        function loadRecruitmentDetail(id, fieldCode) {
+            $.ajax({
+                url: '/api/recruitments/' + id,
+                method: 'GET',
+                success: function(data) {
+                    renderRecruitmentDetail(data);
+                    if (data.status === 'CLOSED' || data.status === 'closed') {
+                        $('#applyBtn').hide();
+                    }
+                    $('#applyBtn').on('click', function() {
+                        if (data.status === 'closed' || data.status === 'CLOSED') {
+                            alert('Thông báo tuyển chọn này đã đóng.');
+                            return;
+                        }
+                        let applyUrl = '/part/part_apply.html?id=' + id;
+                        if (fieldCode) applyUrl += '&field=' + fieldCode;
+                        location.href = applyUrl;
+                    });
+                },
+                error: function(error) {
+                    console.error('Lỗi tải dữ liệu:', error);
+                    alert('Không thể tải thông báo tuyển chọn.');
+                    window.history.back();
+                }
+            });
+        }
+
+        function loadDetailImage(recruitmentId) {
+            $.ajax({
+                url: '/api/files/list?entityType=RECRUITMENT&entityId=' + recruitmentId,
+                method: 'GET',
+                success: function(files) {
+                    const attachments = (files || []).filter(function(f) {
+                        return f.fileCategory === 'ATTACHMENT';
+                    });
+                    if (attachments.length > 0) {
+                        const file = attachments[0];
+                        $('#detailImageViewBtn').attr('href', '/api/files/' + file.id + '/view');
+                        $('#detailImageSection').show();
+                    }
+                },
+                error: function() {
+                    // 이미지 없으면 그냥 숨김 유지
+                }
+            });
+        }
+
+        function renderRecruitmentDetail(data) {
+            let html = '';
+
+            if (!data.isNotification && data.trialCode) {
+                html += '<tr>';
+                html += '<td class="tit">Mã số thử nghiệm</td>';
+                html += `<td class="txt">${data.trialCode}</td>`;
+                html += '</tr>';
+            }
+
+            const titleText = data.trialName || data.title || '';
+            if (titleText) {
+                html += '<tr>';
+                html += '<td class="tit">Tên thử nghiệm</td>';
+                html += `<td class="txt">${titleText}</td>`;
+                html += '</tr>';
+            }
+
+            if (data.participationGroup) {
+                html += '<tr>';
+                html += '<td class="tit">Đối tượng tham gia</td>';
+                html += `<td class="txt">${data.participationGroup}</td>`;
+                html += '</tr>';
+            }
+
+            if (data.trialPart) {
+                html += '<tr>';
+                html += '<td class="tit">Vị trí thử nghiệm</td>';
+                html += `<td class="txt">${data.trialPart}</td>`;
+                html += '</tr>';
+            }
+
+            if (data.participationCost) {
+                html += '<tr>';
+                html += '<td class="tit">Chi phí tham gia</td>';
+                html += `<td class="txt">${data.participationCost}</td>`;
+                html += '</tr>';
+            }
+
+            if (data.requirements) {
+                html += '<tr>';
+                html += '<td class="tit">Điều kiện lựa chọn</td>';
+                html += '<td class="txt">';
+                data.requirements.split('\n').filter(line => line.trim()).forEach(line => {
+                    html += `<p>${line}</p>`;
+                });
+                html += '</td>';
+                html += '</tr>';
+            }
+
+            html += '<tr>';
+            html += '<td class="tit">Lịch thử nghiệm</td>';
+            html += '<td class="txt">';
+            if (data.status === 'ALWAYS' || data.status === 'always') {
+                html += 'Tuyển thường xuyên';
+            } else if (data.startDate && data.endDate) {
+                html += `${data.startDate} ~ ${data.endDate}`;
+            } else {
+                html += 'Xem thông báo và hướng dẫn riêng sau';
+            }
+            html += '</td>';
+            html += '</tr>';
+
+            html += '<tr>';
+            html += '<td class="tit">Trạng thái tuyển chọn</td>';
+            html += '<td class="txt">';
+            if (data.status === 'ALWAYS' || data.status === 'always') {
+                html += '<span style="color: #0066cc; font-weight: bold;">Tuyển thường xuyên</span>';
+            } else if (data.status === 'OPEN' || data.status === 'open') {
+                html += '<span style="color: #00cc00; font-weight: bold;">Đang tuyển</span>';
+            } else if (data.status === 'CLOSED' || data.status === 'closed') {
+                html += '<span style="color: #cc0000; font-weight: bold;">Đã đóng</span>';
+            } else if (data.isNotification) {
+                html += '<span style="color: #888; font-weight: bold;">Thông báo</span>';
+            }
+            html += '</td>';
+            html += '</tr>';
+
+            if (data.content) {
+                html += '<tr class="content_row">';
+                html += '<td class="tit part_mobile">Nội dung chi tiết</td>';
+                html += `<td class="txt" colspan="2">${data.content}</td>`;
+                html += '</tr>';
+            }
+
+            $('#recruitmentDetail').html(html);
+
+            $.ajax({
+                url: '/api/files/list?entityType=RECRUITMENT&entityId=' + data.id,
+                method: 'GET',
+                success: function(files) {
+                    const attachments = (files || []).filter(function(f) {
+                        return f.fileCategory === 'ATTACHMENT';
+                    });
+                    if (attachments.length > 0) {
+                        const file = attachments[0];
+                        const imageRow =
+                            '<tr>' +
+                            '<td class="tit">Hình ảnh chi tiết</td>' +
+                            '<td class="txt">' +
+                            '<a href="/api/files/' + file.id + '/view" target="_blank" style="display:flex; padding:8px 20px; width:100px; font-size:14px; background-color:#d11616; color:#fff; border-radius:4px; margin:8px; text-decoration:none; font-weight:bold; justify-content:center;">Xem</a>' +
+                            '<p style="color:#cc0000; font-weight:bold; margin-top:10px; font-size:15px;">※Chúng tôi không chịu trách nhiệm về bất lợi phát sinh nếu bạn không xem chi tiết, vui lòng kiểm tra kỹ!</p>' +
+                            '</td>' +
+                            '</tr>';
+                        $('#recruitmentDetail').append(imageRow);
+                    }
+                }
+            });
+
+            $('#recruitmentDetail').html(html);
+        }
+    </script>
+</body>
+</html>

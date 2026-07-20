@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Trung Tâm Thử Nghiệm Lâm Sàng HUMAN</title>
+    <link href="/css/main.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="/js/script.js"></script>
+</head>
+<body class="part3">
+    <div id="head"></div>
+    <div class="top_banner">
+        <div class="container">
+            <h1>Tham Gia Thử Nghiệm</h1>
+        </div>
+        <div class="scroll_down">
+            <span class="scroll_text">Scroll to down</span>
+            <div class="scroll_line_box"><div class="scroll_line_inner"></div></div>
+        </div>
+    </div>
+    <div class="tab_menu">
+        <div class="container">
+            <div class="wrap">
+                <a href="/part/part1.html">Cách Tham Gia</a>
+                <a href="/part/part2.html">Trải Nghiệm Mỹ Phẩm</a>
+                <a href="/part/part3.html" class="active">Câu Hỏi Thường Gặp (FAQ)</a>
+            </div>
+        </div>
+    </div>
+    <section class="sub1">
+        <div class="container">
+            <div class="title">
+                <div class="top">
+                    <img src="/images/icon/symbol.svg" alt="" class="symbol">
+                    <h2>Câu Hỏi Thường Gặp (FAQ)</h2>
+                </div>
+            </div>
+            <div class="content">
+                <div class="bd_search">
+                    <div class="select" id="search_field_wrapper">
+                        <button class="toggle" aria-haspopup="listbox" aria-expanded="false">Tiêu đề<span class="icon"><img src="/images/icon/dropdown.svg" alt=""></span>
+                        </button>
+                        <ul class="option" role="listbox" hidden>
+                            <li role="option" data-value="subject" class="active">Tiêu đề</li>
+                            <li role="option" data-value="content">Nội dung</li>
+                        </ul>
+                    </div>
+                    <input type="hidden" id="search_field" value="subject">
+                    <div class="search_input">
+                        <input type="text" id="search_keyword" placeholder="Nhập từ khóa tìm kiếm.">
+                        <button id="search_btn"><img src="/images/icon/search.svg" alt=""></button>
+                    </div>
+                </div>
+                <div class="board_qna">
+                    <!-- JavaScript로 동적 생성 -->
+                </div>
+                <div class="pagination">
+                    <!-- JavaScript로 동적 생성 -->
+                </div>
+            </div>
+        </div>
+    </section>
+    <div id="foot"></div>
+    <script>
+        let currentPage = 1;
+        const itemsPerPage = 10;
+        let allFaqs = [];
+
+        $(function(){
+            $("#head").load("/head.html");
+            $("#foot").load("/foot.html");
+
+            loadFaqs();
+
+            $('#search_btn').click(function() {
+                searchFaqs();
+            });
+
+            $('#search_keyword').keypress(function(e) {
+                if (e.which === 13) {
+                    searchFaqs();
+                }
+            });
+
+            $(document).on('click', '.toggle', function () {
+                const $wrapper = $(this).closest('.select');
+                const $options = $wrapper.find('.option');
+                const isOpen = !$options.prop('hidden');
+
+                $('.option').attr('hidden', true);
+                $('.select').removeClass('open');
+
+                if (!isOpen) {
+                    $options.removeAttr('hidden');
+                    $wrapper.addClass('open');
+                }
+            });
+
+            $(document).on('click', '.option li', function () {
+                const $this = $(this);
+                const value = $this.data('value');
+                const label = $this.text();
+                const $wrapper = $this.closest('.select');
+
+                $this.addClass('active').siblings().removeClass('active');
+                $wrapper.find('.toggle').contents().first()[0].textContent = label + ' ';
+                $('#search_field').val(value);
+                $this.parent().attr('hidden', true);
+                $wrapper.removeClass('open');
+            });
+
+            $(document).on('click', function (e) {
+                if (!$(e.target).closest('.select').length) {
+                    $('.option').attr('hidden', true);
+                    $('.select').removeClass('open');
+                }
+            });
+        });
+
+        function loadFaqs() {
+            $.ajax({
+                url: '/api/faqs/participation',
+                method: 'GET',
+                success: function(data) {
+                    allFaqs = data;
+                    currentPage = 1;
+                    renderFaqs();
+                    renderPagination();
+                },
+                error: function(error) {
+                    console.error('Lỗi tải dữ liệu:', error);
+                    alert('Không thể tải dữ liệu.');
+                }
+            });
+        }
+
+        function searchFaqs() {
+            const searchType = $('#search_field').val();
+            const keyword = $('#search_keyword').val().trim();
+
+            if (!keyword) {
+                loadFaqs();
+                return;
+            }
+
+            $.ajax({
+                url: '/api/faqs/participation',
+                method: 'GET',
+                data: {
+                    searchType: searchType,
+                    keyword: keyword
+                },
+                success: function(data) {
+                    if (data.length === 0) {
+                        alert('Không có kết quả tìm kiếm.');
+                        return;
+                    }
+                    allFaqs = data;
+                    currentPage = 1;
+                    renderFaqs();
+                    renderPagination();
+                },
+                error: function(error) {
+                    console.error('Lỗi tìm kiếm:', error);
+                    alert('Tìm kiếm thất bại.');
+                }
+            });
+        }
+
+        function renderFaqs() {
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageFaqs = allFaqs.slice(startIndex, endIndex);
+
+            let html = '';
+
+            if (pageFaqs.length === 0) {
+                html = '<p style="text-align: center; padding: 40px;">Chưa có câu hỏi thường gặp nào.</p>';
+            } else {
+                pageFaqs.forEach(faq => {
+                    html += `
+                        <div class="item">
+                            <div class="qna_q">
+                                <div class="txt">${faq.title}</div>
+                            </div>
+                            <div class="qna_a">
+                                <div class="txt">${formatContent(faq.content)}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            $('.board_qna').html(html);
+
+            attachAccordionEvents();
+        }
+
+        function attachAccordionEvents() {
+            $('.board_qna .qna_q').off('click').on('click', function() {
+                const $item = $(this).closest('.item');
+                const $answer = $item.find('.qna_a');
+
+                $item.siblings().removeClass('active').find('.qna_a').slideUp(300);
+
+                if ($item.hasClass('active')) {
+                    $answer.slideUp(300);
+                    $item.removeClass('active');
+                } else {
+                    $answer.slideDown(300);
+                    $item.addClass('active');
+                }
+            });
+        }
+
+        function renderPagination() {
+            const totalPages = Math.ceil(allFaqs.length / itemsPerPage);
+
+            if (totalPages <= 1) {
+                $('.pagination').html('');
+                return;
+            }
+
+            let html = '';
+
+            if (currentPage > 1) {
+                html += '<button class="prev" onclick="changePage(' + (currentPage - 1) + ')"><img src="/images/icon/prev.svg" alt="">Trước</button>';
+            } else {
+                html += '<button class="prev" disabled><img src="/images/icon/prev.svg" alt="">Trước</button>';
+            }
+
+            html += '<div class="num">';
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === currentPage) {
+                    html += '<button class="active">' + i + '</button>';
+                } else {
+                    html += '<button onclick="changePage(' + i + ')">' + i + '</button>';
+                }
+            }
+            html += '</div>';
+
+            if (currentPage < totalPages) {
+                html += '<button class="next" onclick="changePage(' + (currentPage + 1) + ')">Sau<img src="/images/icon/next.svg" alt=""></button>';
+            } else {
+                html += '<button class="next" disabled>Sau<img src="/images/icon/next.svg" alt=""></button>';
+            }
+
+            $('.pagination').html(html);
+        }
+
+        function changePage(page) {
+            currentPage = page;
+            renderFaqs();
+            renderPagination();
+            $('html, body').animate({ scrollTop: 0 }, 300);
+        }
+
+        function formatContent(content) {
+            if (!content) return '';
+            return content.replace(/\n/g, '<br>');
+        }
+    </script>
+</body>
+</html>

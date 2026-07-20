@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>휴먼피부임상시험센터</title>
+    <link href="/css/main.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="/js/script.js"></script>
+</head>
+<body class="entry2">
+    <div id="head"></div>
+    <div class="top_banner">
+        <div class="container">
+            <h1>시험 항목</h1>
+        </div>
+        <div class="scroll_down">
+            <span class="scroll_text">Scroll to down</span>
+            <div class="scroll_line_box"><div class="scroll_line_inner"></div></div>
+        </div>
+    </div>
+    <div class="tab_menu">
+        <div class="container">
+            <div class="wrap">
+                <a href="/entry/entry1.html">안전성 평가</a>
+                <a href="/entry/entry2.html" class="active">유효성 평가</a>
+                <a href="/entry/entry3.html">기능성 평가</a>
+                <a href="/entry/entry4.html">IN VITRO 평가</a>
+            </div>
+        </div>
+    </div>
+    <section class="sub1">
+        <div class="container">
+            <div class="content">
+                <!-- 상단 카드 영역 (동적 생성) -->
+                <div class="entry_top">
+                    <!-- JavaScript로 동적 생성 -->
+                </div>
+                
+                <!-- 하단 탭 영역 -->
+                <div class="entry_bottom">
+                    <div class="entry_tab">
+                        <div class="wrap">
+                            <a href="#" class="active" data-tab="info">시험 정보</a>
+                            <a href="#" data-tab="marketing">마케팅 서비스</a>
+                        </div>
+                    </div>
+                    <div class="entry_wrap">
+                        <!-- 시험 정보 탭 (동적 생성) -->
+                        <div class="entry_content" id="tab_info">
+                            <!-- JavaScript로 동적 생성 -->
+                        </div>
+                        
+                        <!-- 마케팅 서비스 탭 (고정) -->
+                        <div class="entry_content" id="tab_marketing" style="display: none;">
+                            <div class="content_div">
+                                <p class="entry_tit">1&#41; GIF 무상 제공 서비스</p>
+                                <div class="entry_txt">
+                                    <p>- 계약 금액에 따라 임상 결과를 활용한 GIF 콘텐츠를 무상으로 제공합니다.</p>
+                                    <p>- 추가 GIF 제작 시 1건당 10만원(VAT 별도)이 적용됩니다.</p>
+                                    <p>- GIF 신청은 임상시험 결과보고서 수령 이후 가능합니다.</p>
+                                    <br>
+                                    <p><a href="#" target="_blank" class="quick">GIF 예시 보러가기<img src="/images/icon/arrow_color.svg"></a></p>
+                                </div>
+                                <table class="table3">
+                                    <colgroup>
+                                        <col width="70">
+                                        <col width="30">
+                                    </colgroup>
+                                    <thead>
+                                        <tr>
+                                            <td>계약금액(VAT 별도)</td>
+                                            <td>무상 제공 GIF 수량</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>300만원 ~ 500만원</td>
+                                            <td>1개</td>
+                                        </tr>
+                                        <tr>
+                                            <td>500만원 ~ 1,000만원</td>
+                                            <td>2개</td>
+                                        </tr>
+                                        <tr>
+                                            <td>1,000만원 ~ 1,500만원</td>
+                                            <td>3개</td>
+                                        </tr>
+                                        <tr>
+                                            <td>1,500만원 ~ 2,000만원</td>
+                                            <td>4개</td>
+                                        </tr>
+                                        <tr>
+                                            <td>2,000만원 ~ 3,000만원</td>
+                                            <td>5개</td>
+                                        </tr>
+                                        <tr>
+                                            <td>3,000만원 이상</td>
+                                            <td>보고서 이미지 모두</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="content_div">
+                                <p class="entry_tit">2&#41; 상세페이지 제작 서비스</p>
+                                <div class="entry_txt">
+                                    <p>- 계약 금액에 따라 임상 결과를 효과적으로 전달하는 상세페이지 제작을 지원합니다.</p>
+                                    <p>- 아래 링크를 통해 상세페이지 제작 예시를 확인하실 수 있습니다.</p>
+                                    <br>
+                                    <p><a href="#" target="_blank" class="quick">상세페이지 제작 예시 보러가기<img src="/images/icon/arrow_color.svg"></a></p>
+                                </div>
+                                <table class="table3">
+                                    <thead>
+                                        <tr>
+                                            <td>제품별 계약금액(VAT 별도)</td>
+                                            <td>콘텐츠 기획</td>
+                                            <td>디자인</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>500만원 미만</td>
+                                            <td rowspan="4">20만원</td>
+                                            <td>50만원</td>
+                                        </tr>
+                                        <tr>
+                                            <td>500만원 ~ 1,000만원</td>
+                                            <td>40만원</td>
+                                        </tr>
+                                        <tr>
+                                            <td>1,000만원 ~ 2,000만원</td>
+                                            <td>30만원</td>
+                                        </tr>
+                                        <tr>
+                                            <td>2,000만원 이상</td>
+                                            <td>무료 제공</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <div class="entry_caption">
+                                    <p>* 임상 계약 금액에 따른 금액 할인 적용 기준 (제품 1종에 대한 임상시험 계약금액)</p>
+                                    <p>* VAT별도</p>
+                                </div>
+                            </div>
+                            <div class="content_div">
+                                <p class="entry_tit">3&#41; 블로그 무상 포스팅 서비스</p>
+                                <div class="entry_txt">
+                                    <p>- 팔로워 8천 명 이상 보유한 자사 공식 블로그를 통해, 지정 키워드에 맞춘 포스팅을 1회 제공합니다.</p>
+                                    <br>
+                                    <p><a href="#" target="_blank" class="quick">휴먼 공식 블로그 보러가기<img src="/images/icon/arrow_color.svg"></a></p>
+                                </div>
+                                <table class="table3">
+                                    <colgroup>
+                                        <col width="70">
+                                        <col width="30">
+                                    </colgroup>
+                                    <thead>
+                                        <tr>
+                                            <td>계약금액(VAT 별도)</td>
+                                            <td>무상 제공</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>~1,000만원</td>
+                                            <td>없음</td>
+                                        </tr>
+                                        <tr>
+                                            <td>1,000만원 이상</td>
+                                            <td>1건</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="content_div">
+                                <p class="entry_tit">4&#41; 콘텐츠 제작 서비스</p>
+                                <div class="entry_txt">
+                                    <p>- 임상 내용을 기반으로 콘텐츠를 제작해 휴먼임상시험센터 공식 유튜브에 업로드하며, 원본 영상도 함께 제공합니다.</p>
+                                    <br>
+                                    <p><a href="#" target="_blank" class="quick">휴먼 공식 유튜브 채널 보러가기<img src="/images/icon/arrow_color.svg"></a></p>
+                                </div>
+                                <table class="table3">
+                                    <colgroup>
+                                        <col width="70">
+                                        <col width="30">
+                                    </colgroup>
+                                    <thead>
+                                        <tr>
+                                            <td>계약금액(VAT 별도)</td>
+                                            <td>무상 제공</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>~1,000만원</td>
+                                            <td>100만원</td>
+                                        </tr>
+                                        <tr>
+                                            <td>1,000만원 이상</td>
+                                            <td>30만원</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="entry_alert">
+                                <div class="wrap">
+                                    <p class="tit">휴먼임상시험센터는 지난 5년간 <br class="m_only"><span class="purple bold">현금 1억 5천만 원, 현물 34억 원을 기부</span>하며 <br>사회와 함께 성장해왔습니다.</p>
+                                    <p>귀사의 임상시험 의뢰는 곧 <br class="m_only">사회공헌의 한 걸음이 됩니다.</p>
+                                </div>
+                                <a href="#">기부현황 바로가기</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="btn_group">
+                        <button type="button" class="submit" onclick="window.history.back()">목록으로</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <div id="foot"></div>
+    <script>
+        $(function(){
+            $("#head").load("/head.html");
+            $("#foot").load("/foot.html");
+            
+            // URL에서 ID 파라미터 가져오기
+            const urlParams = new URLSearchParams(window.location.search);
+            const trialId = urlParams.get('id');
+            
+            if (!trialId) {
+                alert('잘못된 접근입니다.');
+                window.location.href = '/entry/entry2.html';
+                return;
+            }
+            
+            // 시험 상세 정보 로드
+            loadTrialDetail(trialId);
+            
+            // 탭 전환 이벤트
+            $('.entry_tab a').on('click', function(e) {
+                e.preventDefault();
+                $('.entry_tab a').removeClass('active');
+                $(this).addClass('active');
+                
+                const tab = $(this).data('tab');
+                $('.entry_content').hide();
+                $('#tab_' + tab).show();
+            });
+            
+            /**
+             * 시험 상세 정보 로드
+             */
+            function loadTrialDetail(id) {
+                $.ajax({
+                    url: '/api/trials/' + id,
+                    method: 'GET',
+                    success: function(trial) {
+                        renderTrialDetail(trial);
+                    },
+                    error: function(error) {
+                        console.error('데이터 로드 실패:', error);
+                        alert('데이터를 불러오는데 실패했습니다.');
+                        window.location.href = '/entry/entry2.html';
+                    }
+                });
+            }
+            
+            /**
+             * 상세 정보 렌더링
+             */
+            function renderTrialDetail(trial) {
+                // 1. 상단 카드 렌더링
+                const topHtml = `
+                    <div class="entry_img">
+                        <div class="thumb">
+                            <img src="${trial.beforeImageUrl || '/images/board/sample.jpg'}" alt="시험 전">
+                        </div>
+                        <div class="thumb">
+                            <img src="${trial.afterImageUrl || '/images/board/sample.jpg'}" alt="시험 후">
+                        </div>
+                    </div>
+                    <div class="entry_card">
+                        <div class="text">
+                            <div class="main">
+                                <p class="deco">${trial.groupName || trial.tabName || ''}</p>
+                                <p class="txt">
+                                    <span class="tit">${trial.trialTitle}</span>
+                                    ${trial.trialSubtitle ? `<span class="caution">${trial.trialSubtitle}</span>` : ''}
+                                </p>
+                                <p class="sub">${trial.trialDescription || '본 시험은 사용 전/사용 직후 기준으로 진행됩니다.'}</p>
+                            </div>
+                            <div class="sub">
+                                <div class="wrap">
+                                    <span class="tit">인원</span>
+                                    <span>${trial.trialPersonnel || '-'}</span>
+                                </div>
+                                <div class="wrap">
+                                    <span class="tit">필요 시료량</span>
+                                    <span>${trial.trialRequiredSample || '-'}</span>
+                                </div>
+                                <div class="wrap">
+                                    <span class="tit">예상 보고서 수령일</span>
+                                    <span>${trial.trialReportDate || '시험 종료일로부터 2주 후'}</span>
+                                </div>
+                                <div class="wrap">
+                                    <span class="tit">산출물</span>
+                                    <span>${trial.trialResultType || '-'}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <a href="/req/req2.html" class="btn">임상 관련 문의하기</a>
+                    </div>
+                `;
+                $('.entry_top').html(topHtml);
+                
+                // 2. 시험 정보 탭 렌더링
+                const infoHtml = `
+                    <div class="content_div">
+                        <p class="entry_subtit">참고사항</p>
+                        <div class="entry_txt">
+                            <p>본 페이지에 기재된 임상 항목은 참고용으로 제공되는 일부 내용입니다. 실제로는 더 다양한 임상 항목과 맞춤형 설계가 준비되어 있습니다. <br>상세한 안내가 필요하신 경우 시험 문의 또는 전화 상담을 통해 확인하시기 바랍니다.</p>
+                        </div>
+                    </div>
+                    <div class="content_div">
+                        <p class="entry_subtit">인원</p>
+                        <div class="entry_txt">
+                            <p>${trial.trialPersonnel || '-'}</p>
+                        </div>
+                    </div>
+                    <div class="content_div">
+                        <p class="entry_subtit">필요 시료량</p>
+                        <div class="entry_txt">
+                            <p>${trial.trialRequiredSample || '-'}</p>
+                        </div>
+                    </div>
+                    <div class="content_div">
+                        <p class="entry_subtit">측정시점</p>
+                        <div class="entry_txt">
+                            <p>${trial.trialTimePoint || '-'}</p>
+                        </div>
+                    </div>
+                    <div class="content_div">
+                        <p class="entry_subtit">시험부위</p>
+                        <div class="entry_txt">
+                            <p>${trial.trialPart || '-'}</p>
+                        </div>
+                    </div>
+                    <div class="content_div">
+                        <p class="entry_subtit">예상 보고서 수령일</p>
+                        <div class="entry_txt">
+                            <p>${trial.trialReportDateSub || '-'}</p>
+                        </div>
+                    </div>
+                    <div class="content_div">
+                        <p class="entry_subtit">산출물</p>
+                        <div class="entry_txt">
+                            <p>${trial.trialResultType || '-'}</p>
+                        </div>
+                    </div>
+                `;
+                $('#tab_info').html(infoHtml);
+            }
+        });
+    </script>
+</body>
+</html>

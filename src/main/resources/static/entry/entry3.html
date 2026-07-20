@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>휴먼피부임상시험센터</title>
+    <link href="/css/main.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="/js/script.js"></script>
+</head>
+<body class="entry3">
+    <div id="head"></div>
+    <div class="top_banner">
+        <div class="container">
+            <h1>시험 항목</h1>
+        </div>
+        <div class="scroll_down">
+            <span class="scroll_text">Scroll to down</span>
+            <div class="scroll_line_box"><div class="scroll_line_inner"></div></div>
+        </div>
+    </div>
+    <div class="tab_menu">
+        <div class="container">
+            <div class="wrap">
+                <a href="/entry/entry1.html">안전성 평가</a>
+                <a href="/entry/entry2.html">유효성 평가</a>
+                <a href="/entry/entry3.html" class="active">기능성 평가</a>
+                <a href="/entry/entry4.html">IN VITRO 평가</a>
+            </div>
+        </div>
+    </div>
+    <section class="sub0">
+        <div class="container">
+            <div class="title">
+                <h2 class="normal">제품의 진정한 가치를 밝히는 여정, <br>휴먼의 <span class="bold purple">연구 분야</span></h2>
+            </div>
+            <div class="image">
+                <h3>"제품이 세상과 만나는 여정, <br class="m_only">그 시작은 임상에서 시작됩니다." <br>휴먼은 브랜드가 전하고 싶은 가치를 <br class="m_only">과학의 언어로 증명합니다.</h3>
+            </div>
+        </div>
+    </section>
+    <section class="sub1">
+        <div class="container">
+            <div class="title">
+                <div class="top">
+                    <img src="/images/icon/symbol.svg" alt="" class="symbol">
+                    <h2>기능성</h2>
+                </div>
+                <p>식약처 기능성 화장품 허가를 위한 시험</p>
+            </div>
+            <div class="content">
+                <div class="list1" id="functionListContainer"></div>
+            </div>
+        </div>
+    </section>
+    <div id="common"></div>
+    <div id="foot"></div>
+
+    <script>
+        $(function(){
+            $("#head").load("/head.html");
+            $("#common").load("/common.html");
+            $("#foot").load("/foot.html");
+
+            loadFunctionData();
+        });
+
+        function loadFunctionData() {
+            $.ajax({
+                url: "/api/trial-function",
+                method: "GET",
+                dataType: "json",
+                success: function(data) {
+                    const container = $("#functionListContainer");
+                    container.empty();
+
+                    if (!data || data.length === 0) {
+                        container.append('<p class="text-center w-100" style="padding: 100px 0;">등록된 시험 항목이 없습니다.</p>');
+                        return;
+                    }
+
+                    data.forEach(function(item) {
+                        const imgSrc = item.thumbnailUrl ? item.thumbnailUrl : "/images/icon/symbol.svg";
+
+                        const itemHtml = `
+                            <div class="item">
+                                <div class="text">
+                                    <div class="tit">${item.title}</div>
+                                    <div class="txt">
+                                        <p>시험기간 : ${item.trialPeriod || '-'}</p><br>
+                                        <p>시험대상자 수 : ${item.participantCount || '-'}</p><br>
+                                        <p>시험부위 : ${item.trialLocation || '-'}</p><br>
+                                        <p>산출물 : ${item.trialOutput || '-'}</p>
+                                    </div>
+                                </div>
+                                <div class="img"><img src="${imgSrc}" alt="${item.title}"></div>
+                            </div>
+                        `;
+                        container.append(itemHtml);
+                    });
+
+                    setTimeout(function() {
+                        $(window).trigger('scroll'); // ← reveal() 대신 이걸로 교체
+                    }, 100);
+                },
+                error: function(err) {
+                    console.error("데이터 로드 실패:", err);
+                    $("#functionListContainer").html('<p class="text-center w-100">데이터를 불러오는데 실패했습니다.</p>');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
