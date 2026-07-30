@@ -42,17 +42,7 @@
                 <div class="filter">
                     <span class="label">Số điện thoại</span>
                     <div class="filter_phone">
-                        <div class="select" id="phone_select">
-                            <button class="toggle" aria-haspopup="listbox" aria-expanded="false">010<span class="icon"><img src="/images/icon/dropdown.svg" alt=""></span>
-                            </button>
-                            <ul class="option" role="listbox" hidden>
-                                <li role="option" data-value="010" class="active">010</li>
-                            </ul>
-                        </div>
-                        <span>-</span>
-                        <input type="text" id="phone_middle" maxlength="4">
-                        <span>-</span>
-                        <input type="text" id="phone_last" maxlength="4">
+                        <input type="text" id="phone_full" placeholder="Nhập số điện thoại">
                     </div>
                     <div class="filter_btn">
                         <button type="button" class="back" id="searchBtn">Tra cứu</button>
@@ -119,7 +109,7 @@
                 searchByPhone();
             });
 
-            $('#phone_middle, #phone_last').keypress(function(e) {
+            $('#phone_full').keypress(function(e) {
                 if (e.which === 13) {
                     searchByPhone();
                 }
@@ -154,15 +144,12 @@
         }
 
         function searchByPhone() {
-            const phoneMiddle = $('#phone_middle').val().trim();
-            const phoneLast = $('#phone_last').val().trim();
+            const phone = $('#phone_full').val().trim();
 
-            if (!phoneMiddle || !phoneLast) {
-                alert('Vui lòng nhập đầy đủ số điện thoại.');
+            if (!phone) {
+                alert('Vui lòng nhập số điện thoại.');
                 return;
             }
-
-            const phone = '010' + phoneMiddle + phoneLast;
 
             $.ajax({
                 url: '/api/trial-questions/by-phone',
