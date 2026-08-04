@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+	<link rel="preconnect" href="https://fonts.gstatic.com">
+	<link rel="shortcut icon" href="../img/icons/icon-48x48.png" />
+
+	<title>피험자 신청 상세 - Human Clinical 관리자</title>
+
+	<link href="../css/app.css" rel="stylesheet">
+	<link href="../css/custom.css" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body data-page="trial-application-list" data-base="../">
+	<div class="wrapper">
+
+		<div id="sidebar-container"></div>
+
+		<div class="main">
+			<div id="header-container"></div>
+
+			<main class="content">
+				<div class="container-fluid p-0">
+
+					<div class="d-flex justify-content-between align-items-center mb-3">
+						<h1 class="h3 mb-0"><strong id="pageTitle">피험자 신청 상세</strong></h1>
+						<a href="list.html" class="btn btn-outline-secondary" id="btnBack">
+							<i class="align-middle" data-feather="arrow-left" style="width:14px;height:14px;"></i>
+							<span class="align-middle ms-1">목록으로</span>
+						</a>
+					</div>
+
+					<!-- 상세 보기 모드 -->
+					<div class="card detail-view" id="viewMode" style="display:none;">
+						<div class="card-body">
+							<!-- 모집 공고 정보 -->
+							<div class="mb-3 p-3 border rounded bg-light">
+								<label class="form-label text-muted small mb-1">모집 공고</label>
+								<p class="mb-1 fw-bold">
+									<a href="" id="viewRecruitmentLink" class="text-decoration-none"></a>
+								</p>
+								<div class="row">
+									<div class="col-md-4">
+										<span class="text-muted small">시험번호:</span>
+										<span class="small" id="viewTrialCode"></span>
+									</div>
+									<div class="col-md-4">
+										<span class="text-muted small">시험명:</span>
+										<span class="small" id="viewTrialName"></span>
+									</div>
+									<div class="col-md-4">
+										<span class="text-muted small">모집 지역:</span>
+										<span class="small" id="viewRecruitmentRegion"></span>
+									</div>
+								</div>
+							</div>
+
+							<!-- 신청자 정보 -->
+							<div class="row mb-3">
+								<div class="col-md-3">
+									<label class="form-label text-muted">신청자명</label>
+									<p class="form-control-plaintext" id="viewName"></p>
+								</div>
+								<div class="col-md-3">
+									<label class="form-label text-muted">성별</label>
+									<p class="form-control-plaintext" id="viewGender"></p>
+								</div>
+								<div class="col-md-3">
+									<label class="form-label text-muted">생년월일</label>
+									<p class="form-control-plaintext" id="viewBirth"></p>
+								</div>
+								<div class="col-md-3">
+									<label class="form-label text-muted">연락처</label>
+									<p class="form-control-plaintext" id="viewPhone"></p>
+								</div>
+							</div>
+
+							<!-- 신청 정보 -->
+							<div class="row mb-3">
+								<div class="col-md-3">
+									<label class="form-label text-muted">참여 지역</label>
+									<p class="form-control-plaintext" id="viewField"></p>
+								</div>
+								<div class="col-md-3">
+									<label class="form-label text-muted">희망 시작일</label>
+									<p class="form-control-plaintext" id="viewStartDate"></p>
+								</div>
+								<div class="col-md-3">
+									<label class="form-label text-muted">희망 시간</label>
+									<p class="form-control-plaintext" id="viewStartTime"></p>
+								</div>
+								<div class="col-md-3">
+									<label class="form-label text-muted">상태</label>
+									<p id="viewStatus"></p>
+								</div>
+							</div>
+							<div class="row mb-3">
+								<div class="col-md-3">
+									<label class="form-label text-muted">신청일</label>
+									<p class="form-control-plaintext" id="viewCreatedAt"></p>
+								</div>
+								<div class="col-md-3">
+									<label class="form-label text-muted">수정일</label>
+									<p class="form-control-plaintext" id="viewUpdatedAt"></p>
+								</div>
+							</div>
+
+							<!-- 시간대별 신청 현황 -->
+							<div class="mb-3" id="viewTimeSlotsWrap" style="display:none;">
+								<label class="form-label text-muted">시간대별 신청 현황</label>
+								<div class="d-flex flex-wrap gap-2" id="viewTimeSlots"></div>
+								<div class="mt-1">
+									<span class="text-muted small">신청 합계: <strong id="viewTimeTotal">0</strong>명</span>
+								</div>
+							</div>
+						</div>
+						<div class="card-footer d-flex gap-2">
+							<button class="btn btn-primary" id="btnEditMode">
+								<i class="align-middle" data-feather="edit-2" style="width:14px;height:14px;"></i>
+								<span class="align-middle ms-1">수정</span>
+							</button>
+							<button class="btn btn-danger" id="btnDeleteView" data-bs-toggle="modal" data-bs-target="#deleteModal">
+								<i class="align-middle" data-feather="trash-2" style="width:14px;height:14px;"></i>
+								<span class="align-middle ms-1">삭제</span>
+							</button>
+						</div>
+					</div>
+
+					<!-- 수정 폼 -->
+					<div class="card" id="editMode" style="display:none;">
+						<div class="card-body">
+							<input type="hidden" id="applicationId">
+
+							<!-- 모집 공고 정보 (읽기 전용) -->
+							<div class="mb-3 p-3 border rounded bg-light">
+								<label class="form-label text-muted small mb-1">모집 공고</label>
+								<p class="mb-0 fw-bold" id="editRecruitmentTitle"></p>
+							</div>
+
+							<!-- 신청자 정보 (읽기 전용) -->
+							<div class="row mb-3">
+								<div class="col-md-3">
+									<label class="form-label text-muted">신청자명</label>
+									<p class="form-control-plaintext" id="editName"></p>
+								</div>
+								<div class="col-md-3">
+									<label class="form-label text-muted">성별</label>
+									<p class="form-control-plaintext" id="editGender"></p>
+								</div>
+								<div class="col-md-3">
+									<label class="form-label text-muted">생년월일</label>
+									<p class="form-control-plaintext" id="editBirth"></p>
+								</div>
+								<div class="col-md-3">
+									<label class="form-label text-muted">연락처</label>
+									<p class="form-control-plaintext" id="editPhone"></p>
+								</div>
+							</div>
+
+							<!-- 수정 가능 필드 -->
+							<div class="row mb-3">
+								<div class="col-md-3">
+									<label class="form-label" for="inputField">참여 지역 <span class="text-danger">*</span></label>
+									<select class="form-select" id="inputField"></select>
+								</div>
+								<div class="col-md-3">
+									<label class="form-label" for="inputStartDate">희망 시작일</label>
+									<input type="date" class="form-control" id="inputStartDate">
+								</div>
+								<div class="col-md-3">
+									<label class="form-label" for="inputStartTime">희망 시간</label>
+									<select class="form-select" id="inputStartTime"></select>
+								</div>
+								<div class="col-md-3">
+									<label class="form-label" for="inputStatus">상태 <span class="text-danger">*</span></label>
+									<select class="form-select" id="inputStatus">
+										<option value="PENDING">대기</option>
+										<option value="APPROVED">승인</option>
+										<option value="REJECTED">거절</option>
+									</select>
+								</div>
+							</div>
+
+							<!-- 시간대별 신청 현황 (수정 모드) -->
+							<div class="mb-3" id="editTimeSlotsWrap" style="display:none;">
+								<label class="form-label text-muted">시간대별 신청 현황</label>
+								<div class="d-flex flex-wrap gap-2" id="editTimeSlots"></div>
+								<div class="mt-1">
+									<span class="text-muted small">신청 합계: <strong id="editTimeTotal">0</strong>명</span>
+								</div>
+							</div>
+						</div>
+						<div class="card-footer d-flex gap-2">
+							<button class="btn btn-primary" id="btnSave">
+								<i class="align-middle" data-feather="save" style="width:14px;height:14px;"></i>
+								<span class="align-middle ms-1">저장</span>
+							</button>
+							<button class="btn btn-outline-secondary" id="btnCancel">취소</button>
+							<button class="btn btn-danger ms-auto" id="btnDeleteEdit" data-bs-toggle="modal" data-bs-target="#deleteModal">
+								<i class="align-middle" data-feather="trash-2" style="width:14px;height:14px;"></i>
+								<span class="align-middle ms-1">삭제</span>
+							</button>
+						</div>
+					</div>
+
+				</div>
+			</main>
+
+			<footer class="footer">
+				<div class="container-fluid">
+					<div class="row text-muted">
+						<div class="col-12 text-start">
+							<p class="mb-0">&copy; Human Clinical</p>
+						</div>
+					</div>
+				</div>
+			</footer>
+		</div>
+	</div>
+
+	<!-- 삭제 확인 모달 -->
+	<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-sm">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="deleteModalLabel">신청 삭제</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<p>이 신청 건을 삭제하시겠습니까?</p>
+					<p class="text-danger small mb-0">이 작업은 되돌릴 수 없습니다.</p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+					<button type="button" class="btn btn-danger" id="btnConfirmDelete">삭제</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../js/app.js"></script>
+	<script src="../js/admin-utils.js"></script>
+	<script src="../js/common.js"></script>
+	<script>
+		var FIELD_MAP = {};
+		var GENDER_MAP = { "MALE": "남", "FEMALE": "여" };
+		var STATUS_MAP = {
+			"PENDING": '<span class="badge bg-warning text-dark">대기</span>',
+			"APPROVED": '<span class="badge bg-success">승인</span>',
+			"REJECTED": '<span class="badge bg-danger">거절</span>'
+		};
+
+		var currentApp = null;
+		var currentRec = null;
+		var timeSlots = [];
+
+		function parseFieldIds(jsonStr) {
+			if (!jsonStr) return [];
+			try { return JSON.parse(jsonStr); } catch (e) { return []; }
+		}
+
+		function formatBirth(birth) {
+			if (!birth || birth.length !== 8) return "-";
+			return birth.substring(0, 4) + "-" + birth.substring(4, 6) + "-" + birth.substring(6, 8);
+		}
+
+		function getRegionText(rec) {
+			if (!rec) return "-";
+			var ids = parseFieldIds(rec.recruitmentFieldIds);
+			return ids.map(function (fid) { return FIELD_MAP[String(fid)] || fid; }).join(", ");
+		}
+
+		function getApplicationFieldName(data) {
+			if (data.recruitmentFieldId) {
+				return FIELD_MAP[String(data.recruitmentFieldId)] || "-";
+			}
+			return "-";
+		}
+
+		function populateFieldOptions(selectEl, rec, selectedFieldId) {
+			selectEl.innerHTML = "";
+			if (!rec) return;
+			var ids = parseFieldIds(rec.recruitmentFieldIds);
+			if (ids.length === 0) {
+				var opt = document.createElement("option");
+				opt.value = "";
+				opt.textContent = "지역 없음";
+				selectEl.appendChild(opt);
+				return;
+			}
+			ids.forEach(function (fid) {
+				var opt = document.createElement("option");
+				opt.value = String(fid);
+				opt.textContent = FIELD_MAP[String(fid)] || fid;
+				if (String(fid) === String(selectedFieldId)) opt.selected = true;
+				selectEl.appendChild(opt);
+			});
+		}
+
+		function loadFields() {
+			return fetch("/api/recruitment-fields")
+				.then(function (res) { return res.ok ? res.json() : []; })
+				.then(function (fields) {
+					(fields || []).forEach(function (f) {
+						FIELD_MAP[String(f.id)] = f.fieldName;
+					});
+				});
+		}
+
+		function loadApplication(id) {
+			return fetch("/api/trial-applications/" + id)
+				.then(function (res) {
+					if (!res.ok) throw new Error("신청 정보를 찾을 수 없습니다.");
+					return res.json();
+				});
+		}
+
+		function loadRecruitment(recruitmentId) {
+			return fetch("/api/recruitments/" + recruitmentId)
+				.then(function (res) { return res.ok ? res.json() : null; });
+		}
+
+		function loadTimeTables(recruitmentId) {
+			return fetch("/api/recruitment-time-tables/recruitment/" + recruitmentId)
+				.then(function (res) { return res.ok ? res.json() : []; });
+		}
+
+		function renderTimeSlotStatus(containerId, wrapId, totalId, selectedTime) {
+			var wrap = document.getElementById(wrapId);
+			var container = document.getElementById(containerId);
+			var totalEl = document.getElementById(totalId);
+
+			if (!timeSlots || timeSlots.length === 0) {
+				wrap.style.display = "none";
+				return;
+			}
+
+			wrap.style.display = "";
+			container.innerHTML = "";
+			var totalCount = 0, totalMax = 0;
+
+			timeSlots.forEach(function (ts) {
+				if (ts.maxCnt <= 0) return;
+				totalCount += ts.count;
+				totalMax += ts.maxCnt;
+				var isFull = ts.count >= ts.maxCnt;
+				var isSelected = ts.timeSlot === selectedTime;
+
+				var span = document.createElement("span");
+				span.className = "badge ";
+				if (isSelected) {
+					span.className += isFull ? "bg-danger" : "bg-primary";
+				} else if (isFull) {
+					span.className += "bg-danger bg-opacity-25 text-danger";
+				} else {
+					span.className += "bg-light text-dark border";
+				}
+				span.style.fontSize = "0.85em";
+				span.textContent = ts.timeSlot + "  " + ts.count + "/" + ts.maxCnt;
+				if (isSelected) {
+					var arrow = document.createElement("span");
+					arrow.textContent = " \u25C0";
+					arrow.style.fontSize = "0.75em";
+					span.appendChild(arrow);
+				}
+				container.appendChild(span);
+			});
+
+			totalEl.textContent = totalCount + "/" + totalMax;
+		}
+
+		function populateTimeOptions(selectEl, selectedValue) {
+			selectEl.innerHTML = "";
+			if (timeSlots.length > 0) {
+				timeSlots.forEach(function (ts) {
+					var opt = document.createElement("option");
+					opt.value = ts.timeSlot;
+					var remaining = ts.maxCnt - ts.count;
+					opt.textContent = ts.timeSlot + " (잔여 " + remaining + "/" + ts.maxCnt + ")";
+					if (ts.timeSlot === selectedValue) opt.selected = true;
+					selectEl.appendChild(opt);
+				});
+			} else {
+				// 시간대 데이터 없으면 기본 08:00~16:00, 30분 간격
+				for (var h = 8; h <= 16; h++) {
+					var times = [("0" + h).slice(-2) + ":00"];
+					if (h < 16) times.push(("0" + h).slice(-2) + ":30");
+					times.forEach(function (t) {
+						var opt = document.createElement("option");
+						opt.value = t;
+						opt.textContent = t;
+						if (t === selectedValue) opt.selected = true;
+						selectEl.appendChild(opt);
+					});
+				}
+			}
+		}
+
+		function showViewMode(data, rec) {
+			document.getElementById("pageTitle").textContent = "피험자 신청 상세";
+			document.getElementById("viewMode").style.display = "";
+			document.getElementById("editMode").style.display = "none";
+
+			// 모집 공고 정보
+			var linkEl = document.getElementById("viewRecruitmentLink");
+			linkEl.textContent = rec ? rec.title : "-";
+			linkEl.href = "../recruitment/detail.html?id=" + data.recruitmentId;
+			document.getElementById("viewTrialCode").textContent = rec ? (rec.trialCode || "-") : "-";
+			document.getElementById("viewTrialName").textContent = rec ? (rec.trialName || "-") : "-";
+			document.getElementById("viewRecruitmentRegion").textContent = getRegionText(rec);
+
+			// 신청자 정보
+			document.getElementById("viewName").textContent = data.name || "-";
+			document.getElementById("viewGender").textContent = GENDER_MAP[data.gender] || data.gender || "-";
+			document.getElementById("viewBirth").textContent = formatBirth(data.birth);
+			document.getElementById("viewPhone").textContent = data.phone || "-";
+
+			// 신청 정보 - 참여 지역은 신청자가 선택한 개별 지역
+			document.getElementById("viewField").textContent = getApplicationFieldName(data);
+			document.getElementById("viewStartDate").textContent = data.startDate || "-";
+			document.getElementById("viewStartTime").textContent = data.startTime || "-";
+			document.getElementById("viewStatus").innerHTML = STATUS_MAP[data.status] || data.status || "-";
+			document.getElementById("viewCreatedAt").textContent = AdminUtils.formatDate(data.createdAt);
+			document.getElementById("viewUpdatedAt").textContent = AdminUtils.formatDate(data.updatedAt);
+
+			// 시간대별 신청 현황
+			renderTimeSlotStatus("viewTimeSlots", "viewTimeSlotsWrap", "viewTimeTotal", data.startTime);
+
+			if (window.feather) feather.replace();
+		}
+
+		function showEditMode(data, rec) {
+			document.getElementById("pageTitle").textContent = "피험자 신청 수정";
+			document.getElementById("viewMode").style.display = "none";
+			document.getElementById("editMode").style.display = "";
+
+			document.getElementById("applicationId").value = data.id;
+
+			// 모집 공고 (읽기 전용)
+			document.getElementById("editRecruitmentTitle").textContent = rec ? rec.title : "-";
+
+			// 신청자 정보 (읽기 전용)
+			document.getElementById("editName").textContent = data.name || "-";
+			document.getElementById("editGender").textContent = GENDER_MAP[data.gender] || data.gender || "-";
+			document.getElementById("editBirth").textContent = formatBirth(data.birth);
+			document.getElementById("editPhone").textContent = data.phone || "-";
+
+			// 수정 가능 필드 - 참여 지역 드롭다운 (해당 공고 지역만)
+			populateFieldOptions(document.getElementById("inputField"), rec, data.recruitmentFieldId);
+			document.getElementById("inputStartDate").value = data.startDate || "";
+			populateTimeOptions(document.getElementById("inputStartTime"), data.startTime);
+			document.getElementById("inputStatus").value = data.status || "PENDING";
+
+			// 시간대별 신청 현황
+			renderTimeSlotStatus("editTimeSlots", "editTimeSlotsWrap", "editTimeTotal", data.startTime);
+
+			if (window.feather) feather.replace();
+		}
+
+		function getBackUrl() {
+			var params = new URLSearchParams(window.location.search);
+			var fromRecruitment = params.get("recruitment_id");
+			return fromRecruitment ? "list.html?recruitment_id=" + fromRecruitment : "list.html";
+		}
+
+		document.addEventListener("DOMContentLoaded", function () {
+			var params = new URLSearchParams(window.location.search);
+			var id = params.get("id");
+
+			// 목록 복귀 시 모집공고 필터 유지
+			var fromRecruitment = params.get("recruitment_id");
+			if (fromRecruitment) {
+				document.getElementById("btnBack").href = "list.html?recruitment_id=" + fromRecruitment;
+			}
+
+			if (!id) {
+				alert("잘못된 접근입니다.");
+				location.href = "list.html";
+				return;
+			}
+
+			// 필드 + 신청 데이터 로드
+			loadFields().then(function () {
+				return loadApplication(id);
+			}).then(function (appData) {
+				currentApp = appData;
+				return Promise.all([
+					loadRecruitment(appData.recruitmentId),
+					loadTimeTables(appData.recruitmentId)
+				]);
+			}).then(function (results) {
+				currentRec = results[0];
+				timeSlots = results[1] || [];
+				showViewMode(currentApp, currentRec);
+			}).catch(function (err) {
+				alert(err.message || "신청 정보를 찾을 수 없습니다.");
+				location.href = "list.html";
+			});
+
+			// 수정 버튼
+			document.getElementById("btnEditMode").addEventListener("click", function () {
+				if (currentApp) {
+					showEditMode(currentApp, currentRec);
+				}
+			});
+
+			// 취소 버튼
+			document.getElementById("btnCancel").addEventListener("click", function () {
+				if (currentApp) {
+					showViewMode(currentApp, currentRec);
+				}
+			});
+
+			// 저장
+			document.getElementById("btnSave").addEventListener("click", function () {
+				var appId = document.getElementById("applicationId").value;
+				var status = document.getElementById("inputStatus").value;
+				var startDate = document.getElementById("inputStartDate").value;
+				var startTime = document.getElementById("inputStartTime").value;
+
+				var selectedFieldId = document.getElementById("inputField").value;
+
+				var body = {
+					recruitmentId: currentApp.recruitmentId,
+					recruitmentFieldId: selectedFieldId ? parseInt(selectedFieldId) : null,
+					startDate: startDate || null,
+					startTime: startTime || null,
+					name: currentApp.name,
+					gender: currentApp.gender,
+					birth: currentApp.birth,
+					phone: currentApp.phone
+				};
+
+				// 먼저 PUT으로 시작일/시간 수정
+				fetch("/api/trial-applications/" + appId, {
+					method: "PUT",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify(body)
+				}).then(function (res) {
+					if (!res.ok) throw new Error("수정 실패");
+					// 상태가 변경되었으면 PATCH로 상태 변경
+					if (status !== currentApp.status) {
+						return fetch("/api/trial-applications/" + appId + "/status?status=" + status, {
+							method: "PATCH"
+						});
+					}
+					return res;
+				}).then(function (res) {
+					if (res && !res.ok) throw new Error("상태 변경 실패");
+					alert("수정이 완료되었습니다.");
+					// 수정 후 데이터 새로고침
+					return loadApplication(appId);
+				}).then(function (updated) {
+					currentApp = updated;
+					showViewMode(currentApp, currentRec);
+				}).catch(function (err) {
+					alert(err.message || "수정 중 오류가 발생했습니다.");
+				});
+			});
+
+			// 삭제 확인
+			document.getElementById("btnConfirmDelete").addEventListener("click", function () {
+				fetch("/api/trial-applications/" + id, {
+					method: "DELETE"
+				}).then(function (res) {
+					if (!res.ok) throw new Error("삭제 실패");
+					if (currentRec && currentRec.status === "CLOSED") {
+						alert("삭제가 완료되었습니다.\n\n해당 공고는 현재 마감 상태입니다.\n모집 상태를 변경하려면 모집공고 관리에서 수동으로 변경해주세요.");
+					} else {
+						alert("삭제가 완료되었습니다.");
+					}
+					location.href = getBackUrl();
+				}).catch(function (err) {
+					alert(err.message || "삭제 중 오류가 발생했습니다.");
+				});
+			});
+		});
+	</script>
+</body>
+
+</html>

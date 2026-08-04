@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+	<link rel="preconnect" href="https://fonts.gstatic.com">
+	<link rel="shortcut icon" href="../img/icons/icon-48x48.png" />
+
+	<title>E-IRB - Human Clinical 관리자</title>
+
+	<link href="../css/app.css" rel="stylesheet">
+	<link href="../css/custom.css" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+	<style>
+		/* 메일수신 체크박스 영역 */
+		.email-recipient-list {
+			max-height: 200px;
+			overflow-y: auto;
+			border: 1px solid #dee2e6;
+			border-radius: 6px;
+			padding: 12px;
+			background: #fafafa;
+		}
+		.email-recipient-list .form-check { margin-bottom: 6px; }
+		.email-recipient-list .form-check:last-child { margin-bottom: 0; }
+	</style>
+</head>
+
+<body data-page="e-irb-list" data-base="../">
+	<div class="wrapper">
+
+		<div id="sidebar-container"></div>
+
+		<div class="main">
+			<div id="header-container"></div>
+
+			<main class="content">
+				<div class="container-fluid p-0">
+
+					<div class="d-flex justify-content-between align-items-center mb-3">
+						<div class="d-flex align-items-center gap-2">
+							<h1 class="h3 mb-0"><strong id="pageTitle">IRB 시험 등록</strong></h1>
+							<button class="btn btn-outline-secondary btn-sm" id="btnTempList" style="display:none;">
+								임시 저장된 글 (<span id="tempCount">0</span>)
+							</button>
+						</div>
+						<a href="list" class="btn btn-outline-secondary">
+							<i class="align-middle" data-feather="arrow-left" style="width:14px;height:14px;"></i>
+							<span class="align-middle ms-1">목록으로</span>
+						</a>
+					</div>
+
+					<!-- 상세 보기 모드 -->
+					<div class="card detail-view" id="viewMode" style="display:none;">
+						<div class="card-body">
+							<div class="mb-3">
+								<label class="form-label text-muted d-flex align-items-center gap-2">제목 <span id="viewReviewStatus"></span></label>
+								<p class="form-control-plaintext fw-bold fs-5" id="viewTitle"></p>
+							</div>
+							<div class="row mb-3">
+								<div class="col-md-3">
+									<label class="form-label text-muted">시험구분(항목)</label>
+									<p id="viewCategory"></p>
+								</div>
+								<div class="col-md-3">
+									<label class="form-label text-muted">상태</label>
+									<p id="viewStatus"></p>
+								</div>
+								<div class="col-md-3">
+									<label class="form-label text-muted">등록일</label>
+									<p class="form-control-plaintext" id="viewCreatedAt"></p>
+								</div>
+							</div>
+							<div class="row mb-3">
+								<div class="col-md-6">
+									<label class="form-label text-muted">심사참여 기간</label>
+									<p class="form-control-plaintext" id="viewPeriod"></p>
+								</div>
+							</div>
+
+							<!-- 메일수신 보기 -->
+							<div class="mb-3">
+								<label class="form-label text-muted">메일수신</label>
+								<div id="viewEmailRecipients"></div>
+							</div>
+
+							<!-- 첨부파일 보기 -->
+							<div class="mb-3">
+								<label class="form-label text-muted">첨부파일</label>
+								<div id="viewAttachments"></div>
+							</div>
+
+						</div>
+						<div class="card-footer d-flex justify-content-between">
+							<div class="d-flex gap-2">
+								<button class="btn btn-primary" id="btnEditMode">
+									<i class="align-middle" data-feather="edit-2" style="width:14px;height:14px;"></i>
+									<span class="align-middle ms-1">수정</span>
+								</button>
+								<button class="btn btn-danger" id="btnDeleteView" data-bs-toggle="modal" data-bs-target="#deleteModal">
+									<i class="align-middle" data-feather="trash-2" style="width:14px;height:14px;"></i>
+									<span class="align-middle ms-1">삭제</span>
+								</button>
+							</div>
+							<div class="d-flex gap-2">
+								<a class="btn btn-outline-primary" id="btnSurveyTemplate" href="#">
+									<i class="align-middle" data-feather="clipboard" style="width:14px;height:14px;"></i>
+									<span class="align-middle ms-1">심사참여 템플릿</span>
+								</a>
+								<button class="btn btn-info text-white" id="btnReply">
+									<i class="align-middle" data-feather="corner-up-left" style="width:14px;height:14px;"></i>
+									<span class="align-middle ms-1">답글</span>
+								</button>
+							</div>
+						</div>
+					</div>
+
+					<!-- 심사참여 목록 -->
+					<div class="card mt-3" id="surveyAnswerList" style="display:none;">
+						<div class="card-header">
+							<div class="d-flex justify-content-between align-items-center mb-2">
+								<div class="d-flex align-items-center gap-2">
+									<h5 class="card-title mb-0">심사참여 목록</h5>
+									<span id="surveyReviewStatus"></span>
+								</div>
+							</div>
+							<div id="surveyResultFilter" class="d-flex flex-wrap gap-1"></div>
+						</div>
+						<table class="table table-hover my-0" id="surveyAnswerTable">
+							<thead>
+								<tr>
+									<th style="width:50px;" class="text-center">No</th>
+									<th>참여자</th>
+									<th style="width:160px;">심사 결과</th>
+									<th style="width:120px;">제출일</th>
+									<th style="width:80px;" class="text-center">상세</th>
+									<th style="width:80px;" class="text-center">삭제</th>
+								</tr>
+							</thead>
+							<tbody id="surveyAnswerBody"></tbody>
+						</table>
+					</div>
+
+					<!-- 등록/수정 폼 -->
+					<div class="card" id="editMode">
+						<div class="card-body">
+							<input type="hidden" id="irbTestId">
+							<input type="hidden" id="irbTestIdRef">
+							<input type="hidden" id="irbDepth" value="0">
+
+							<!-- 답글 안내 -->
+							<div class="alert alert-info d-flex align-items-center" id="replyNotice" style="display:none !important;">
+								<i class="align-middle me-2" data-feather="corner-up-left" style="width:16px;height:16px;"></i>
+								<span><strong id="replyParentTitle"></strong>에 대한 답글 작성 중</span>
+							</div>
+
+							<div class="mb-3">
+								<label class="form-label" for="inputTitle">제목 <span class="text-danger">*</span></label>
+								<input type="text" class="form-control" id="inputTitle" placeholder="시험 제목을 입력하세요">
+								<div class="invalid-feedback">제목을 입력해주세요.</div>
+							</div>
+
+							<div class="row mb-3">
+								<div class="col-md-3">
+									<label class="form-label" for="inputStartDate">심사참여 시작일 <span class="text-danger">*</span></label>
+									<input type="date" class="form-control" id="inputStartDate">
+									<div class="invalid-feedback">시작일을 선택해주세요.</div>
+								</div>
+								<div class="col-md-3">
+									<label class="form-label" for="inputEndDate">심사참여 종료일 <span class="text-danger">*</span></label>
+									<input type="date" class="form-control" id="inputEndDate">
+									<div class="invalid-feedback">종료일을 선택해주세요.</div>
+								</div>
+							</div>
+
+							<div class="row mb-3">
+								<div class="col-md-3">
+									<label class="form-label" for="inputCategory">시험구분(항목) <span class="text-danger">*</span></label>
+									<select class="form-select" id="inputCategory">
+										<option value="">선택</option>
+									</select>
+									<div class="invalid-feedback">시험구분을 선택해주세요.</div>
+								</div>
+								<div class="col-md-4">
+									<label class="form-label">상태</label>
+									<div class="d-flex gap-3 mt-1">
+										<div class="form-check">
+											<input class="form-check-input" type="radio" name="inputStatus" id="statusInReview" value="IN_REVIEW" checked>
+											<label class="form-check-label" for="statusInReview">심의중</label>
+										</div>
+										<div class="form-check">
+											<input class="form-check-input" type="radio" name="inputStatus" id="statusCompleted" value="COMPLETED">
+											<label class="form-check-label" for="statusCompleted">심의완료</label>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<hr>
+
+							<!-- 메일수신 -->
+							<div class="mb-3">
+								<label class="form-label">메일수신</label>
+								<div class="mb-2">
+									<button type="button" class="btn btn-sm btn-outline-secondary" id="btnCheckAll">전체 선택</button>
+									<button type="button" class="btn btn-sm btn-outline-secondary" id="btnUncheckAll">전체 해제</button>
+								</div>
+								<div class="email-recipient-list" id="emailRecipientList"></div>
+								<div class="form-text">시험 관련 메일을 수신할 대상을 선택하세요.</div>
+							</div>
+
+							<hr>
+
+							<!-- 첨부파일 업로드 -->
+							<div class="mb-3">
+								<label class="form-label">
+									첨부파일 <span class="text-muted small">(file_category: ATTACHMENT, 무제한 첨부 가능)</span>
+								</label>
+								<div id="attachmentList"></div>
+								<div class="d-flex gap-2 mt-2">
+									<input type="file" class="form-control" id="inputAttachment" multiple>
+									<button type="button" class="btn btn-outline-primary flex-shrink-0" id="btnAddAttachment">
+										<i class="align-middle" data-feather="plus" style="width:14px;height:14px;"></i>
+										<span class="align-middle ms-1">추가</span>
+									</button>
+								</div>
+								<div class="form-text">파일을 선택한 뒤 [추가] 버튼을 누르면 목록에 추가됩니다. 여러 파일을 한번에 선택할 수도 있습니다.</div>
+							</div>
+						</div>
+						<div class="card-footer d-flex gap-2">
+							<button class="btn btn-primary" id="btnSave">
+								<i class="align-middle" data-feather="check" style="width:14px;height:14px;"></i>
+								<span class="align-middle ms-1">작성완료</span>
+							</button>
+							<button class="btn btn-outline-secondary" id="btnSaveTemp">
+								<i class="align-middle" data-feather="file" style="width:14px;height:14px;"></i>
+								<span class="align-middle ms-1">임시저장</span>
+							</button>
+							<button class="btn btn-danger ms-auto" id="btnDeleteEdit" data-bs-toggle="modal" data-bs-target="#deleteModal" style="display:none;">
+								<i class="align-middle" data-feather="trash-2" style="width:14px;height:14px;"></i>
+								<span class="align-middle ms-1">삭제</span>
+							</button>
+						</div>
+					</div>
+
+				</div>
+			</main>
+
+			<footer class="footer">
+				<div class="container-fluid">
+					<div class="row text-muted">
+						<div class="col-12 text-start">
+							<p class="mb-0">&copy; Human Clinical</p>
+						</div>
+					</div>
+				</div>
+			</footer>
+		</div>
+	</div>
+
+	<!-- 삭제 확인 모달 -->
+	<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-sm">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="deleteModalLabel">IRB 시험 삭제</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<p>이 IRB 시험을 삭제하시겠습니까?</p>
+					<p class="text-danger small mb-0">첨부파일도 함께 삭제됩니다. 이 작업은 되돌릴 수 없습니다.</p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+					<button type="button" class="btn btn-danger" id="btnConfirmDelete">삭제</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 임시저장 목록 모달 -->
+	<div class="modal fade" id="tempListModal" tabindex="-1" aria-labelledby="tempListModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="tempListModalLabel">임시 저장된 글</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<table class="table table-sm table-hover mb-0">
+						<thead>
+							<tr>
+								<th>제목</th>
+								<th style="width:120px;">저장일</th>
+								<th style="width:60px;">관리</th>
+							</tr>
+						</thead>
+						<tbody id="tempListBody"></tbody>
+					</table>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 심사참여 삭제 확인 모달 -->
+	<div class="modal fade" id="deleteAnswerModal" tabindex="-1" aria-labelledby="deleteAnswerModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-sm">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="deleteAnswerModalLabel">심사참여 삭제</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<p><strong id="deleteAnswerUserName"></strong>의 심사참여 기록을 삭제하시겠습니까?</p>
+					<p class="text-danger small mb-0">삭제된 심사 기록은 복구할 수 없습니다.</p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+					<button type="button" class="btn btn-danger" id="btnConfirmDeleteAnswer">삭제</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../js/app.js"></script>
+	<script src="../js/common.js"></script>
+	<script src="../js/admin-utils.js"></script>
+	<script>
+		// ========== 전역 변수 ==========
+		var CATEGORY_MAP = {};
+		var BADGE_COLORS = ["bg-info", "bg-success", "bg-danger", "bg-primary", "bg-warning text-dark", "bg-secondary"];
+		var RESULT_MAP = {
+			"APPROVED": { text: "승인", badge: "bg-success", btn: "success" },
+			"CONDITIONALLY_APPROVED": { text: "조건부 승인", badge: "bg-info", btn: "info" },
+			"REVISION_REQUIRED": { text: "보완 후 재심의", badge: "bg-warning text-dark", btn: "warning" },
+			"REJECTED": { text: "반려", badge: "bg-danger", btn: "danger" },
+			"ON_HOLD": { text: "심의 보류", badge: "bg-secondary", btn: "secondary" },
+			"SUSPENDED": { text: "시험 중지", badge: "bg-dark", btn: "dark" }
+		};
+
+		var professors = [];
+		var professorMap = {}; // userId → { name, email }
+		var currentData = null;
+		var originalFiles = [];
+		var currentUser = null;
+		var emailRecipients = []; // 이메일 수신 이력 (view용)
+		var attachMgr = AdminUtils.createAttachmentManager();
+
+		// ========== 유틸 ==========
+		function escapeHtml(str) {
+			if (!str) return "";
+			var div = document.createElement("div");
+			div.textContent = str;
+			return div.innerHTML;
+		}
+
+		/**
+		 * 날짜 문자열(YYYY-MM-DD) 기준으로 한 달 뒤 날짜 반환
+		 */
+		function getOneMonthLater(dateStr) {
+			if (!dateStr) return "";
+			var d = new Date(dateStr);
+			d.setMonth(d.getMonth() + 1);
+			var year = d.getFullYear();
+			var month = String(d.getMonth() + 1).padStart(2, '0');
+			var day = String(d.getDate()).padStart(2, '0');
+			return year + '-' + month + '-' + day;
+		}
+
+		/**
+		 * 한국 시간대(UTC+9) 기준 오늘 날짜 YYYY-MM-DD 반환
+		 */
+		function getTodayKST() {
+			var now = new Date();
+			var kstOffset = 9 * 60;
+			var kstTime = new Date(now.getTime() + kstOffset * 60 * 1000);
+			var year = kstTime.getUTCFullYear();
+			var month = String(kstTime.getUTCMonth() + 1).padStart(2, '0');
+			var day = String(kstTime.getUTCDate()).padStart(2, '0');
+			return year + '-' + month + '-' + day;
+		}
+
+		// ========== API 로드 ==========
+		function loadCategories() {
+			return fetch("/api/irb-categories")
+				.then(function (res) { return res.json(); })
+				.then(function (list) {
+					list.forEach(function (cat, idx) {
+						CATEGORY_MAP[cat.id] = {
+							code: cat.categoryCode,
+							text: cat.category,
+							badge: BADGE_COLORS[idx % BADGE_COLORS.length]
+						};
+					});
+				});
+		}
+
+		function loadProfessors() {
+			return fetch("/api/users/professors")
+				.then(function (res) { return res.json(); })
+				.then(function (list) {
+					professors = list;
+					professors.forEach(function (p) {
+						professorMap[p.id] = { name: p.name, email: p.email };
+					});
+				});
+		}
+
+		function loadCurrentUser() {
+			return fetch("/api/auth/current-user")
+				.then(function (res) {
+					if (!res.ok) return null;
+					return res.json();
+				})
+				.then(function (user) { currentUser = user; })
+				.catch(function () { currentUser = null; });
+		}
+
+		function loadDetail(id) {
+			return fetch("/api/irbs/" + id)
+				.then(function (res) {
+					if (res.status === 401) {
+						alert("로그인이 필요합니다.");
+						location.href = "list";
+						return null;
+					}
+					if (res.status === 403) {
+						alert("접근 권한이 없습니다.");
+						location.href = "list";
+						return null;
+					}
+					if (!res.ok) throw new Error("조회 실패");
+					return res.json();
+				});
+		}
+
+		function loadEmailRecipients(irbId) {
+			return fetch("/api/irb-emails/logs/" + irbId)
+				.then(function (res) {
+					if (!res.ok) return [];
+					return res.json();
+				})
+				.then(function (logs) {
+					var seen = {};
+					var result = [];
+					(logs || []).forEach(function (log) {
+						(log.userList || []).forEach(function (u) {
+							if (!seen[u.email]) {
+								seen[u.email] = true;
+								result.push({ name: u.name, email: u.email });
+							}
+						});
+					});
+					emailRecipients = result;
+					return result;
+				})
+				.catch(function () {
+					emailRecipients = [];
+					return [];
+				});
+		}
+
+		function loadSurveyAnswers(testId) {
+			return fetch("/api/irb-surveys")
+				.then(function (res) {
+					if (!res.ok) return [];
+					return res.json();
+				})
+				.then(function (list) {
+					return (list || []).filter(function (s) {
+						return s.testResponseDTO && s.testResponseDTO.id === testId;
+					});
+				})
+				.catch(function () { return []; });
+		}
+
+		// ========== 파일 업로드/삭제 ==========
+		function uploadAttachments(entityId, files) {
+			var promises = files.map(function (file) {
+				return fetch("/api/files/upload-link", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						entityType: "IRB",
+						entityId: entityId,
+						fileCategory: "ATTACHMENT",
+						uploadedBy: currentUser ? currentUser.id : null,
+						originalFilename: file.name,
+						mimeType: file.type || "application/octet-stream",
+						fileSize: file.size
+					})
+				})
+				.then(function (res) {
+					if (!res.ok) throw new Error("파일 업로드 링크 생성 실패 (" + file.name + "): " + res.status);
+					return res.json();
+				})
+				.then(function (data) {
+					if (data.uploadUrl) {
+						return fetch(data.uploadUrl, {
+							method: "PUT",
+							headers: { "Content-Type": file.type || "application/octet-stream" },
+							body: file
+						});
+					}
+				});
+			});
+			return Promise.all(promises);
+		}
+
+		function deleteRemovedAttachments(origAtts, remainingAtts) {
+			var remainingIds = remainingAtts.map(function (f) { return f.id; });
+			var toDelete = origAtts.filter(function (f) { return remainingIds.indexOf(f.id) === -1; });
+			var promises = toDelete.map(function (f) {
+				return fetch("/api/files/" + f.id, { method: "DELETE" });
+			});
+			return Promise.all(promises);
+		}
+
+		function mapAttachments(apiFiles) {
+			if (!apiFiles) return [];
+			return apiFiles.map(function (f) {
+				return { id: f.id, name: f.originalFilename, size: f.fileSize, downloadUrl: f.s3Url };
+			});
+		}
+
+		// ========== 메일수신 UI ==========
+		function renderEmailCheckboxes() {
+			var container = document.getElementById("emailRecipientList");
+			if (!professors.length) {
+				container.innerHTML = '<p class="text-muted small mb-0">등록된 교수가 없습니다.</p>';
+				return;
+			}
+			var html = "";
+			professors.forEach(function (p) {
+				html += '<div class="form-check">';
+				html += '<input class="form-check-input" type="checkbox" id="email_' + p.id + '" value="' + p.id + '" data-name="' + escapeHtml(p.name) + '" data-email="' + escapeHtml(p.email) + '">';
+				html += '<label class="form-check-label" for="email_' + p.id + '">' + escapeHtml(p.name) + ' (' + escapeHtml(p.email) + ')</label>';
+				html += '</div>';
+			});
+			container.innerHTML = html;
+		}
+
+		function setEmailCheckboxes(emails) {
+			document.querySelectorAll("#emailRecipientList input[type='checkbox']").forEach(function (cb) {
+				cb.checked = false;
+			});
+			if (!emails) return;
+			var emailSet = {};
+			emails.forEach(function (e) { emailSet[e.email] = true; });
+			document.querySelectorAll("#emailRecipientList input[type='checkbox']").forEach(function (cb) {
+				if (emailSet[cb.dataset.email]) cb.checked = true;
+			});
+		}
+
+		function getSelectedRecipients() {
+			var recipients = [];
+			document.querySelectorAll("#emailRecipientList input[type='checkbox']:checked").forEach(function (cb) {
+				recipients.push({ name: cb.dataset.name, email: cb.dataset.email });
+			});
+			return recipients;
+		}
+
+		function renderViewEmailRecipients(recipients) {
+			var container = document.getElementById("viewEmailRecipients");
+			if (!recipients || recipients.length === 0) {
+				container.innerHTML = '<p class="text-muted mb-0">메일수신 대상이 없습니다.</p>';
+				return;
+			}
+			var html = '<div class="d-flex flex-wrap gap-2">';
+			recipients.forEach(function (r) {
+				html += '<span class="badge bg-light text-dark border">';
+				html += '<i data-feather="mail" style="width:12px;height:12px;" class="me-1"></i>';
+				html += escapeHtml(r.name) + ' (' + escapeHtml(r.email) + ')';
+				html += '</span>';
+			});
+			html += '</div>';
+			container.innerHTML = html;
+			if (window.feather) feather.replace();
+		}
+
+		// ========== 카테고리 UI ==========
+		function populateCategoryDropdown() {
+			var select = document.getElementById("inputCategory");
+			Object.keys(CATEGORY_MAP).forEach(function (id) {
+				var cat = CATEGORY_MAP[id];
+				var opt = document.createElement("option");
+				opt.value = id;
+				opt.textContent = cat.text;
+				select.appendChild(opt);
+			});
+		}
+
+		function getCategoryBadge(catId) {
+			var cat = CATEGORY_MAP[catId];
+			if (!cat) return '<span class="text-muted">-</span>';
+			return '<span class="badge ' + cat.badge + '">' + escapeHtml(cat.text) + '</span>';
+		}
+
+		function getStatusBadge(status, isTemp) {
+			if (isTemp === 1) return '<span class="badge bg-secondary">임시저장</span>';
+			if (status === "COMPLETED") return '<span class="badge bg-success">심의완료</span>';
+			return '<span class="badge bg-warning text-dark">심의중</span>';
+		}
+
+		// ========== 임시저장 목록 ==========
+		function loadTempList() {
+			return fetch("/api/irbs")
+				.then(function (res) { return res.json(); })
+				.then(function (list) {
+					var temps = (list || []).filter(function (item) { return item.isTemp === 1; });
+					document.getElementById("tempCount").textContent = temps.length;
+					if (temps.length > 0) {
+						document.getElementById("btnTempList").style.display = "";
+					}
+					var tbody = document.getElementById("tempListBody");
+					if (temps.length === 0) {
+						tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-3">임시 저장된 글이 없습니다.</td></tr>';
+						return;
+					}
+					var html = "";
+					temps.forEach(function (item) {
+						html += '<tr>';
+						html += '<td><a href="detail?id=' + item.id + '">' + escapeHtml(item.title || "(제목 없음)") + '</a></td>';
+						html += '<td>' + AdminUtils.formatDate(item.createdAt) + '</td>';
+						html += '<td>';
+						html += '<button class="btn btn-sm btn-outline-danger btn-delete-temp" data-id="' + item.id + '">';
+						html += '<i data-feather="trash-2" style="width:12px;height:12px;"></i>';
+						html += '</button>';
+						html += '</td>';
+						html += '</tr>';
+					});
+					tbody.innerHTML = html;
+					if (window.feather) feather.replace();
+
+					tbody.querySelectorAll(".btn-delete-temp").forEach(function (btn) {
+						btn.addEventListener("click", function () {
+							var tempId = this.dataset.id;
+							if (!confirm("이 임시저장 글을 삭제하시겠습니까?")) return;
+							fetch("/api/irbs/" + tempId, { method: "DELETE" })
+								.then(function () { loadTempList(); })
+								.catch(function () { alert("삭제 중 오류가 발생했습니다."); });
+						});
+					});
+				})
+				.catch(function () {
+					document.getElementById("tempCount").textContent = "0";
+				});
+		}
+
+		// ========== 모드 전환 ==========
+		function showViewMode(data) {
+			currentData = data;
+			document.getElementById("pageTitle").textContent = "IRB 시험 상세";
+			document.getElementById("viewMode").style.display = "";
+			document.getElementById("editMode").style.display = "none";
+			document.getElementById("btnTempList").style.display = "none";
+			document.getElementById("surveyAnswerList").style.display = "none";
+
+			document.getElementById("viewTitle").textContent = data.title;
+			document.getElementById("viewCreatedAt").textContent = AdminUtils.formatDate(data.createdAt);
+			document.getElementById("viewPeriod").textContent = (data.startDate || "-") + " ~ " + (data.endDate || "-");
+			document.getElementById("viewCategory").innerHTML = getCategoryBadge(data.categoryId);
+			document.getElementById("viewStatus").innerHTML = getStatusBadge(data.status, data.isTemp);
+
+			var atts = mapAttachments(data.attachedFiles);
+			attachMgr.renderView(atts);
+
+			document.getElementById("btnSurveyTemplate").href = "survey?id=" + data.id;
+
+			loadEmailRecipients(data.id).then(function (recipients) {
+				renderViewEmailRecipients(recipients);
+			});
+
+			loadSurveyAnswers(data.id).then(function (surveys) {
+				renderSurveyAnswerList(data.id, surveys);
+			});
+		}
+
+		function showCreateMode() {
+			currentData = null;
+			document.getElementById("pageTitle").textContent = "IRB 시험 등록";
+			document.getElementById("viewMode").style.display = "none";
+			document.getElementById("editMode").style.display = "";
+			document.getElementById("btnDeleteEdit").style.display = "none";
+			document.getElementById("surveyAnswerList").style.display = "none";
+			document.getElementById("replyNotice").style.display = "none !important";
+			document.getElementById("irbTestId").value = "";
+			document.getElementById("irbTestIdRef").value = "";
+			document.getElementById("irbDepth").value = "0";
+
+			var today = getTodayKST();
+			document.getElementById("inputStartDate").value = today;
+			document.getElementById("inputEndDate").value = getOneMonthLater(today); // ✅ 한 달 뒤 자동 설정
+
+			setEmailCheckboxes([]);
+			attachMgr.reset([]);
+			loadTempList();
+		}
+
+		function showEditMode(data) {
+			currentData = data;
+			document.getElementById("pageTitle").textContent = "IRB 시험 수정";
+			document.getElementById("viewMode").style.display = "none";
+			document.getElementById("editMode").style.display = "";
+			document.getElementById("btnDeleteEdit").style.display = "";
+			document.getElementById("btnTempList").style.display = "none";
+			document.getElementById("surveyAnswerList").style.display = "none";
+			document.getElementById("replyNotice").style.display = "none !important";
+
+			document.getElementById("irbTestId").value = data.id;
+			document.getElementById("irbTestIdRef").value = "";
+			document.getElementById("irbDepth").value = data.depth || 0;
+			document.getElementById("inputTitle").value = data.title;
+			document.getElementById("inputStartDate").value = data.startDate || "";
+			document.getElementById("inputEndDate").value = data.endDate || getOneMonthLater(data.startDate); // ✅ 종료일 없으면 자동
+			document.getElementById("inputCategory").value = data.categoryId || "";
+
+			if (data.status === "COMPLETED") {
+				document.getElementById("statusCompleted").checked = true;
+			} else {
+				document.getElementById("statusInReview").checked = true;
+			}
+
+			setEmailCheckboxes(emailRecipients);
+
+			var atts = mapAttachments(data.attachedFiles);
+			originalFiles = atts.slice();
+			attachMgr.reset(atts);
+		}
+
+		function showReplyMode(parentData) {
+			document.getElementById("pageTitle").textContent = "IRB 시험 답글";
+			document.getElementById("viewMode").style.display = "none";
+			document.getElementById("editMode").style.display = "";
+			document.getElementById("btnDeleteEdit").style.display = "none";
+			document.getElementById("btnTempList").style.display = "none";
+			document.getElementById("surveyAnswerList").style.display = "none";
+
+			var replyNotice = document.getElementById("replyNotice");
+			replyNotice.style.cssText = "";
+			document.getElementById("replyParentTitle").textContent = parentData.title;
+
+			document.getElementById("irbTestId").value = "";
+			document.getElementById("irbTestIdRef").value = parentData.id;
+			document.getElementById("irbDepth").value = (parentData.depth || 0) + 1;
+
+			document.getElementById("inputTitle").value = parentData.title;
+			document.getElementById("inputStartDate").value = parentData.startDate || "";
+			document.getElementById("inputEndDate").value = parentData.endDate || getOneMonthLater(parentData.startDate); // ✅ 종료일 없으면 자동
+			document.getElementById("inputCategory").value = parentData.categoryId || "";
+
+			if (parentData.status === "COMPLETED") {
+				document.getElementById("statusCompleted").checked = true;
+			} else {
+				document.getElementById("statusInReview").checked = true;
+			}
+
+			setEmailCheckboxes(emailRecipients);
+
+			originalFiles = [];
+			attachMgr.reset([]);
+
+			if (window.feather) feather.replace();
+		}
+
+		// ========== 심사참여 목록 렌더링 ==========
+		function renderSurveyAnswerList(testId, surveys) {
+			var container = document.getElementById("surveyAnswerList");
+
+			if (!surveys || surveys.length === 0) {
+				container.style.display = "none";
+				return;
+			}
+
+			container.style.display = "";
+
+			var counts = {};
+			var allApproved = true;
+			var items = surveys.map(function (s) {
+				var userId = s.answerDTO ? s.answerDTO.userId : null;
+				var prof = professorMap[userId];
+				var userName = prof ? prof.name : "사용자 " + userId;
+				var userEmail = prof ? prof.email : "";
+				var result = s.resultDTO ? s.resultDTO.reviewResult : "";
+				var reviewText = s.resultDTO ? s.resultDTO.reviewText : "";
+				var submittedAt = s.resultDTO ? AdminUtils.formatDate(s.resultDTO.createdAt) : AdminUtils.formatDate(s.answerDTO ? s.answerDTO.createdAt : "");
+
+				if (result) {
+					counts[result] = (counts[result] || 0) + 1;
+				}
+				if (result !== "APPROVED") allApproved = false;
+
+				return { userId: userId, userName: userName, userEmail: userEmail, result: result, reviewText: reviewText, submittedAt: submittedAt };
+			});
+
+			var statusEl = document.getElementById("surveyReviewStatus");
+			var titleStatusEl = document.getElementById("viewReviewStatus");
+			if (allApproved && items.length > 0) {
+				statusEl.innerHTML = '<span class="badge bg-success">전체 승인</span>';
+				if (titleStatusEl) titleStatusEl.innerHTML = '<span class="badge bg-success">전체 승인</span>';
+
+				// ✅ 추가: IRB 상태를 COMPLETED로 자동 업데이트
+				if (currentData && currentData.status !== "COMPLETED") {
+					fetch("/api/irbs/" + currentData.id, {
+						method: "PUT",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({
+							title: currentData.title,
+							startDate: currentData.startDate,
+							endDate: currentData.endDate,
+							categoryId: currentData.categoryId,
+							status: "COMPLETED",
+							isTemp: currentData.isTemp || 0,
+							emails: emailRecipients,
+							userId: currentUser ? currentUser.id : null,
+							depth: currentData.depth || 0
+						})
+					})
+					.then(function(res) {
+						if (!res.ok) throw new Error("상태 업데이트 실패");
+						return res.json();
+					})
+					.then(function(updated) {
+						currentData = updated; // currentData 동기화
+						document.getElementById("viewStatus").innerHTML = getStatusBadge("COMPLETED", 0);
+					})
+					.catch(function(err) {
+						console.error("IRB 상태 자동 업데이트 실패:", err);
+					});
+				}
+
+			} else if (items.length > 0) {
+				statusEl.innerHTML = '<span class="badge bg-danger">재심사 필요</span>';
+				if (titleStatusEl) titleStatusEl.innerHTML = '<span class="badge bg-danger">재심사 필요</span>';
+			}
+
+			var tbody = document.getElementById("surveyAnswerBody");
+			var rowHtml = "";
+			items.forEach(function (a, idx) {
+				var r = RESULT_MAP[a.result] || { text: a.result || "-", badge: "bg-secondary" };
+				rowHtml += '<tr data-result="' + (a.result || "") + '">';
+				rowHtml += '<td class="text-center survey-row-num">' + (idx + 1) + '</td>';
+				rowHtml += '<td>' + escapeHtml(a.userName) + ' <span class="text-muted small">(' + escapeHtml(a.userEmail) + ')</span></td>';
+				rowHtml += '<td><span class="badge ' + r.badge + '">' + r.text + '</span></td>';
+				rowHtml += '<td>' + a.submittedAt + '</td>';
+				rowHtml += '<td class="text-center">';
+				rowHtml += '<a href="survey?id=' + testId + '&userId=' + a.userId + '" class="btn btn-sm btn-outline-primary">';
+				rowHtml += '<i data-feather="eye" style="width:14px;height:14px;"></i>';
+				rowHtml += '</a>';
+				rowHtml += '</td>';
+				rowHtml += '<td class="text-center">';
+				rowHtml += '<button class="btn btn-sm btn-outline-danger btn-delete-answer" data-user-id="' + a.userId + '" data-user-name="' + escapeHtml(a.userName) + '">';
+				rowHtml += '<i data-feather="trash-2" style="width:14px;height:14px;"></i>';
+				rowHtml += '</button>';
+				rowHtml += '</td>';
+				rowHtml += '</tr>';
+			});
+			tbody.innerHTML = rowHtml;
+
+			var filterEl = document.getElementById("surveyResultFilter");
+			filterEl.innerHTML = "";
+
+			var allBtn = document.createElement("button");
+			allBtn.type = "button";
+			allBtn.className = "btn btn-sm btn-dark survey-pill active";
+			allBtn.textContent = "전체 " + items.length;
+			allBtn.setAttribute("data-filter", "");
+			filterEl.appendChild(allBtn);
+
+			var pillButtons = [allBtn];
+			Object.keys(counts).forEach(function (key) {
+				var r = RESULT_MAP[key] || { text: key, btn: "secondary" };
+				var btn = document.createElement("button");
+				btn.type = "button";
+				btn.className = "btn btn-sm btn-outline-" + r.btn + " survey-pill";
+				btn.textContent = r.text + " " + counts[key];
+				btn.setAttribute("data-filter", key);
+				filterEl.appendChild(btn);
+				pillButtons.push(btn);
+			});
+
+			function applyFilter(activeBtn) {
+				var filterVal = activeBtn.getAttribute("data-filter");
+				pillButtons.forEach(function (p) {
+					var f = p.getAttribute("data-filter");
+					var rm = RESULT_MAP[f];
+					if (f === "") {
+						p.className = "btn btn-sm btn-outline-dark survey-pill";
+					} else if (rm) {
+						p.className = "btn btn-sm btn-outline-" + rm.btn + " survey-pill";
+					}
+				});
+				if (filterVal === "") {
+					activeBtn.className = "btn btn-sm btn-dark survey-pill active";
+				} else {
+					var activeR = RESULT_MAP[filterVal];
+					if (activeR) activeBtn.className = "btn btn-sm btn-" + activeR.btn + " survey-pill active";
+				}
+
+				var num = 1;
+				var rows = tbody.querySelectorAll("tr[data-result]");
+				for (var i = 0; i < rows.length; i++) {
+					var row = rows[i];
+					if (filterVal === "" || row.getAttribute("data-result") === filterVal) {
+						row.style.display = "";
+						row.querySelector(".survey-row-num").textContent = num++;
+					} else {
+						row.style.display = "none";
+					}
+				}
+			}
+
+			for (var i = 0; i < pillButtons.length; i++) {
+				(function (btn) { btn.onclick = function () { applyFilter(btn); }; })(pillButtons[i]);
+			}
+
+			tbody.querySelectorAll(".btn-delete-answer").forEach(function (btn) {
+				btn.addEventListener("click", function () {
+					var userId = this.dataset.userId;
+					var userName = this.dataset.userName;
+					document.getElementById("deleteAnswerUserName").textContent = userName;
+					document.getElementById("btnConfirmDeleteAnswer").dataset.userId = userId;
+					document.getElementById("btnConfirmDeleteAnswer").dataset.testId = testId;
+					var modal = new bootstrap.Modal(document.getElementById("deleteAnswerModal"));
+					modal.show();
+				});
+			});
+
+			if (window.feather) feather.replace();
+		}
+
+		// ========== 유효성 검사 ==========
+		function validate() {
+			var valid = true;
+			var fields = [
+				{ id: "inputTitle", check: function (v) { return v.trim() !== ""; } },
+				{ id: "inputStartDate", check: function (v) { return !!v; } },
+				{ id: "inputEndDate", check: function (v) { return !!v; } },
+				{ id: "inputCategory", check: function (v) { return !!v; } }
+			];
+			fields.forEach(function (f) {
+				var el = document.getElementById(f.id);
+				if (!f.check(el.value)) { el.classList.add("is-invalid"); valid = false; }
+				else { el.classList.remove("is-invalid"); }
+			});
+			return valid;
+		}
+
+		// ========== 저장 공통 ==========
+		function saveIrb(isTemp) {
+			var testId = document.getElementById("irbTestId").value;
+			var refId = document.getElementById("irbTestIdRef").value;
+			var isReply = !!refId;
+			var isUpdate = !!testId;
+			var startDateEl = document.getElementById("inputStartDate");
+
+			var body = {
+				title: document.getElementById("inputTitle").value.trim(),
+				startDate: document.getElementById("inputStartDate").value,
+				endDate: document.getElementById("inputEndDate").value,
+				categoryId: parseInt(document.getElementById("inputCategory").value) || null,
+				status: document.querySelector('input[name="inputStatus"]:checked').value,
+				isTemp: isTemp ? 1 : 0,
+				emails: getSelectedRecipients(),
+				userId: currentUser ? currentUser.id : null,
+				depth: parseInt(document.getElementById("irbDepth").value) || 0
+			};
+
+			var url, method;
+			if (isReply) {
+				url = "/api/irbs/" + refId + "/reply";
+				method = "POST";
+			} else if (isUpdate) {
+				url = "/api/irbs/" + testId;
+				method = "PUT";
+			} else {
+				url = "/api/irbs";
+				method = "POST";
+			}
+
+			var btnSave = document.getElementById("btnSave");
+			var btnTemp = document.getElementById("btnSaveTemp");
+			btnSave.disabled = true;
+			btnTemp.disabled = true;
+
+			fetch(url, {
+				method: method,
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(body)
+			})
+			.then(function (res) {
+				if (!res.ok) throw new Error("저장 실패: " + res.status);
+				return res.json();
+			})
+			.then(function (saved) {
+				var entityId = saved.id;
+				var pendingFiles = attachMgr.getPendingFiles();
+				var existingFiles = attachMgr.getExistingFiles();
+				var uploadPromise = pendingFiles.length > 0 ? uploadAttachments(entityId, pendingFiles) : Promise.resolve();
+				var deletePromise = isUpdate ? deleteRemovedAttachments(originalFiles, existingFiles) : Promise.resolve();
+				return Promise.all([uploadPromise, deletePromise]);
+			})
+			.then(function () {
+				location.href = "list";
+			})
+			.catch(function (err) {
+				alert("저장 중 오류가 발생했습니다.\n" + err.message);
+			})
+			.finally(function () {
+				btnSave.disabled = false;
+				btnTemp.disabled = false;
+			});
+		}
+
+		// ========== 초기화 ==========
+		document.addEventListener("DOMContentLoaded", function () {
+			var params = new URLSearchParams(window.location.search);
+			var id = params.get("id");
+
+			Promise.all([loadCategories(), loadProfessors(), loadCurrentUser()])
+				.then(function () {
+					populateCategoryDropdown();
+					renderEmailCheckboxes();
+
+					if (id) {
+						return loadDetail(parseInt(id));
+					} else {
+						showCreateMode();
+						return null;
+					}
+				})
+				.then(function (data) {
+					if (data) {
+						showViewMode(data);
+					}
+				})
+				.catch(function (err) {
+					console.error("초기화 실패:", err);
+				});
+
+			// 임시저장 목록 모달
+			document.getElementById("btnTempList").addEventListener("click", function () {
+				var modal = new bootstrap.Modal(document.getElementById("tempListModal"));
+				modal.show();
+			});
+
+			// 첨부파일 추가 버튼 바인딩
+			attachMgr.bindAddButton();
+
+			// 전체 선택 / 전체 해제
+			document.getElementById("btnCheckAll").addEventListener("click", function () {
+				document.querySelectorAll("#emailRecipientList input[type='checkbox']").forEach(function (cb) { cb.checked = true; });
+			});
+			document.getElementById("btnUncheckAll").addEventListener("click", function () {
+				document.querySelectorAll("#emailRecipientList input[type='checkbox']").forEach(function (cb) { cb.checked = false; });
+			});
+
+			// 입력 시 에러 초기화 (inputStartDate는 아래에서 별도 처리)
+			["inputTitle", "inputEndDate", "inputCategory"].forEach(function (elId) {
+				var el = document.getElementById(elId);
+				el.addEventListener("input", function () { this.classList.remove("is-invalid"); });
+				el.addEventListener("change", function () { this.classList.remove("is-invalid"); });
+			});
+
+
+			function bindStartDateEvent() {
+				var el = document.getElementById("inputStartDate");
+				
+				function handleStartDate() {
+					el.classList.remove("is-invalid");
+					var val = el.value;
+					if (val && val.length === 10) {
+						document.getElementById("inputEndDate").value = getOneMonthLater(val); // 항상 갱신
+					}
+				}
+
+				el.addEventListener("change", handleStartDate);
+				el.addEventListener("blur", handleStartDate);
+			}
+
+			bindStartDateEvent();
+
+			// 수정 버튼
+			document.getElementById("btnEditMode").addEventListener("click", function () {
+				if (currentData) showEditMode(currentData);
+			});
+
+			// 답글 버튼
+			document.getElementById("btnReply").addEventListener("click", function () {
+				if (currentData) showReplyMode(currentData);
+			});
+
+			// 작성완료
+			document.getElementById("btnSave").addEventListener("click", function () {
+				if (!validate()) return;
+				saveIrb(false);
+			});
+
+			// 임시저장
+			document.getElementById("btnSaveTemp").addEventListener("click", function () {
+				var titleInput = document.getElementById("inputTitle");
+				if (!titleInput.value.trim()) {
+					titleInput.classList.add("is-invalid");
+					return;
+				}
+				saveIrb(true);
+			});
+
+			// 삭제 확인
+			document.getElementById("btnConfirmDelete").addEventListener("click", function () {
+				var deleteId = currentData ? currentData.id : id;
+				if (!deleteId) return;
+				this.disabled = true;
+				var self = this;
+				fetch("/api/irbs/" + deleteId, { method: "DELETE" })
+					.then(function () { location.href = "list"; })
+					.catch(function () { alert("삭제 중 오류가 발생했습니다."); })
+					.finally(function () { self.disabled = false; });
+			});
+
+			// 심사참여 삭제 확인
+			document.getElementById("btnConfirmDeleteAnswer").addEventListener("click", function () {
+				var userId = this.dataset.userId;
+				var testId = this.dataset.testId;
+				if (!userId || !testId) return;
+
+				this.disabled = true;
+				var self = this;
+				fetch("/api/irb-surveys/" + testId + "?userId=" + userId, { method: "DELETE" })
+					.then(function (res) {
+						if (!res.ok) throw new Error("삭제 실패");
+						var modal = bootstrap.Modal.getInstance(document.getElementById("deleteAnswerModal"));
+						if (modal) modal.hide();
+						return loadSurveyAnswers(parseInt(testId));
+					})
+					.then(function (surveys) {
+						renderSurveyAnswerList(parseInt(testId), surveys);
+					})
+					.catch(function () { alert("심사참여 삭제 중 오류가 발생했습니다."); })
+					.finally(function () { self.disabled = false; });
+			});
+		});
+	</script>
+</body>
+
+</html>

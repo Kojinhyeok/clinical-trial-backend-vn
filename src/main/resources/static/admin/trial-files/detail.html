@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+	<link rel="preconnect" href="https://fonts.gstatic.com">
+	<link rel="shortcut icon" href="../img/icons/icon-48x48.png" />
+
+	<title>다운로드 - Human Clinical 관리자</title>
+
+	<link href="../css/app.css" rel="stylesheet">
+	<link href="../css/custom.css" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body data-page="trial-files-list" data-base="../">
+	<div class="wrapper">
+
+		<div id="sidebar-container"></div>
+
+		<div class="main">
+			<div id="header-container"></div>
+
+			<main class="content">
+				<div class="container-fluid p-0">
+
+					<div class="d-flex justify-content-between align-items-center mb-3">
+						<h1 class="h3 mb-0"><strong id="pageTitle">다운로드 등록</strong></h1>
+						<a href="list" class="btn btn-outline-secondary">
+							<i class="align-middle" data-feather="arrow-left" style="width:14px;height:14px;"></i>
+							<span class="align-middle ms-1">목록으로</span>
+						</a>
+					</div>
+
+					<!-- 상세 보기 모드 -->
+					<div class="card detail-view" id="viewMode" style="display:none;">
+						<div class="card-body">
+							<div class="mb-3">
+								<label class="form-label text-muted">제목</label>
+								<p class="form-control-plaintext fw-bold fs-5" id="viewTitle"></p>
+							</div>
+							<div class="row mb-3">
+								<div class="col-md-3">
+									<label class="form-label text-muted">공지 여부</label>
+									<p id="viewNotice"></p>
+								</div>
+								<div class="col-md-3">
+									<label class="form-label text-muted">상태</label>
+									<p id="viewStatus"></p>
+								</div>
+								<div class="col-md-3">
+									<label class="form-label text-muted">등록일</label>
+									<p class="form-control-plaintext" id="viewCreatedAt"></p>
+								</div>
+								<div class="col-md-3">
+									<label class="form-label text-muted">수정일</label>
+									<p class="form-control-plaintext" id="viewUpdatedAt"></p>
+								</div>
+							</div>
+							<div class="mb-3">
+								<label class="form-label text-muted">본문</label>
+								<div class="content-display" id="viewContent"></div>
+							</div>
+
+							<!-- 첨부파일 보기 -->
+							<div class="mb-0">
+								<label class="form-label text-muted">첨부파일</label>
+								<div id="viewAttachments"></div>
+							</div>
+						</div>
+						<div class="card-footer d-flex gap-2">
+							<button class="btn btn-primary" id="btnEditMode">
+								<i class="align-middle" data-feather="edit-2" style="width:14px;height:14px;"></i>
+								<span class="align-middle ms-1">수정</span>
+							</button>
+							<button class="btn btn-danger" id="btnDeleteView" data-bs-toggle="modal" data-bs-target="#deleteModal">
+								<i class="align-middle" data-feather="trash-2" style="width:14px;height:14px;"></i>
+								<span class="align-middle ms-1">삭제</span>
+							</button>
+						</div>
+					</div>
+
+					<!-- 등록/수정 폼 -->
+					<div class="card" id="editMode">
+						<div class="card-body">
+							<input type="hidden" id="filePostId">
+
+							<div class="mb-3">
+								<label class="form-label" for="inputTitle">제목 <span class="text-danger">*</span></label>
+								<input type="text" class="form-control" id="inputTitle" placeholder="제목을 입력하세요">
+								<div class="invalid-feedback">제목을 입력해주세요.</div>
+							</div>
+
+							<div class="mb-3">
+								<div class="form-check">
+									<input class="form-check-input" type="checkbox" id="inputNotice">
+									<label class="form-check-label" for="inputNotice">공지글로 등록</label>
+								</div>
+							</div>
+
+							<div class="mb-3">
+								<label class="form-label">본문 <span class="text-danger">*</span></label>
+								<div id="editor"></div>
+								<div class="text-danger small mt-1" id="editorError" style="display:none;">본문 내용을 입력해주세요.</div>
+							</div>
+
+							<hr>
+
+							<!-- 첨부파일 업로드 -->
+							<div class="mb-3">
+								<label class="form-label">첨부파일</label>
+								<div id="attachmentList"></div>
+								<div class="d-flex gap-2 mt-2">
+									<input type="file" class="form-control" id="inputAttachment" multiple>
+									<button type="button" class="btn btn-outline-primary flex-shrink-0" id="btnAddAttachment">
+										<i class="align-middle" data-feather="plus" style="width:14px;height:14px;"></i>
+										<span class="align-middle ms-1">추가</span>
+									</button>
+								</div>
+								<div class="form-text">파일을 선택한 뒤 [추가] 버튼을 누르면 목록에 추가됩니다. 여러 파일을 한번에 선택할 수도 있습니다.</div>
+							</div>
+						</div>
+						<div class="card-footer d-flex gap-2">
+							<button class="btn btn-primary" id="btnSave">
+								<i class="align-middle" data-feather="save" style="width:14px;height:14px;"></i>
+								<span class="align-middle ms-1">게시</span>
+							</button>
+							<button class="btn btn-outline-secondary" id="btnSaveTemp">
+								<i class="align-middle" data-feather="file" style="width:14px;height:14px;"></i>
+								<span class="align-middle ms-1">임시저장</span>
+							</button>
+							<button class="btn btn-danger ms-auto" id="btnDeleteEdit" data-bs-toggle="modal" data-bs-target="#deleteModal" style="display:none;">
+								<i class="align-middle" data-feather="trash-2" style="width:14px;height:14px;"></i>
+								<span class="align-middle ms-1">삭제</span>
+							</button>
+						</div>
+					</div>
+
+				</div>
+			</main>
+
+			<footer class="footer">
+				<div class="container-fluid">
+					<div class="row text-muted">
+						<div class="col-12 text-start">
+							<p class="mb-0">&copy; Human Clinical</p>
+						</div>
+					</div>
+				</div>
+			</footer>
+		</div>
+	</div>
+
+	<!-- 삭제 확인 모달 -->
+	<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-sm">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="deleteModalLabel">게시글 삭제</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<p>이 게시글을 삭제하시겠습니까?</p>
+					<p class="text-danger small mb-0">첨부파일도 함께 삭제됩니다. 이 작업은 되돌릴 수 없습니다.</p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+					<button type="button" class="btn btn-danger" id="btnConfirmDelete">삭제</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../js/app.js"></script>
+	<script src="../js/common.js"></script>
+	<script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/super-build/ckeditor.js"></script>
+	<script src="../js/ckeditor-config.js"></script>
+	<script src="../js/admin-utils.js"></script>
+	<script>
+		var ENTITY_TYPE = "TRIAL_FILE";
+		var editorMgr = AdminUtils.createEditorManager("editor", ENTITY_TYPE);
+		var attMgr = AdminUtils.createAttachmentManager();
+		var currentData = null;
+		var currentUserId = null;
+
+		function fetchCurrentUser() {
+			return fetch("/api/auth/current-user")
+				.then(function (res) { return res.ok ? res.json() : null; })
+				.then(function (user) { if (user && user.id) currentUserId = user.id; })
+				.catch(function () { currentUserId = null; });
+		}
+
+		/**
+		 * 첨부파일 Presigned URL 업로드
+		 * 각 파일을 /api/files/upload-link → S3 PUT 순서로 업로드
+		 * @param {Long} entityId - 게시글 ID
+		 * @param {File[]} files - 업로드할 파일 배열
+		 * @returns {Promise} - 모든 파일 업로드 완료 시 resolve
+		 */
+		function uploadAttachments(entityId, files) {
+			var promises = files.map(function (file) {
+				return fetch("/api/files/upload-link", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						entityType: ENTITY_TYPE,
+						entityId: entityId,
+						fileCategory: "ATTACHMENT",
+						originalFilename: file.name,
+						mimeType: file.type,
+						fileSize: file.size
+					})
+				})
+				.then(function (res) { return res.json(); })
+				.then(function (data) {
+					return fetch(data.uploadUrl, {
+						method: "PUT",
+						headers: { "Content-Type": file.type },
+						body: file
+					});
+				});
+			});
+			return Promise.all(promises);
+		}
+
+		/**
+		 * 삭제된 기존 첨부파일 제거
+		 * @param {Object[]} originalFiles - 원본 첨부파일 목록
+		 * @param {Object[]} remainingFiles - 남아있는 첨부파일 목록
+		 */
+		function deleteRemovedAttachments(originalFiles, remainingFiles) {
+			var remainingIds = remainingFiles.map(function (f) { return f.id; });
+			var toDelete = originalFiles.filter(function (f) {
+				return remainingIds.indexOf(f.id) === -1;
+			});
+			var promises = toDelete.map(function (f) {
+				return fetch("/api/files/" + f.id, { method: "DELETE" });
+			});
+			return Promise.all(promises);
+		}
+
+		/**
+		 * API 첨부파일 → AttachmentManager 포맷 변환
+		 */
+		function mapAttachments(apiFiles) {
+			if (!apiFiles) return [];
+			return apiFiles.map(function (f) {
+				return { id: f.id, name: f.originalFilename, size: f.fileSize, downloadUrl: f.s3Url };
+			});
+		}
+
+		document.addEventListener("DOMContentLoaded", function () {
+			var params = new URLSearchParams(window.location.search);
+			var id = params.get("id");
+
+			AdminUtils.bindTitleErrorClear();
+			attMgr.bindAddButton();
+
+			fetchCurrentUser().then(function () {
+				if (id) {
+					loadDetail(id);
+				} else {
+					showCreateMode();
+				}
+			});
+
+			// ===== 상세 데이터 로드 =====
+			function loadDetail(postId) {
+				fetch("/api/trial-files/" + postId)
+					.then(function (res) {
+						if (!res.ok) throw new Error("NOT_FOUND");
+						return res.json();
+					})
+					.then(function (data) {
+						currentData = data;
+						showViewMode(data);
+					})
+					.catch(function () {
+						alert("게시글을 찾을 수 없습니다.");
+						location.href = "list";
+					});
+			}
+
+			// ===== 상세 보기 모드 =====
+			function showViewMode(data) {
+				document.getElementById("pageTitle").textContent = "다운로드 상세";
+				document.getElementById("viewMode").style.display = "";
+				document.getElementById("editMode").style.display = "none";
+
+				document.getElementById("viewTitle").textContent = data.title;
+				document.getElementById("viewCreatedAt").textContent = AdminUtils.formatDate(data.createdAt);
+				document.getElementById("viewUpdatedAt").textContent = AdminUtils.formatDate(data.updatedAt);
+				document.getElementById("viewContent").innerHTML = data.content;
+
+				if (data.isNotification) {
+					document.getElementById("viewNotice").innerHTML = '<span class="badge bg-danger">공지</span>';
+				} else {
+					document.getElementById("viewNotice").innerHTML = '<span class="badge bg-secondary">일반</span>';
+				}
+
+				if (data.isTemp) {
+					document.getElementById("viewStatus").innerHTML = '<span class="badge bg-warning text-dark">임시저장</span>';
+				} else {
+					document.getElementById("viewStatus").innerHTML = '<span class="badge bg-success">게시</span>';
+				}
+
+				attMgr.renderView(mapAttachments(data.attachedFiles));
+				if (window.feather) feather.replace();
+			}
+
+			// ===== 등록 모드 =====
+			function showCreateMode() {
+				document.getElementById("pageTitle").textContent = "다운로드 등록";
+				document.getElementById("viewMode").style.display = "none";
+				document.getElementById("editMode").style.display = "";
+				document.getElementById("btnDeleteEdit").style.display = "none";
+				attMgr.reset([]);
+				editorMgr.init("");
+			}
+
+			// ===== 수정 모드 =====
+			function showEditMode(data) {
+				document.getElementById("pageTitle").textContent = "다운로드 수정";
+				document.getElementById("viewMode").style.display = "none";
+				document.getElementById("editMode").style.display = "";
+				document.getElementById("btnDeleteEdit").style.display = "";
+
+				document.getElementById("filePostId").value = data.id;
+				document.getElementById("inputTitle").value = data.title;
+				document.getElementById("inputNotice").checked = !!data.isNotification;
+
+				editorMgr.init(data.content);
+				attMgr.reset(mapAttachments(data.attachedFiles));
+			}
+
+			// 수정 버튼
+			document.getElementById("btnEditMode").addEventListener("click", function () {
+				if (currentData) {
+					showEditMode(currentData);
+				}
+			});
+
+			// ===== 저장 처리 (게시 / 임시저장 공용) =====
+			function savePost(isTemp) {
+				var postId = document.getElementById("filePostId").value;
+				var title = document.getElementById("inputTitle").value.trim();
+				var content = editorMgr.getData();
+				var isNotice = document.getElementById("inputNotice").checked;
+
+				var body = {
+					userId: currentUserId,
+					title: title,
+					content: content,
+					isTemp: isTemp,
+					isNotification: isNotice
+				};
+
+				var apiPromise;
+				if (postId) {
+					apiPromise = fetch("/api/trial-files/" + postId, {
+						method: "PUT",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify(body)
+					});
+				} else {
+					apiPromise = fetch("/api/trial-files", {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify(body)
+					});
+				}
+
+				return apiPromise
+					.then(function (res) {
+						if (!res.ok) throw new Error("저장 실패");
+						return res.json();
+					})
+					.then(function (savedData) {
+						var savedId = savedData.id;
+						var pendingFiles = attMgr.getPendingFiles();
+						var existingFiles = attMgr.getExistingFiles();
+
+						var tasks = [];
+
+						// 신규 첨부파일 업로드
+						if (pendingFiles.length > 0) {
+							tasks.push(uploadAttachments(savedId, pendingFiles));
+						}
+
+						// 수정 시 삭제된 기존 첨부파일 처리
+						if (postId && currentData && currentData.attachedFiles) {
+							var originalFiles = mapAttachments(currentData.attachedFiles);
+							tasks.push(deleteRemovedAttachments(originalFiles, existingFiles));
+						}
+
+						return Promise.all(tasks);
+					});
+			}
+
+			// ===== 게시 저장 =====
+			document.getElementById("btnSave").addEventListener("click", function () {
+				if (!AdminUtils.validateTitleAndContent(editorMgr)) return;
+
+				var btn = this;
+				btn.disabled = true;
+
+				savePost(false)
+					.then(function () {
+						alert("게시글이 저장되었습니다.");
+						location.href = "list";
+					})
+					.catch(function (err) {
+						alert("저장 중 오류가 발생했습니다: " + err.message);
+						btn.disabled = false;
+					});
+			});
+
+			// ===== 임시 저장 =====
+			document.getElementById("btnSaveTemp").addEventListener("click", function () {
+				var titleInput = document.getElementById("inputTitle");
+				if (!titleInput.value.trim()) {
+					titleInput.classList.add("is-invalid");
+					return;
+				}
+
+				var btn = this;
+				btn.disabled = true;
+
+				savePost(true)
+					.then(function () {
+						alert("임시저장되었습니다.");
+						location.href = "list";
+					})
+					.catch(function (err) {
+						alert("저장 중 오류가 발생했습니다: " + err.message);
+						btn.disabled = false;
+					});
+			});
+
+			// ===== 삭제 확인 =====
+			document.getElementById("btnConfirmDelete").addEventListener("click", function () {
+				if (!id) return;
+
+				var btn = this;
+				btn.disabled = true;
+
+				fetch("/api/trial-files/" + id, { method: "DELETE" })
+					.then(function (res) {
+						if (!res.ok) throw new Error("삭제 실패");
+						alert("게시글이 삭제되었습니다.");
+						location.href = "list";
+					})
+					.catch(function (err) {
+						alert("삭제 중 오류가 발생했습니다: " + err.message);
+						btn.disabled = false;
+					});
+			});
+		});
+	</script>
+</body>
+
+</html>

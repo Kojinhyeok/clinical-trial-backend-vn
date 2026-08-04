@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+	<link rel="preconnect" href="https://fonts.gstatic.com">
+	<link rel="shortcut icon" href="../img/icons/icon-48x48.png" />
+
+	<title>누적 데이터 관리 - Human Clinical 관리자</title>
+
+	<link href="../css/app.css" rel="stylesheet">
+	<link href="../css/custom.css" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body data-page="cumulative-data" data-base="../">
+	<div class="wrapper">
+
+		<div id="sidebar-container"></div>
+
+		<div class="main">
+			<div id="header-container"></div>
+
+			<main class="content">
+				<div class="container-fluid p-0">
+
+					<div class="d-flex justify-content-between align-items-center mb-3">
+						<h1 class="h3 mb-0"><strong>누적 데이터 관리</strong></h1>
+						<!-- <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">
+							<i class="align-middle" data-feather="plus"></i>
+							<span class="align-middle ms-1">등록</span>
+						</button> -->
+					</div>
+
+					<!-- 누적 데이터 목록 -->
+					<div class="card">
+						<div class="card-header">
+							<h5 class="card-title mb-0">누적 데이터 목록</h5>
+						</div>
+						<table class="table table-hover my-0" id="dataTable">
+							<thead>
+								<tr>
+									<th>썸네일</th>
+									<th>데이터 유형</th>
+									<th>수치</th>
+									<th class="d-none d-md-table-cell">등록일</th>
+									<th class="d-none d-md-table-cell">수정일</th>
+									<th class="text-center">관리</th>
+								</tr>
+							</thead>
+							<tbody>
+							</tbody>
+						</table>
+						<div class="card-footer d-flex justify-content-between align-items-center">
+							<span class="text-muted small" id="pageInfo"></span>
+							<nav><ul class="pagination pagination-sm mb-0" id="pageNav"></ul></nav>
+						</div>
+					</div>
+
+				</div>
+			</main>
+
+			<footer class="footer">
+				<div class="container-fluid">
+					<div class="row text-muted">
+						<div class="col-12 text-start">
+							<p class="mb-0">&copy; Human Clinical</p>
+						</div>
+					</div>
+				</div>
+			</footer>
+		</div>
+	</div>
+
+	<!-- 등록 모달 -->
+	<div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="createModalLabel">누적 데이터 등록</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<div class="mb-3">
+						<label class="form-label" for="createType">데이터 유형 <span class="text-danger">*</span></label>
+						<input type="text" class="form-control" id="createType" placeholder="예: 누적 시험 건 수" maxlength="50">
+						<div class="invalid-feedback">데이터 유형을 입력해주세요.</div>
+					</div>
+					<div class="mb-3">
+						<label class="form-label" for="createCount">수치</label>
+						<input type="number" class="form-control" id="createCount" value="0" min="0">
+					</div>
+					<div class="mb-3">
+						<label class="form-label" for="createImage">썸네일 <span class="text-danger">*</span> <span class="text-muted small">(file_category: THUMBNAIL)</span></label>
+						<input type="file" class="form-control" id="createImage" accept="image/*">
+						<div class="invalid-feedback">썸네일 이미지를 선택해주세요.</div>
+						<div class="mt-2" id="createPreviewWrap" style="display:none;">
+							<img id="createPreview" src="" alt="미리보기" style="max-width:100%;max-height:200px;border-radius:4px;">
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+					<button type="button" class="btn btn-primary" id="btnCreate">등록</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 수정 모달 -->
+	<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="editModalLabel">누적 데이터 수정</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<input type="hidden" id="editId">
+					<div class="mb-3">
+						<label class="form-label" for="editType">데이터 유형 <span class="text-danger">*</span></label>
+						<input type="text" class="form-control" id="editType" maxlength="50">
+						<div class="invalid-feedback">데이터 유형을 입력해주세요.</div>
+					</div>
+					<div class="mb-3">
+						<label class="form-label" for="editCount">수치</label>
+						<input type="number" class="form-control" id="editCount" min="0">
+					</div>
+					<div class="mb-3">
+						<label class="form-label">현재 썸네일</label>
+						<div class="mb-2">
+							<img id="editCurrentImg" src="" alt="현재 썸네일" style="max-width:100%;max-height:200px;border-radius:4px;">
+						</div>
+						<label class="form-label" for="editImage">썸네일 변경 <span class="text-muted small">(file_category: THUMBNAIL)</span></label>
+						<input type="file" class="form-control" id="editImage" accept="image/*">
+						<div class="form-text">변경하려면 새 이미지를 선택하세요.</div>
+						<div class="mt-2" id="editPreviewWrap" style="display:none;">
+							<img id="editPreview" src="" alt="새 이미지 미리보기" style="max-width:100%;max-height:200px;border-radius:4px;">
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+					<button type="button" class="btn btn-primary" id="btnSaveEdit">저장</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 삭제 확인 모달 -->
+	<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-sm">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="deleteModalLabel">누적 데이터 삭제</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<input type="hidden" id="deleteId">
+					<p><strong id="deleteType"></strong> 데이터를 삭제하시겠습니까?</p>
+					<p class="text-danger small mb-0">이 작업은 되돌릴 수 없습니다.</p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+					<button type="button" class="btn btn-danger" id="btnConfirmDelete">삭제</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 이미지 라이트박스 모달 -->
+	<div class="modal fade" id="lightboxModal" tabindex="-1" aria-hidden="true">
+		<div class="modal-dialog" style="max-width:720px;">
+			<div class="modal-content" style="background:transparent;border:none;box-shadow:none;">
+				<div class="modal-header" style="border:none;padding:0 0 0.5rem 0;">
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+						style="filter:invert(1);opacity:0.8;"></button>
+				</div>
+				<div class="modal-body text-center p-0">
+					<img id="lightboxImg" src="" alt="썸네일 이미지"
+						style="max-width:100%;max-height:75vh;border-radius:8px;">
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../js/app.js"></script>
+	<script src="../js/pagination.js"></script>
+	<script src="../js/admin-utils.js"></script>
+	<script src="../js/common.js"></script>
+	<script>
+		var allData = [];
+		var NO_IMAGE = "../img/icons/icon-48x48.png";
+
+		// 이미지 미리보기 공통 함수
+		function bindImagePreview(inputId, previewId, wrapId) {
+			document.getElementById(inputId).addEventListener("change", function () {
+				var file = this.files[0];
+				var wrap = document.getElementById(wrapId);
+				var preview = document.getElementById(previewId);
+				if (file && file.type.startsWith("image/")) {
+					var reader = new FileReader();
+					reader.onload = function (e) {
+						preview.src = e.target.result;
+						wrap.style.display = "block";
+					};
+					reader.readAsDataURL(file);
+					this.classList.remove("is-invalid");
+				} else {
+					wrap.style.display = "none";
+				}
+			});
+		}
+
+		// S3 Presigned URL 이미지 업로드
+		function uploadImage(file, entityId) {
+			return fetch("/api/files/upload-link", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					entityType: "CUMULATIVE_DATA",
+					entityId: entityId,
+					fileCategory: "THUMBNAIL",
+					originalFilename: file.name,
+					mimeType: file.type,
+					fileSize: file.size
+				})
+			})
+			.then(function (res) {
+				if (!res.ok) throw new Error("upload-link 요청 실패");
+				return res.json();
+			})
+			.then(function (data) {
+				return fetch(data.uploadUrl, {
+					method: "PUT",
+					headers: { "Content-Type": file.type },
+					body: file
+				}).then(function () {
+					return data.id;
+				});
+			});
+		}
+
+		// 숫자 포맷 (천 단위 콤마)
+		function formatNumber(num) {
+			return (num || 0).toLocaleString();
+		}
+
+		// 목록 로드
+		function loadData() {
+			fetch("/api/statistics/cumulative")
+				.then(function (res) { return res.json(); })
+				.then(function (data) {
+					allData = data || [];
+					renderTable();
+				})
+				.catch(function () {
+					console.error("누적 데이터 로드 실패");
+				});
+		}
+
+		// 테이블 렌더링
+		function renderTable() {
+			var tbody = document.querySelector("#dataTable tbody");
+			if (!allData.length) {
+				tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">등록된 누적 데이터가 없습니다.</td></tr>';
+				initPagination({ tableId: "dataTable", perPage: 10, infoId: "pageInfo", navId: "pageNav" });
+				return;
+			}
+
+			var html = "";
+			allData.forEach(function (d) {
+				var imgSrc = d.imageUrl || NO_IMAGE;
+				html += '<tr data-type="' + (d.dataType || '') + '">' +
+					'<td>' +
+						'<img src="' + imgSrc + '" alt="' + (d.dataType || '') + '" ' +
+						'style="width:60px;height:60px;object-fit:cover;border-radius:4px;cursor:pointer;" ' +
+						'data-bs-toggle="modal" data-bs-target="#lightboxModal">' +
+					'</td>' +
+					'<td>' + (d.dataType || '') + '</td>' +
+					'<td>' + formatNumber(d.dataCount) + '</td>' +
+					'<td class="d-none d-md-table-cell">' + AdminUtils.formatDate(d.createdAt) + '</td>' +
+					'<td class="d-none d-md-table-cell">' + AdminUtils.formatDate(d.updatedAt) + '</td>' +
+					'<td class="text-center">' +
+						'<button class="btn btn-sm btn-outline-primary me-1 btn-edit" ' +
+							'data-bs-toggle="modal" data-bs-target="#editModal" ' +
+							'data-id="' + d.id + '" data-type="' + (d.dataType || '').replace(/"/g, '&quot;') + '" ' +
+							'data-count="' + (d.dataCount || 0) + '" ' +
+							'data-img="' + imgSrc + '">' +
+							'<i class="align-middle" data-feather="edit-2" style="width:14px;height:14px;"></i>' +
+						'</button>' +
+						'<button class="btn btn-sm btn-outline-danger btn-delete" ' +
+							'data-bs-toggle="modal" data-bs-target="#deleteModal" ' +
+							'data-id="' + d.id + '" data-type="' + (d.dataType || '').replace(/"/g, '&quot;') + '">' +
+							'<i class="align-middle" data-feather="trash-2" style="width:14px;height:14px;"></i>' +
+						'</button>' +
+					'</td>' +
+				'</tr>';
+			});
+
+			tbody.innerHTML = html;
+			if (window.feather) feather.replace();
+			initPagination({ tableId: "dataTable", perPage: 10, infoId: "pageInfo", navId: "pageNav" });
+		}
+
+		document.addEventListener("DOMContentLoaded", function () {
+			// 데이터 로드
+			loadData();
+
+			// 이미지 미리보기 바인딩
+			bindImagePreview("createImage", "createPreview", "createPreviewWrap");
+			bindImagePreview("editImage", "editPreview", "editPreviewWrap");
+
+			// 라이트박스 모달
+			document.getElementById("lightboxModal").addEventListener("show.bs.modal", function (e) {
+				var trigger = e.relatedTarget;
+				if (trigger && trigger.tagName === "IMG") {
+					document.getElementById("lightboxImg").src = trigger.src;
+				}
+			});
+
+			// 등록 모달 열릴 때 초기화
+			document.getElementById("createModal").addEventListener("show.bs.modal", function () {
+				document.getElementById("createType").value = "";
+				document.getElementById("createCount").value = 0;
+				document.getElementById("createImage").value = "";
+				document.getElementById("createPreviewWrap").style.display = "none";
+				document.getElementById("createType").classList.remove("is-invalid");
+				document.getElementById("createImage").classList.remove("is-invalid");
+			});
+
+			// 등록
+			document.getElementById("btnCreate").addEventListener("click", function () {
+				var btn = this;
+				var typeInput = document.getElementById("createType");
+				var countInput = document.getElementById("createCount");
+				var imageInput = document.getElementById("createImage");
+				var valid = true;
+
+				if (!typeInput.value.trim()) { typeInput.classList.add("is-invalid"); valid = false; }
+				else { typeInput.classList.remove("is-invalid"); }
+
+				if (!imageInput.files.length) { imageInput.classList.add("is-invalid"); valid = false; }
+				else { imageInput.classList.remove("is-invalid"); }
+
+				if (!valid) return;
+
+				btn.disabled = true;
+				btn.textContent = "등록 중...";
+
+				fetch("/api/statistics/cumulative", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						dataType: typeInput.value.trim(),
+						dataCount: parseInt(countInput.value) || 0
+					})
+				})
+				.then(function (res) {
+					if (!res.ok) throw new Error("등록 실패");
+					return res.json();
+				})
+				.then(function (saved) {
+					return uploadImage(imageInput.files[0], saved.id);
+				})
+				.then(function () {
+					document.querySelector('#createModal [data-bs-dismiss="modal"]').click();
+					loadData();
+				})
+				.catch(function (err) {
+					alert("등록 중 오류가 발생했습니다: " + err.message);
+				})
+				.finally(function () {
+					btn.disabled = false;
+					btn.textContent = "등록";
+				});
+			});
+
+			// 등록 입력 시 에러 초기화
+			document.getElementById("createType").addEventListener("input", function () {
+				this.classList.remove("is-invalid");
+			});
+
+			// 수정 모달 열릴 때 데이터 세팅
+			document.getElementById("editModal").addEventListener("show.bs.modal", function (e) {
+				var btn = e.relatedTarget;
+				document.getElementById("editId").value = btn.dataset.id;
+				document.getElementById("editType").value = btn.dataset.type;
+				document.getElementById("editCount").value = btn.dataset.count;
+				document.getElementById("editCurrentImg").src = btn.dataset.img;
+				document.getElementById("editPreviewWrap").style.display = "none";
+				document.getElementById("editImage").value = "";
+				document.getElementById("editType").classList.remove("is-invalid");
+			});
+
+			// 수정 저장
+			document.getElementById("btnSaveEdit").addEventListener("click", function () {
+				var btn = this;
+				var typeInput = document.getElementById("editType");
+				var countInput = document.getElementById("editCount");
+				var imageInput = document.getElementById("editImage");
+				var editId = document.getElementById("editId").value;
+
+				if (!typeInput.value.trim()) {
+					typeInput.classList.add("is-invalid");
+					return;
+				}
+				typeInput.classList.remove("is-invalid");
+
+				btn.disabled = true;
+				btn.textContent = "저장 중...";
+
+				fetch("/api/statistics/cumulative/" + editId, {
+					method: "PUT",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						dataType: typeInput.value.trim(),
+						dataCount: parseInt(countInput.value) || 0
+					})
+				})
+				.then(function (res) {
+					if (!res.ok) throw new Error("수정 실패");
+					return res.json();
+				})
+				.then(function (saved) {
+					if (imageInput.files.length) {
+						return uploadImage(imageInput.files[0], saved.id);
+					}
+				})
+				.then(function () {
+					document.querySelector('#editModal [data-bs-dismiss="modal"]').click();
+					loadData();
+				})
+				.catch(function (err) {
+					alert("수정 중 오류가 발생했습니다: " + err.message);
+				})
+				.finally(function () {
+					btn.disabled = false;
+					btn.textContent = "저장";
+				});
+			});
+
+			// 수정 입력 시 에러 초기화
+			document.getElementById("editType").addEventListener("input", function () {
+				this.classList.remove("is-invalid");
+			});
+
+			// 삭제 모달 열릴 때 데이터 세팅
+			document.getElementById("deleteModal").addEventListener("show.bs.modal", function (e) {
+				var btn = e.relatedTarget;
+				document.getElementById("deleteId").value = btn.dataset.id;
+				document.getElementById("deleteType").textContent = btn.dataset.type;
+			});
+
+			// 삭제 확인
+			document.getElementById("btnConfirmDelete").addEventListener("click", function () {
+				var btn = this;
+				var deleteId = document.getElementById("deleteId").value;
+
+				btn.disabled = true;
+				btn.textContent = "삭제 중...";
+
+				fetch("/api/statistics/cumulative/" + deleteId, { method: "DELETE" })
+					.then(function (res) {
+						if (!res.ok) throw new Error("삭제 실패");
+						document.querySelector('#deleteModal [data-bs-dismiss="modal"]').click();
+						loadData();
+					})
+					.catch(function (err) {
+						alert("삭제 중 오류가 발생했습니다: " + err.message);
+					})
+					.finally(function () {
+						btn.disabled = false;
+						btn.textContent = "삭제";
+					});
+			});
+		});
+	</script>
+</body>
+
+</html>

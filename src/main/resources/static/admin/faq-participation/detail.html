@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+	<link rel="preconnect" href="https://fonts.gstatic.com">
+	<link rel="shortcut icon" href="../img/icons/icon-48x48.png" />
+
+	<title>FAQ 관리 - Human Clinical 관리자</title>
+
+	<link href="../css/app.css" rel="stylesheet">
+	<link href="../css/custom.css" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+	<style>
+		.content-display { min-height: 100px; }
+	</style>
+</head>
+
+<body data-page="faq-participation-list" data-base="../">
+	<div class="wrapper">
+
+		<div id="sidebar-container"></div>
+
+		<div class="main">
+			<div id="header-container"></div>
+
+			<main class="content">
+				<div class="container-fluid p-0">
+
+					<div class="d-flex justify-content-between align-items-center mb-3">
+						<h1 class="h3 mb-0"><strong id="pageTitle">FAQ 등록</strong></h1>
+						<a href="list" class="btn btn-outline-secondary">
+							<i class="align-middle" data-feather="arrow-left" style="width:14px;height:14px;"></i>
+							<span class="align-middle ms-1">목록으로</span>
+						</a>
+					</div>
+
+					<!-- 상세 보기 모드 -->
+					<div class="card detail-view" id="viewMode" style="display:none;">
+						<div class="card-body">
+							<div class="row mb-3">
+								<div class="col-md-6">
+									<label class="form-label text-muted">표시 순서</label>
+									<p class="form-control-plaintext" id="viewOrder"></p>
+								</div>
+								<div class="col-md-3">
+									<label class="form-label text-muted">등록일</label>
+									<p class="form-control-plaintext" id="viewCreatedAt"></p>
+								</div>
+								<div class="col-md-3">
+									<label class="form-label text-muted">수정일</label>
+									<p class="form-control-plaintext" id="viewUpdatedAt"></p>
+								</div>
+							</div>
+							<div class="mb-3">
+								<label class="form-label text-muted">질문</label>
+								<p class="form-control-plaintext fw-bold fs-5" id="viewTitle"></p>
+							</div>
+							<div class="mb-3">
+								<label class="form-label text-muted">답변</label>
+								<div class="content-display" id="viewContent"></div>
+							</div>
+						</div>
+						<div class="card-footer d-flex gap-2">
+							<button class="btn btn-primary" id="btnEditMode">
+								<i class="align-middle" data-feather="edit-2" style="width:14px;height:14px;"></i>
+								<span class="align-middle ms-1">수정</span>
+							</button>
+							<button class="btn btn-danger" id="btnDeleteView" data-bs-toggle="modal" data-bs-target="#deleteModal">
+								<i class="align-middle" data-feather="trash-2" style="width:14px;height:14px;"></i>
+								<span class="align-middle ms-1">삭제</span>
+							</button>
+						</div>
+					</div>
+
+					<!-- 등록/수정 폼 -->
+					<div class="card" id="editMode">
+						<div class="card-body">
+							<input type="hidden" id="faqId">
+
+							<div class="mb-3">
+								<label class="form-label" for="inputTitle">질문 <span class="text-danger">*</span></label>
+								<input type="text" class="form-control" id="inputTitle" placeholder="질문을 입력하세요">
+								<div class="invalid-feedback">질문을 입력해주세요.</div>
+							</div>
+
+							<div class="mb-3">
+								<label class="form-label" for="inputContent">답변 <span class="text-danger">*</span></label>
+								<textarea class="form-control" id="inputContent" rows="6" placeholder="답변을 입력하세요"></textarea>
+								<div class="invalid-feedback">답변을 입력해주세요.</div>
+							</div>
+
+							<div class="mb-3">
+								<label class="form-label" for="inputOrder">표시 순서</label>
+								<input type="number" class="form-control" id="inputOrder" value="1" min="1" style="width:120px;">
+								<div class="form-text">숫자가 작을수록 먼저 표시됩니다.</div>
+							</div>
+						</div>
+						<div class="card-footer d-flex gap-2">
+							<button class="btn btn-primary" id="btnSave">
+								<i class="align-middle" data-feather="save" style="width:14px;height:14px;"></i>
+								<span class="align-middle ms-1">저장</span>
+							</button>
+							<button class="btn btn-danger ms-auto" id="btnDeleteEdit" data-bs-toggle="modal" data-bs-target="#deleteModal" style="display:none;">
+								<i class="align-middle" data-feather="trash-2" style="width:14px;height:14px;"></i>
+								<span class="align-middle ms-1">삭제</span>
+							</button>
+						</div>
+					</div>
+
+				</div>
+			</main>
+
+			<footer class="footer">
+				<div class="container-fluid">
+					<div class="row text-muted">
+						<div class="col-12 text-start">
+							<p class="mb-0">&copy; Human Clinical</p>
+						</div>
+					</div>
+				</div>
+			</footer>
+		</div>
+	</div>
+
+	<!-- 삭제 확인 모달 -->
+	<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-sm">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="deleteModalLabel">FAQ 삭제</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<p>이 FAQ를 삭제하시겠습니까?</p>
+					<p class="text-danger small mb-0">이 작업은 되돌릴 수 없습니다.</p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+					<button type="button" class="btn btn-danger" id="btnConfirmDelete">삭제</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../js/app.js"></script>
+	<script src="../js/common.js"></script>
+	<script src="../js/admin-utils.js"></script>
+	<script>
+		var FAQ_TYPE = "PARTICIPATION";
+		var currentData = null;
+
+		document.addEventListener("DOMContentLoaded", function () {
+			var params = new URLSearchParams(window.location.search);
+			var id = params.get("id");
+
+			if (id) {
+				loadDetail(id);
+			} else {
+				showCreateMode();
+			}
+
+			function loadDetail(faqId) {
+				fetch("/api/faqs/" + faqId)
+					.then(function (res) {
+						if (!res.ok) throw new Error("API 오류: " + res.status);
+						return res.json();
+					})
+					.then(function (data) {
+						currentData = data;
+						showViewMode(data);
+					})
+					.catch(function (err) {
+						console.error("FAQ 로딩 실패:", err);
+						alert("FAQ를 찾을 수 없습니다.");
+						location.href = "list";
+					});
+			}
+
+			function showViewMode(data) {
+				document.getElementById("pageTitle").textContent = "FAQ 상세";
+				document.getElementById("viewMode").style.display = "";
+				document.getElementById("editMode").style.display = "none";
+
+				document.getElementById("viewTitle").textContent = data.title;
+				document.getElementById("viewContent").textContent = data.content;
+				document.getElementById("viewOrder").textContent = data.displayOrder || 0;
+				document.getElementById("viewCreatedAt").textContent = AdminUtils.formatDate(data.createdAt);
+				document.getElementById("viewUpdatedAt").textContent = AdminUtils.formatDate(data.updatedAt);
+			}
+
+			function showCreateMode() {
+				document.getElementById("pageTitle").textContent = "FAQ 등록";
+				document.getElementById("viewMode").style.display = "none";
+				document.getElementById("editMode").style.display = "";
+				document.getElementById("btnDeleteEdit").style.display = "none";
+
+				// 기본 표시 순서: 기존 FAQ 중 마지막 순서 + 1
+				fetch("/api/faqs/participation")
+					.then(function (res) { return res.json(); })
+					.then(function (list) {
+						var maxOrder = 0;
+						(list || []).forEach(function (f) {
+							if (f.displayOrder > maxOrder) maxOrder = f.displayOrder;
+						});
+						document.getElementById("inputOrder").value = maxOrder + 1;
+					})
+					.catch(function () {
+						document.getElementById("inputOrder").value = 1;
+					});
+			}
+
+			function showEditMode(data) {
+				document.getElementById("pageTitle").textContent = "FAQ 수정";
+				document.getElementById("viewMode").style.display = "none";
+				document.getElementById("editMode").style.display = "";
+				document.getElementById("btnDeleteEdit").style.display = "";
+
+				document.getElementById("faqId").value = data.id;
+				document.getElementById("inputTitle").value = data.title;
+				document.getElementById("inputContent").value = data.content;
+				document.getElementById("inputOrder").value = data.displayOrder || 1;
+			}
+
+			document.getElementById("btnEditMode").addEventListener("click", function () {
+				if (currentData) {
+					showEditMode(currentData);
+				}
+			});
+
+			function validate() {
+				var valid = true;
+				var titleInput = document.getElementById("inputTitle");
+				var contentInput = document.getElementById("inputContent");
+
+				if (!titleInput.value.trim()) {
+					titleInput.classList.add("is-invalid");
+					valid = false;
+				} else {
+					titleInput.classList.remove("is-invalid");
+				}
+
+				if (!contentInput.value.trim()) {
+					contentInput.classList.add("is-invalid");
+					valid = false;
+				} else {
+					contentInput.classList.remove("is-invalid");
+				}
+
+				return valid;
+			}
+
+			document.getElementById("inputTitle").addEventListener("input", function () {
+				this.classList.remove("is-invalid");
+			});
+			document.getElementById("inputContent").addEventListener("input", function () {
+				this.classList.remove("is-invalid");
+			});
+
+			document.getElementById("btnSave").addEventListener("click", function () {
+				if (!validate()) return;
+
+				var faqId = document.getElementById("faqId").value;
+				var title = document.getElementById("inputTitle").value.trim();
+				var content = document.getElementById("inputContent").value.trim();
+				var order = parseInt(document.getElementById("inputOrder").value) || 1;
+
+				var body = {
+					faqType: FAQ_TYPE,
+					title: title,
+					content: content,
+					displayOrder: order
+				};
+
+				var url = faqId ? "/api/faqs/" + faqId : "/api/faqs";
+				var method = faqId ? "PUT" : "POST";
+
+				fetch(url, {
+					method: method,
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify(body)
+				})
+					.then(function (res) {
+						if (!res.ok) throw new Error("API 오류: " + res.status);
+						return res.json();
+					})
+					.then(function () {
+						alert(faqId ? "FAQ가 수정되었습니다." : "FAQ가 등록되었습니다.");
+						location.href = "list";
+					})
+					.catch(function (err) {
+						console.error("FAQ 저장 실패:", err);
+						alert("저장에 실패했습니다.");
+					});
+			});
+
+			document.getElementById("btnConfirmDelete").addEventListener("click", function () {
+				fetch("/api/faqs/" + id, { method: "DELETE" })
+					.then(function (res) {
+						if (!res.ok) throw new Error("API 오류: " + res.status);
+						alert("FAQ가 삭제되었습니다.");
+						location.href = "list";
+					})
+					.catch(function (err) {
+						console.error("FAQ 삭제 실패:", err);
+						alert("삭제에 실패했습니다.");
+					});
+			});
+		});
+	</script>
+</body>
+
+</html>

@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+	<link rel="preconnect" href="https://fonts.gstatic.com">
+	<link rel="shortcut icon" href="../img/icons/icon-48x48.png" />
+
+	<title>유효성 평가 항목 관리 - Human Clinical 관리자</title>
+
+	<link href="../css/app.css" rel="stylesheet">
+	<link href="../css/custom.css" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+	<style>
+		.thumb-cell {
+			display: flex;
+			gap: 4px;
+			align-items: center;
+		}
+		.thumb-cell img {
+			width: 48px;
+			height: 48px;
+			object-fit: cover;
+			border-radius: 4px;
+			border: 1px solid #dee2e6;
+		}
+		.thumb-cell .thumb-label {
+			display: block;
+			font-size: 10px;
+			text-align: center;
+			color: #6c757d;
+			margin-top: 2px;
+		}
+		.thumb-cell .thumb-wrap {
+			text-align: center;
+		}
+		.thumb-placeholder {
+			width: 48px;
+			height: 48px;
+			background: #e9ecef;
+			border-radius: 4px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+		.search-hidden {
+			display: none !important;
+		}
+	</style>
+</head>
+
+<body data-page="trial-list" data-base="../">
+	<div class="wrapper">
+
+		<div id="sidebar-container"></div>
+
+		<div class="main">
+			<div id="header-container"></div>
+
+			<main class="content">
+				<div class="container-fluid p-0">
+
+					<div class="d-flex justify-content-between align-items-center mb-3">
+						<h1 class="h3 mb-0"><strong>유효성 평가 항목 관리</strong></h1>
+						<a href="detail.html" class="btn btn-primary">
+							<i class="align-middle" data-feather="plus"></i>
+							<span class="align-middle ms-1">평가 항목 등록</span>
+						</a>
+					</div>
+
+					<!-- 검색 필터 -->
+					<div class="card mb-3">
+						<div class="card-body">
+							<div class="row g-2 align-items-end">
+								<div class="col-md-3">
+									<label class="form-label" for="filterTab">탭</label>
+									<select class="form-select" id="filterTab">
+										<option value="">전체</option>
+									</select>
+								</div>
+								<div class="col-md-6">
+									<label class="form-label" for="filterSearch">시험 제목 검색</label>
+									<input type="text" class="form-control" id="filterSearch" placeholder="시험 제목을 입력하세요.">
+								</div>
+								<div class="col-md-3">
+									<button class="btn btn-outline-secondary w-100" id="btnFilterReset">
+										<span class="align-middle">초기화</span>
+									</button>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- 유효성 평가 항목 목록 -->
+					<div class="card">
+						<div class="card-header">
+							<h5 class="card-title mb-0">유효성 평가 항목 목록</h5>
+						</div>
+						<div class="table-responsive">
+							<table class="table table-hover my-0" id="trialTable">
+								<thead>
+									<tr>
+										<th style="width:120px;">BEFORE / AFTER</th>
+										<th>시험 제목</th>
+										<th>카테고리</th>
+										<th class="d-none d-md-table-cell">등록일</th>
+									</tr>
+								</thead>
+								<tbody></tbody>
+							</table>
+						</div>
+						<div class="card-footer d-flex justify-content-between align-items-center">
+							<span class="text-muted small" id="pageInfo"></span>
+							<nav><ul class="pagination pagination-sm mb-0" id="pageNav"></ul></nav>
+						</div>
+					</div>
+
+				</div>
+			</main>
+
+			<footer class="footer">
+				<div class="container-fluid">
+					<div class="row text-muted">
+						<div class="col-12 text-start">
+							<p class="mb-0">&copy; Human Clinical</p>
+						</div>
+					</div>
+				</div>
+			</footer>
+		</div>
+	</div>
+
+	<script src="../js/app.js"></script>
+	<script src="../js/admin-utils.js"></script>
+	<script src="../js/pagination.js"></script>
+	<script src="../js/common.js"></script>
+	<script>
+		var TAB_BADGE_MAP = {
+			"SKIN_TONER_MIST":   "bg-primary",
+			"ESSENCE_LOTION":    "bg-info text-dark",
+			"CREAM_OIL":         "bg-success",
+			"MASK":              "bg-warning text-dark",
+			"CLEANSING":         "bg-secondary",
+			"MAKEUP":            "bg-danger",
+			"SUN_CARE":          "bg-warning",
+			"HAIR_DYE":          "bg-dark",
+			"SHAMPOO_TREATMENT": "bg-info",
+			"SCALP_HAIR_TONIC":  "bg-primary",
+			"BEAUTY_DEVICE":     "bg-success",
+			"ETC":               "bg-secondary"
+		};
+
+		var TABS_DATA = [];
+		var pager;
+
+		function loadTabs() {
+			return fetch("/api/trial-keyword-groups/tabs")
+				.then(function (res) { return res.ok ? res.json() : []; })
+				.then(function (data) { TABS_DATA = data || []; });
+		}
+
+		function loadTrials() {
+			return fetch("/api/trials")
+				.then(function (res) { return res.ok ? res.json() : []; });
+		}
+
+		function renderTrials(trials) {
+			var tbody = document.querySelector("#trialTable tbody");
+			tbody.innerHTML = "";
+
+			if (!trials || trials.length === 0) {
+				tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">등록된 평가 항목이 없습니다.</td></tr>';
+				return;
+			}
+
+			trials.forEach(function (item) {
+				var tr = document.createElement("tr");
+				tr.style.cursor = "pointer";
+				tr.setAttribute("data-tab", item.tabCode || "");
+				tr.setAttribute("data-title", (item.trialTitle || "").toLowerCase());
+				tr.addEventListener("click", function () {
+					location.href = "detail.html?id=" + item.id;
+				});
+
+				var imgHtml = '<div class="thumb-cell">';
+				imgHtml += '<div class="thumb-wrap">';
+				if (item.beforeImageUrl) {
+					imgHtml += '<img src="' + item.beforeImageUrl + '" alt="BEFORE">';
+				} else {
+					imgHtml += '<div class="thumb-placeholder"><i data-feather="image" style="width:16px;height:16px;color:#adb5bd;"></i></div>';
+				}
+				imgHtml += '<span class="thumb-label">BEFORE</span></div>';
+				imgHtml += '<div class="thumb-wrap">';
+				if (item.afterImageUrl) {
+					imgHtml += '<img src="' + item.afterImageUrl + '" alt="AFTER">';
+				} else {
+					imgHtml += '<div class="thumb-placeholder"><i data-feather="image" style="width:16px;height:16px;color:#adb5bd;"></i></div>';
+				}
+				imgHtml += '<span class="thumb-label">AFTER</span></div></div>';
+
+				var badgeClass = TAB_BADGE_MAP[item.tabCode] || "bg-secondary";
+
+				tr.innerHTML =
+					'<td>' + imgHtml + '</td>' +
+					'<td>' + (item.trialTitle || "-") + '</td>' +
+					'<td><span class="badge ' + badgeClass + '">' + (item.tabName || "-") + '</span></td>' +
+					'<td class="d-none d-md-table-cell">' + AdminUtils.formatDate(item.createdAt) + '</td>';
+
+				tbody.appendChild(tr);
+			});
+
+			if (window.feather) feather.replace();
+		}
+
+		function initFilterTab() {
+			var tabEl = document.getElementById("filterTab");
+
+			TABS_DATA.forEach(function (tab) {
+				var opt = document.createElement("option");
+				opt.value = tab.tabCode;
+				opt.textContent = tab.tabName;
+				tabEl.appendChild(opt);
+			});
+
+			tabEl.addEventListener("change", function () {
+				applyFilter();
+			});
+		}
+
+		function applyFilter() {
+			var tabVal = document.getElementById("filterTab").value;
+			var searchVal = document.getElementById("filterSearch").value.trim().toLowerCase();
+
+			var rows = document.querySelectorAll("#trialTable tbody tr");
+			rows.forEach(function (row) {
+				if (!row.dataset.tab && !row.dataset.title) return;
+				var tabMatch = !tabVal || row.dataset.tab === tabVal;
+				var titleMatch = !searchVal || (row.dataset.title || "").includes(searchVal);
+
+				if (tabMatch && titleMatch) {
+					row.classList.remove("search-hidden");
+				} else {
+					row.classList.add("search-hidden");
+					row.style.display = "none";  // 즉시 숨김
+				}
+			});
+
+			pager.refresh();  // currentPage = 1로 리셋 후 재렌더
+		}
+
+		document.addEventListener("DOMContentLoaded", function () {
+			loadTabs().then(function () {
+				initFilterTab();
+
+				loadTrials().then(function (trials) {
+					renderTrials(trials);
+					pager = initPagination({ tableId: "trialTable", perPage: 10, infoId: "pageInfo", navId: "pageNav" });  // ← pager = 추가
+				});
+			});
+
+			// 초기화 버튼
+			document.getElementById("btnFilterReset").addEventListener("click", function () {
+				document.getElementById("filterTab").value = "";
+				document.getElementById("filterSearch").value = "";
+				applyFilter();
+			});
+
+			// 실시간 검색
+			document.getElementById("filterSearch").addEventListener("input", function () {
+				applyFilter();
+			});
+
+			// 엔터 검색
+			document.getElementById("filterSearch").addEventListener("keypress", function (e) {
+				if (e.key === "Enter") applyFilter();
+			});
+		});
+	</script>
+</body>
+
+</html>

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+	<link rel="preconnect" href="https://fonts.gstatic.com">
+	<link rel="shortcut icon" href="img/icons/icon-48x48.png" />
+
+	<title>로그인 - Human Clinical 관리자</title>
+
+	<link href="css/app.css" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+	<style>
+		body {
+			background: #f5f7fb;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			min-height: 100vh;
+			margin: 0;
+		}
+
+		.login-card {
+			width: 100%;
+			max-width: 420px;
+			padding: 0 1rem;
+		}
+
+		.login-card .card {
+			border: none;
+			box-shadow: 0 0 2rem 0 rgba(136, 152, 170, 0.15);
+			border-radius: 0.5rem;
+		}
+
+		.login-card .card-body {
+			padding: 2.5rem 2rem;
+		}
+
+		.login-brand {
+			text-align: center;
+			margin-bottom: 2rem;
+		}
+
+		.login-brand h1 {
+			font-size: 1.5rem;
+			font-weight: 600;
+			color: #3b7ddd;
+			margin: 0;
+		}
+
+		.login-brand p {
+			color: #6c757d;
+			font-size: 0.875rem;
+			margin: 0.25rem 0 0;
+		}
+
+		.form-label {
+			font-weight: 500;
+			font-size: 0.875rem;
+		}
+
+		.login-error {
+			display: none;
+			color: #dc3545;
+			font-size: 0.85rem;
+			text-align: center;
+			margin-bottom: 1rem;
+			padding: 0.5rem;
+			background: #fff5f5;
+			border-radius: 0.375rem;
+		}
+
+		.login-footer {
+			text-align: center;
+			margin-top: 1.5rem;
+		}
+
+		.login-footer a {
+			color: #6c757d;
+			font-size: 0.85rem;
+			text-decoration: none;
+		}
+
+		.login-footer a:hover {
+			color: #3b7ddd;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="login-card">
+		<div class="card">
+			<div class="card-body">
+				<div class="login-brand">
+					<h1>Human Clinical</h1>
+					<p>관리자 로그인</p>
+				</div>
+
+				<div class="login-error" id="loginError"></div>
+
+				<form id="loginForm">
+					<div class="mb-3">
+						<label class="form-label" for="email">이메일</label>
+						<input type="email" class="form-control form-control-lg" id="email"
+							placeholder="example@email.com" required>
+					</div>
+					<div class="mb-3">
+						<label class="form-label" for="password">비밀번호</label>
+						<input type="password" class="form-control form-control-lg" id="password"
+							placeholder="비밀번호 입력" required>
+					</div>
+					<div class="d-flex justify-content-between align-items-center mb-3">
+						<div class="form-check">
+							<input type="checkbox" class="form-check-input" id="rememberEmail">
+							<label class="form-check-label" for="rememberEmail" style="font-size:0.85rem;">이메일 저장</label>
+						</div>
+					</div>
+					<div class="d-grid">
+						<button type="submit" class="btn btn-lg btn-primary" id="btnLogin">로그인</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<script>
+		document.addEventListener("DOMContentLoaded", function () {
+			var emailInput = document.getElementById("email");
+			var passwordInput = document.getElementById("password");
+			var rememberCheck = document.getElementById("rememberEmail");
+			var loginError = document.getElementById("loginError");
+			var btnLogin = document.getElementById("btnLogin");
+
+			// 저장된 이메일 불러오기
+			var savedEmail = localStorage.getItem("adminSavedEmail");
+			if (savedEmail) {
+				emailInput.value = savedEmail;
+				rememberCheck.checked = true;
+			}
+
+			// 이미 ADMIN으로 로그인 상태이면 대시보드로 이동
+			fetch("/api/auth/current-user")
+				.then(function (res) {
+					if (!res.ok) throw new Error();
+					return res.json();
+				})
+				.then(function (user) {
+					if (user.position === "ADMIN") {
+						window.location.href = "/admin/index";
+					}
+				})
+				.catch(function () { /* 미로그인 - 로그인 폼 표시 */ });
+
+			// 로그인 폼 제출
+			document.getElementById("loginForm").addEventListener("submit", function (e) {
+				e.preventDefault();
+
+				var email = emailInput.value.trim();
+				var password = passwordInput.value;
+
+				if (!email || !password) return;
+
+				loginError.style.display = "none";
+				btnLogin.disabled = true;
+				btnLogin.textContent = "로그인 중...";
+
+				fetch("/api/auth/login", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						email: email,
+						password: password,
+						rememberMe: rememberCheck.checked
+					})
+				})
+				.then(function (res) {
+					if (!res.ok) return res.json().then(function (err) { throw err; });
+					return res.json();
+				})
+				.then(function (data) {
+					// ADMIN 권한 확인
+					if (data.position !== "ADMIN") {
+						// ADMIN이 아니면 세션 정리 후 에러 표시
+						fetch("/api/auth/logout", { method: "POST" });
+						throw { message: "관리자 권한이 없는 계정입니다." };
+					}
+
+					// 이메일 저장
+					if (rememberCheck.checked) {
+						localStorage.setItem("adminSavedEmail", email);
+					} else {
+						localStorage.removeItem("adminSavedEmail");
+					}
+
+					// 세션 저장
+					sessionStorage.setItem("isLoggedIn", "true");
+					sessionStorage.setItem("userName", data.name || "");
+					sessionStorage.setItem("userPosition", data.position || "");
+
+					// 대시보드로 이동
+					window.location.href = "/admin/index";
+				})
+				.catch(function (err) {
+					var msg = (err && err.message) || "로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.";
+					loginError.textContent = msg;
+					loginError.style.display = "block";
+				})
+				.finally(function () {
+					btnLogin.disabled = false;
+					btnLogin.textContent = "로그인";
+				});
+			});
+
+			// 입력 시 에러 숨기기
+			emailInput.addEventListener("input", function () {
+				loginError.style.display = "none";
+			});
+			passwordInput.addEventListener("input", function () {
+				loginError.style.display = "none";
+			});
+		});
+	</script>
+</body>
+
+</html>

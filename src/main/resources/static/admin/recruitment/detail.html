@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+	<link rel="preconnect" href="https://fonts.gstatic.com">
+	<link rel="shortcut icon" href="../img/icons/icon-48x48.png" />
+
+	<title>모집 공고 - Human Clinical 관리자</title>
+
+	<link href="../css/app.css" rel="stylesheet">
+	<link href="../css/custom.css" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+	<style>
+		.content-display { white-space: pre-wrap; line-height: 1.7; }
+		.cal-table { table-layout: fixed; }
+		.cal-table td { cursor: pointer; height: 38px; vertical-align: middle; }
+		.cal-table td:hover { background: #e9ecef; }
+		.cal-table td.selected { background: #0d6efd; color: #fff; font-weight: 600; }
+		.cal-table td.empty { cursor: default; background: none; }
+		.cal-table td.today { border: 2px solid #0d6efd; }
+	</style>
+</head>
+
+<body data-page="recruitment-list" data-base="../">
+	<div class="wrapper">
+
+		<div id="sidebar-container"></div>
+
+		<div class="main">
+			<div id="header-container"></div>
+
+			<main class="content">
+				<div class="container-fluid p-0">
+
+					<div class="d-flex justify-content-between align-items-center mb-3">
+						<h1 class="h3 mb-0"><strong id="pageTitle">모집 공고 등록</strong></h1>
+						<a href="list" class="btn btn-outline-secondary">
+							<i class="align-middle" data-feather="arrow-left" style="width:14px;height:14px;"></i>
+							<span class="align-middle ms-1">목록으로</span>
+						</a>
+					</div>
+
+					<!-- 상세 보기 모드 -->
+					<div class="card detail-view" id="viewMode" style="display:none;">
+						<div class="card-body">
+							<div class="mb-3">
+								<label class="form-label text-muted">제목</label>
+								<p class="form-control-plaintext fw-bold fs-5" id="viewTitle"></p>
+							</div>
+							<div class="mb-3">
+								<label class="form-label text-muted">시험명</label>
+								<p class="form-control-plaintext" id="viewTrialName"></p>
+							</div>
+							<div class="row mb-3">
+								<div class="col-md-3">
+									<label class="form-label text-muted">공지 여부</label>
+									<p id="viewNotice"></p>
+								</div>
+								<div class="col-md-3">
+									<label class="form-label text-muted">모집 상태</label>
+									<p id="viewStatus"></p>
+								</div>
+								<div class="col-md-3">
+									<label class="form-label text-muted">등록일</label>
+									<p class="form-control-plaintext" id="viewCreatedAt"></p>
+								</div>
+								<div class="col-md-3">
+									<label class="form-label text-muted">수정일</label>
+									<p class="form-control-plaintext" id="viewUpdatedAt"></p>
+								</div>
+							</div>
+							<div class="row mb-3">
+								<div class="col-md-4">
+									<label class="form-label text-muted">시험 번호</label>
+									<p class="form-control-plaintext" id="viewTrialCode"></p>
+								</div>
+								<div class="col-md-4">
+									<label class="form-label text-muted">참여비</label>
+									<p class="form-control-plaintext" id="viewParticipationCost"></p>
+								</div>
+								<div class="col-md-4">
+									<label class="form-label text-muted">시험 지역</label>
+									<p class="form-control-plaintext" id="viewField"></p>
+								</div>
+							</div>
+							<div class="row mb-3">
+								<div class="col-md-4">
+									<label class="form-label text-muted">참여 인원</label>
+									<p class="form-control-plaintext">
+										<span id="viewParticipationNumber"></span>
+										<a href="#" id="viewApplicationLink" class="btn btn-sm btn-outline-primary ms-2" style="display:none;">
+											<i class="align-middle" data-feather="users" style="width:12px;height:12px;"></i>
+											<span class="align-middle ms-1" id="viewApplicationLabel">신청자 목록</span>
+										</a>
+									</p>
+								</div>
+								<div class="col-md-4">
+									<label class="form-label text-muted">참여 대상</label>
+									<p class="form-control-plaintext" id="viewParticipationGroup"></p>
+								</div>
+								<div class="col-md-4">
+									<label class="form-label text-muted">시험 부위</label>
+									<p class="form-control-plaintext" id="viewTrialPart"></p>
+								</div>
+							</div>
+							<div class="row mb-3">
+								<div class="col-md-4">
+									<label class="form-label text-muted">시험 시작일</label>
+									<p class="form-control-plaintext" id="viewStartDate"></p>
+								</div>
+								<div class="col-md-4">
+									<label class="form-label text-muted">시험 종료일</label>
+									<p class="form-control-plaintext" id="viewEndDate"></p>
+								</div>
+							</div>
+							<div class="mb-3">
+								<label class="form-label text-muted">시험 일정</label>
+								<div id="viewScheduleContainer"></div>
+							</div>
+							<div class="mb-3">
+								<label class="form-label text-muted">선정 조건</label>
+								<p class="form-control-plaintext" id="viewRequirements" style="white-space:pre-wrap;"></p>
+							</div>
+							<div class="mb-3">
+								<label class="form-label text-muted">본문 내용</label>
+								<div class="content-display" id="viewContent"></div>
+							</div>
+							<div class="mb-0" id="viewDetailImageSection" style="display:none;">
+								<label class="form-label text-muted">상세 이미지</label>
+								<div>
+									<a href="#" id="viewDetailImageLink" class="btn btn-sm btn-outline-primary" target="_blank">보기</a>
+								</div>
+							</div>
+						</div>
+						<div class="card-footer d-flex gap-2">
+							<button class="btn btn-primary" id="btnEditMode">
+								<i class="align-middle" data-feather="edit-2" style="width:14px;height:14px;"></i>
+								<span class="align-middle ms-1">수정</span>
+							</button>
+							<button class="btn btn-danger" id="btnDeleteView" data-bs-toggle="modal" data-bs-target="#deleteModal">
+								<i class="align-middle" data-feather="trash-2" style="width:14px;height:14px;"></i>
+								<span class="align-middle ms-1">삭제</span>
+							</button>
+						</div>
+					</div>
+
+					<!-- 등록/수정 폼 -->
+					<div class="card" id="editMode">
+						<div class="card-body">
+							<input type="hidden" id="recruitmentId">
+
+							<div class="mb-3">
+								<label class="form-label" for="inputTitle">제목 <span class="text-danger">*</span></label>
+								<input type="text" class="form-control" id="inputTitle" placeholder="제목을 입력하세요">
+								<div class="invalid-feedback">제목을 입력해주세요.</div>
+							</div>
+
+							<div class="mb-3">
+								<div class="form-check">
+									<input class="form-check-input" type="checkbox" id="inputNotice">
+									<label class="form-check-label" for="inputNotice">공지글로 등록</label>
+								</div>
+							</div>
+
+							<div class="row mb-3">
+								<div class="col-md-4">
+									<label class="form-label" for="inputTrialCode">시험 번호</label>
+									<input type="text" class="form-control" id="inputTrialCode" placeholder="예: 피부0001">
+								</div>
+								<div class="col-md-4">
+									<label class="form-label" for="inputTrialName">시험명</label>
+									<input type="text" class="form-control" id="inputTrialName" placeholder="예: 보습크림 인체적용시험">
+								</div>
+								<div class="col-md-4">
+									<label class="form-label" for="inputParticipationCost">참여비</label>
+									<input type="text" class="form-control" id="inputParticipationCost" placeholder="예: 50,000원">
+								</div>
+							</div>
+
+							<div class="row mb-3">
+								<div class="col-md-4">
+									<label class="form-label" for="inputParticipationNumber">참여 인원</label>
+									<input type="number" class="form-control" id="inputParticipationNumber" min="1" placeholder="명">
+								</div>
+								<div class="col-md-4">
+									<label class="form-label" for="inputParticipationGroup">참여 대상</label>
+									<input type="text" class="form-control" id="inputParticipationGroup" placeholder="예: 만 20~60세 성인 남녀">
+								</div>
+								<div class="col-md-4">
+									<label class="form-label" for="inputTrialPart">시험 부위</label>
+									<input type="text" class="form-control" id="inputTrialPart" placeholder="예: 전완부(팔 안쪽)">
+								</div>
+							</div>
+
+							<div class="mb-3">
+								<label class="form-label">시험 지역 <span class="text-muted small" id="fieldSelectionHint">(복수 선택 가능)</span></label>
+								<div class="d-flex flex-wrap gap-3" id="inputFieldGroup"></div>
+							</div>
+
+							<!-- 캘린더 기반 일정 설정 -->
+							<div class="mb-3" id="scheduleSection">
+								<label class="form-label">시험 일정 설정</label>
+								<div class="small text-muted mb-2">캘린더에서 시험 가능 날짜를 선택하세요. (복수 선택 가능)</div>
+								<div class="card mb-3">
+									<div class="card-header d-flex justify-content-between align-items-center py-2">
+										<button type="button" class="btn btn-sm btn-outline-secondary" id="btnPrevMonth">&laquo;</button>
+										<strong id="calendarTitle"></strong>
+										<button type="button" class="btn btn-sm btn-outline-secondary" id="btnNextMonth">&raquo;</button>
+									</div>
+									<div class="card-body p-2">
+										<table class="table table-sm table-bordered text-center mb-0 cal-table" id="calendarTable">
+											<thead><tr><th>일</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th><th>토</th></tr></thead>
+											<tbody id="calendarBody"></tbody>
+										</table>
+									</div>
+								</div>
+								<div id="selectedDateCards"></div>
+							</div>
+							<div class="alert alert-info" id="bulkInfoMessage" style="display:none;">
+								다중 지역 선택 시 일정 설정은 각 공고 생성 후 개별 수정에서 설정할 수 있습니다.
+							</div>
+
+							<div class="row mb-3">
+								<div class="col-md-4">
+									<label class="form-label" for="inputStartDate">시험 시작일</label>
+									<input type="date" class="form-control" id="inputStartDate">
+								</div>
+								<div class="col-md-4">
+									<label class="form-label" for="inputEndDate">시험 종료일</label>
+									<input type="date" class="form-control" id="inputEndDate">
+								</div>
+								<div class="col-md-4">
+									<label class="form-label" for="inputStatus">모집 상태</label>
+									<select class="form-select" id="inputStatus">
+										<option value="OPEN">모집중</option>
+										<option value="ALWAYS">상시모집</option>
+										<option value="CLOSED">마감</option>
+									</select>
+								</div>
+							</div>
+
+							<div class="mb-3">
+								<label class="form-label" for="inputRequirements">선정 조건</label>
+								<textarea class="form-control" id="inputRequirements" rows="3" placeholder="선정 조건을 입력하세요"></textarea>
+							</div>
+
+							<div class="mb-3">
+								<label class="form-label">본문 내용 <span class="text-danger">*</span></label>
+								<div id="editor"></div>
+								<div class="text-danger small mt-1" id="editorError" style="display:none;">본문 내용을 입력해주세요.</div>
+							</div>
+
+							<div class="mb-3">
+								<label class="form-label">상세 이미지</label>
+								<div class="small text-muted mb-2">이미지 파일을 선택하면 자동으로 업로드됩니다.</div>
+								<div id="detailImagePreviewWrap" style="display:none;" class="mb-2">
+									<img id="detailImagePreview" src="" alt="상세 이미지 미리보기" style="max-width:100%; max-height:300px; border:1px solid #dee2e6; border-radius:4px; display:block;">
+									<button type="button" class="btn btn-sm btn-outline-danger mt-2" id="btnRemoveDetailImage">이미지 삭제</button>
+								</div>
+								<input type="file" class="form-control" id="inputDetailImage" accept="image/*">
+							</div>
+
+						</div>
+						<div class="card-footer d-flex gap-2">
+							<button class="btn btn-primary" id="btnSave">
+								<i class="align-middle" data-feather="save" style="width:14px;height:14px;"></i>
+								<span class="align-middle ms-1" id="btnSaveLabel">게시</span>
+							</button>
+							<button class="btn btn-outline-secondary" id="btnSaveTemp">
+								<i class="align-middle" data-feather="file" style="width:14px;height:14px;"></i>
+								<span class="align-middle ms-1">임시저장</span>
+							</button>
+							<button class="btn btn-danger ms-auto" id="btnDeleteEdit" data-bs-toggle="modal" data-bs-target="#deleteModal" style="display:none;">
+								<i class="align-middle" data-feather="trash-2" style="width:14px;height:14px;"></i>
+								<span class="align-middle ms-1">삭제</span>
+							</button>
+						</div>
+					</div>
+
+				</div>
+			</main>
+
+			<footer class="footer">
+				<div class="container-fluid">
+					<div class="row text-muted">
+						<div class="col-12 text-start">
+							<p class="mb-0">&copy; Human Clinical</p>
+						</div>
+					</div>
+				</div>
+			</footer>
+		</div>
+	</div>
+
+	<!-- 삭제 확인 모달 -->
+	<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-sm">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="deleteModalLabel">모집 공고 삭제</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<p>이 모집 공고를 삭제하시겠습니까?</p>
+					<p class="text-danger small mb-0">이 작업은 되돌릴 수 없습니다.</p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+					<button type="button" class="btn btn-danger" id="btnConfirmDelete">삭제</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../js/app.js"></script>
+	<script src="../js/common.js"></script>
+	<script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/super-build/ckeditor.js"></script>
+	<script src="../js/ckeditor-config.js"></script>
+	<script src="../js/admin-utils.js"></script>
+	<script>
+		var FIELD_MAP = {};
+		var ENTITY_TYPE = "RECRUITMENT";
+		var editorMgr = AdminUtils.createEditorManager("editor", ENTITY_TYPE);
+		var currentData = null;
+		var currentSchedules = [];
+
+		// 선택된 날짜 목록: { "2026-03-01": true, ... }
+		var selectedDates = {};
+		var calYear, calMonth;
+
+		// 상세 이미지 상태
+		var detailImageFileId = null;  // 현재 서버에 저장된 파일 ID
+		var detailImageRemoved = false; // 삭제 여부
+
+		function loadFields() {
+			return fetch("/api/recruitment-fields")
+				.then(function (res) { return res.ok ? res.json() : []; })
+				.then(function (fields) {
+					(fields || []).forEach(function (f) { FIELD_MAP[String(f.id)] = f.fieldName; });
+					renderFieldCheckboxes(fields || []);
+				});
+		}
+
+		function renderFieldCheckboxes(fields) {
+			var container = document.getElementById("inputFieldGroup");
+			container.innerHTML = "";
+			fields.forEach(function (f) {
+				var div = document.createElement("div");
+				div.className = "form-check";
+				div.innerHTML = '<input class="form-check-input" type="checkbox" value="' + f.id + '" id="field' + f.id + '">' +
+					'<label class="form-check-label" for="field' + f.id + '">' + f.fieldName + '</label>';
+				container.appendChild(div);
+			});
+			container.querySelectorAll("input[type=checkbox]").forEach(function (cb) {
+				cb.addEventListener("change", function () {
+					if (document.getElementById("recruitmentId").value && cb.checked) {
+						container.querySelectorAll("input[type=checkbox]").forEach(function (other) {
+							if (other !== cb) other.checked = false;
+						});
+					}
+					updateFieldSelectionUI();
+				});
+			});
+		}
+
+		function getSelectedFieldCount() {
+			return document.querySelectorAll("#inputFieldGroup input[type=checkbox]:checked").length;
+		}
+
+		function updateFieldSelectionUI() {
+			var count = getSelectedFieldCount();
+			var isMulti = count >= 2;
+			var isNew = !document.getElementById("recruitmentId").value;
+			var scheduleSection = document.getElementById("scheduleSection");
+			var bulkInfo = document.getElementById("bulkInfoMessage");
+			var btnLabel = document.getElementById("btnSaveLabel");
+
+			if (isMulti && isNew) {
+				scheduleSection.style.display = "none";
+				bulkInfo.style.display = "";
+				btnLabel.textContent = "일괄 게시 (" + count + "건)";
+			} else {
+				scheduleSection.style.display = "";
+				bulkInfo.style.display = "none";
+				btnLabel.textContent = "게시";
+			}
+		}
+
+		function parseFieldIds(jsonStr) {
+			if (!jsonStr) return [];
+			try { return JSON.parse(jsonStr); } catch (e) { return []; }
+		}
+
+		function fieldIdsToNames(jsonStr) {
+			var ids = parseFieldIds(jsonStr);
+			return ids.map(function (id) { return FIELD_MAP[String(id)] || id; }).join(", ");
+		}
+
+		function formatDateStr(dateStr) {
+			if (!dateStr) return "";
+			var d = new Date(dateStr);
+			var days = ["일", "월", "화", "수", "목", "금", "토"];
+			return dateStr + " (" + days[d.getDay()] + ")";
+		}
+
+		// ========== 캘린더 ==========
+		function initCalendar() {
+			var now = new Date();
+			calYear = now.getFullYear();
+			calMonth = now.getMonth();
+			renderCalendar();
+
+			document.getElementById("btnPrevMonth").addEventListener("click", function () {
+				calMonth--;
+				if (calMonth < 0) { calMonth = 11; calYear--; }
+				renderCalendar();
+			});
+			document.getElementById("btnNextMonth").addEventListener("click", function () {
+				calMonth++;
+				if (calMonth > 11) { calMonth = 0; calYear++; }
+				renderCalendar();
+			});
+		}
+
+		function renderCalendar() {
+			var months = ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"];
+			document.getElementById("calendarTitle").textContent = calYear + "년 " + months[calMonth];
+
+			var tbody = document.getElementById("calendarBody");
+			tbody.innerHTML = "";
+
+			var firstDay = new Date(calYear, calMonth, 1).getDay();
+			var daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+			var today = new Date();
+			var todayStr = today.getFullYear() + "-" + ("0" + (today.getMonth() + 1)).slice(-2) + "-" + ("0" + today.getDate()).slice(-2);
+
+			var day = 1;
+			for (var row = 0; row < 6; row++) {
+				if (day > daysInMonth) break;
+				var tr = document.createElement("tr");
+				for (var col = 0; col < 7; col++) {
+					var td = document.createElement("td");
+					if ((row === 0 && col < firstDay) || day > daysInMonth) {
+						td.className = "empty";
+						td.innerHTML = "&nbsp;";
+					} else {
+						var dateStr = calYear + "-" + ("0" + (calMonth + 1)).slice(-2) + "-" + ("0" + day).slice(-2);
+						td.textContent = day;
+						td.setAttribute("data-date", dateStr);
+						if (selectedDates[dateStr]) td.classList.add("selected");
+						if (dateStr === todayStr) td.classList.add("today");
+						td.addEventListener("click", onCalendarDateClick);
+						day++;
+					}
+					tr.appendChild(td);
+				}
+				tbody.appendChild(tr);
+			}
+		}
+
+		function onCalendarDateClick(e) {
+			var dateStr = e.target.getAttribute("data-date");
+			if (!dateStr) return;
+			if (selectedDates[dateStr]) {
+				delete selectedDates[dateStr];
+				e.target.classList.remove("selected");
+			} else {
+				selectedDates[dateStr] = true;
+				e.target.classList.add("selected");
+			}
+			renderDateCards();
+			syncDatesFromSelection();
+		}
+
+		function syncDatesFromSelection() {
+			var dates = Object.keys(selectedDates).sort();
+			if (dates.length > 0) {
+				document.getElementById("inputStartDate").value = dates[0];
+				document.getElementById("inputEndDate").value = dates[dates.length - 1];
+			} else {
+				document.getElementById("inputStartDate").value = "";
+				document.getElementById("inputEndDate").value = "";
+			}
+		}
+
+		function renderDateCards() {
+			var container = document.getElementById("selectedDateCards");
+			container.innerHTML = "";
+			var dates = Object.keys(selectedDates).sort();
+
+			if (dates.length === 0) return;
+
+			var wrap = document.createElement("div");
+			wrap.className = "d-flex flex-wrap gap-2 mt-2";
+
+			dates.forEach(function (dateStr) {
+				var badge = document.createElement("span");
+				badge.className = "badge bg-primary d-flex align-items-center gap-1";
+				badge.style.fontSize = "13px";
+				badge.innerHTML =
+					formatDateStr(dateStr) +
+					'<button type="button" class="btn-close btn-close-white btn-remove-date" data-date="' + dateStr + '" style="font-size:9px;" aria-label="제거"></button>';
+				wrap.appendChild(badge);
+			});
+
+			container.appendChild(wrap);
+
+			container.querySelectorAll(".btn-remove-date").forEach(function (btn) {
+				btn.addEventListener("click", function () {
+					var d = this.getAttribute("data-date");
+					delete selectedDates[d];
+					renderDateCards();
+					syncDatesFromSelection();
+					renderCalendar();
+				});
+			});
+		}
+
+		// ========== 스케줄 데이터 변환 (날짜만) ==========
+		function buildSchedulePayload() {
+			return Object.keys(selectedDates).sort().map(function (dateStr) {
+				return { scheduleDate: dateStr };
+			});
+		}
+
+		function populateSelectedDatesFromSchedules(schedules) {
+			selectedDates = {};
+			if (!schedules || !schedules.length) return;
+			schedules.forEach(function (sch) {
+				selectedDates[sch.scheduleDate] = true;
+			});
+		}
+
+		// ========== 상세 이미지 ==========
+		function uploadDetailImage(file, entityId) {
+			return fetch("/api/files/upload-link", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					entityType: "RECRUITMENT",
+					entityId: entityId,
+					fileCategory: "ATTACHMENT",
+					originalFilename: file.name,
+					mimeType: file.type,
+					fileSize: file.size
+				})
+			})
+			.then(function (res) {
+				if (!res.ok) throw new Error("upload-link 실패");
+				return res.json();
+			})
+			.then(function (data) {
+				return fetch(data.uploadUrl, {
+					method: "PUT",
+					headers: { "Content-Type": file.type },
+					body: file
+				}).then(function () { return data.id; });
+			});
+		}
+
+		function loadDetailImage(entityId) {
+			return fetch("/api/files/list?entityType=RECRUITMENT&entityId=" + entityId)
+				.then(function (res) { return res.ok ? res.json() : []; })
+				.then(function (files) {
+					var attachments = (files || []).filter(function (f) {
+						return f.fileCategory === "ATTACHMENT";
+					});
+					return attachments.length > 0 ? attachments[0] : null;
+				});
+		}
+
+		function showDetailImagePreview(src, fileId) {
+			detailImageFileId = fileId || null;
+			document.getElementById("detailImagePreview").src = src;
+			document.getElementById("detailImagePreviewWrap").style.display = "";
+			document.getElementById("inputDetailImage").style.display = "none";
+		}
+
+		function clearDetailImagePreview() {
+			detailImageFileId = null;
+			detailImageRemoved = true;
+			document.getElementById("detailImagePreview").src = "";
+			document.getElementById("detailImagePreviewWrap").style.display = "none";
+			document.getElementById("inputDetailImage").style.display = "";
+			document.getElementById("inputDetailImage").value = "";
+		}
+
+		// ========== 메인 로직 ==========
+		document.addEventListener("DOMContentLoaded", function () {
+			var params = new URLSearchParams(window.location.search);
+			var id = params.get("id");
+
+			AdminUtils.bindTitleErrorClear();
+
+			document.getElementById("inputParticipationCost").addEventListener("keydown", function (e) {
+				var allowed = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"];
+				if (allowed.indexOf(e.key) === -1 && !/^[0-9]$/.test(e.key)) {
+					e.preventDefault();
+				}
+				if (e.key === "Backspace" || e.key === "Delete") {
+					var raw = this.value.replace(/[^0-9]/g, "");
+					raw = raw.slice(0, -1);
+					this.value = raw ? parseInt(raw).toLocaleString("ko-KR") + "원" : "";
+					e.preventDefault();
+				}
+			});
+
+			document.getElementById("inputParticipationCost").addEventListener("input", function () {
+				var raw = this.value.replace(/[^0-9]/g, "");
+				if (!raw) { this.value = ""; return; }
+				this.value = parseInt(raw).toLocaleString("ko-KR") + "원";
+			});
+
+			document.getElementById("inputParticipationCost").addEventListener("blur", function () {
+				var raw = this.value.replace(/[^0-9]/g, "");
+				if (!raw) { this.value = ""; return; }
+				this.value = parseInt(raw).toLocaleString("ko-KR") + "원";
+			});
+
+			// 상세 이미지 파일 선택
+			document.getElementById("inputDetailImage").addEventListener("change", function () {
+				var file = this.files[0];
+				if (!file) return;
+				var reader = new FileReader();
+				reader.onload = function (e) {
+					document.getElementById("detailImagePreview").src = e.target.result;
+					document.getElementById("detailImagePreviewWrap").style.display = "";
+					document.getElementById("inputDetailImage").style.display = "none";
+				};
+				reader.readAsDataURL(file);
+				detailImageRemoved = false;
+			});
+
+			// 상세 이미지 삭제
+			document.getElementById("btnRemoveDetailImage").addEventListener("click", function () {
+				clearDetailImagePreview();
+			});
+
+			initCalendar();
+
+			loadFields().then(function () {
+				if (id) {
+					loadDetail(id);
+				} else {
+					showCreateMode();
+				}
+			});
+
+			// ========== 데이터 로딩 ==========
+			function loadDetail(recId) {
+				Promise.all([
+					fetch("/api/recruitments/" + recId).then(function (r) { return r.ok ? r.json() : null; }),
+					fetch("/api/recruitment-schedules/recruitment/" + recId).then(function (r) { return r.ok ? r.json() : []; }),
+					loadDetailImage(recId)
+				])
+				.then(function (results) {
+					var data = results[0];
+					var schedules = Array.isArray(results[1]) ? results[1] : [];
+					var imageFile = results[2];
+
+					if (!data) throw new Error("데이터 없음");
+					currentData = data;
+					currentSchedules = schedules;
+					showViewMode(data, schedules, imageFile);
+				})
+				.catch(function (err) {
+					console.error(err);
+					alert("모집 공고를 찾을 수 없습니다.");
+					location.href = "list";
+				});
+			}
+
+			// ========== 상세 보기 모드 ==========
+			function showViewMode(data, schedules, imageFile) {
+				document.getElementById("pageTitle").textContent = "모집 공고 상세";
+				document.getElementById("viewMode").style.display = "";
+				document.getElementById("editMode").style.display = "none";
+
+				document.getElementById("viewTitle").textContent = data.title;
+				document.getElementById("viewCreatedAt").textContent = AdminUtils.formatDate(data.createdAt);
+				document.getElementById("viewUpdatedAt").textContent = AdminUtils.formatDate(data.updatedAt);
+				document.getElementById("viewContent").innerHTML = data.content;
+
+				if (data.isNotification) {
+					document.getElementById("viewNotice").innerHTML = '<span class="badge bg-danger">공지</span>';
+				} else {
+					document.getElementById("viewNotice").innerHTML = '<span class="badge bg-secondary">일반</span>';
+				}
+
+				if (data.isTemp) {
+					document.getElementById("viewStatus").innerHTML = '<span class="badge bg-warning text-dark">임시저장</span>';
+				} else if (data.status === "OPEN") {
+					document.getElementById("viewStatus").innerHTML = '<span class="badge bg-success">모집중</span>';
+				} else if (data.status === "ALWAYS") {
+					document.getElementById("viewStatus").innerHTML = '<span class="badge bg-info">상시모집</span>';
+				} else {
+					document.getElementById("viewStatus").innerHTML = '<span class="badge bg-secondary">마감</span>';
+				}
+
+				document.getElementById("viewTrialCode").textContent = data.trialCode || "-";
+				document.getElementById("viewTrialName").textContent = data.trialName || "-";
+				document.getElementById("viewParticipationNumber").textContent = data.participationNumber ? data.participationNumber + "명" : "-";
+				var appLink = document.getElementById("viewApplicationLink");
+				appLink.href = "../trial-application/list.html?recruitment_id=" + data.id;
+				appLink.style.display = "";
+				fetch("/api/trial-applications/recruitment/" + data.id)
+					.then(function (res) { return res.ok ? res.json() : []; })
+					.then(function (apps) {
+						document.getElementById("viewApplicationLabel").textContent = "신청자 목록 (" + (apps ? apps.length : 0) + ")";
+					});
+				var rawViewCost = (data.participationCost || "").replace(/[^0-9]/g, "");
+				document.getElementById("viewParticipationCost").textContent = rawViewCost ? parseInt(rawViewCost).toLocaleString("ko-KR") + "원" : "-";
+				document.getElementById("viewParticipationGroup").textContent = data.participationGroup || "-";
+				document.getElementById("viewTrialPart").textContent = data.trialPart || "-";
+				document.getElementById("viewStartDate").textContent = data.startDate || "-";
+				document.getElementById("viewEndDate").textContent = data.endDate || "-";
+				document.getElementById("viewRequirements").textContent = data.requirements || "-";
+				document.getElementById("viewField").textContent = fieldIdsToNames(data.recruitmentFieldIds) || "-";
+
+				renderViewSchedule(schedules);
+
+				// 상세 이미지
+				if (imageFile && imageFile.s3Url) {
+					document.getElementById("viewDetailImageSection").style.display = "";
+					document.getElementById("viewDetailImageLink").href = "/api/files/" + imageFile.id + "/view";
+				} else {
+					document.getElementById("viewDetailImageSection").style.display = "none";
+				}
+
+				if (window.feather) feather.replace();
+			}
+
+			// ========== 일정 현황 렌더링 (날짜 배지) ==========
+			function renderViewSchedule(schedules) {
+				var container = document.getElementById("viewScheduleContainer");
+				if (!schedules || schedules.length === 0) {
+					container.innerHTML = '<span class="text-muted">설정된 일정이 없습니다.</span>';
+					return;
+				}
+				var html = '<div class="d-flex flex-wrap gap-2">';
+				schedules.forEach(function (sch) {
+					html += '<span class="badge bg-primary" style="font-size:13px;">' + formatDateStr(sch.scheduleDate) + '</span>';
+				});
+				html += '</div>';
+				container.innerHTML = html;
+			}
+
+			// ========== 등록 모드 ==========
+			function showCreateMode() {
+				document.getElementById("pageTitle").textContent = "모집 공고 등록";
+				document.getElementById("viewMode").style.display = "none";
+				document.getElementById("editMode").style.display = "";
+				document.getElementById("btnDeleteEdit").style.display = "none";
+				document.getElementById("fieldSelectionHint").textContent = "(복수 선택 가능)";
+				document.querySelectorAll("#inputFieldGroup input[type=checkbox]").forEach(function (cb) {
+					cb.disabled = false;
+				});
+				selectedDates = {};
+				renderDateCards();
+				editorMgr.init("");
+				clearDetailImagePreview();
+			}
+
+			// ========== 수정 모드 ==========
+			function showEditMode(data, schedules) {
+				document.getElementById("pageTitle").textContent = "모집 공고 수정";
+				document.getElementById("viewMode").style.display = "none";
+				document.getElementById("editMode").style.display = "";
+				document.getElementById("btnDeleteEdit").style.display = "";
+				document.getElementById("fieldSelectionHint").textContent = "(변경 불가)";
+
+				document.getElementById("recruitmentId").value = data.id;
+				document.getElementById("inputTitle").value = data.title || "";
+				document.getElementById("inputNotice").checked = !!data.isNotification;
+				document.getElementById("inputTrialCode").value = data.trialCode || "";
+				document.getElementById("inputTrialName").value = data.trialName || "";
+				document.getElementById("inputParticipationNumber").value = data.participationNumber || "";
+				var rawCost = (data.participationCost || "").replace(/[^0-9]/g, "");
+				document.getElementById("inputParticipationCost").value = rawCost ? parseInt(rawCost).toLocaleString("ko-KR") + "원" : "";
+				document.getElementById("inputParticipationGroup").value = data.participationGroup || "";
+				document.getElementById("inputTrialPart").value = data.trialPart || "";
+				document.getElementById("inputStartDate").value = data.startDate || "";
+				document.getElementById("inputEndDate").value = data.endDate || "";
+				document.getElementById("inputRequirements").value = data.requirements || "";
+				document.getElementById("inputStatus").value = data.status || "OPEN";
+
+				editorMgr.init(data.content || "");
+
+				var fieldIds = parseFieldIds(data.recruitmentFieldIds);
+				document.querySelectorAll("#inputFieldGroup input[type=checkbox]").forEach(function (cb) {
+					cb.checked = fieldIds.indexOf(parseInt(cb.value)) !== -1;
+					cb.disabled = true;
+				});
+
+				populateSelectedDatesFromSchedules(schedules);
+				var sortedDates = Object.keys(selectedDates).sort();
+				if (sortedDates.length > 0) {
+					var firstDate = new Date(sortedDates[0]);
+					calYear = firstDate.getFullYear();
+					calMonth = firstDate.getMonth();
+				}
+				renderCalendar();
+				renderDateCards();
+
+				// 상세 이미지 로드
+				detailImageRemoved = false;
+				clearDetailImagePreview();
+				loadDetailImage(data.id).then(function (imageFile) {
+					if (imageFile && imageFile.s3Url) {
+						showDetailImagePreview(imageFile.s3Url, imageFile.id);
+					}
+				});
+
+				if (window.feather) feather.replace();
+			}
+
+			// ========== 수정 버튼 ==========
+			document.getElementById("btnEditMode").addEventListener("click", function () {
+				if (currentData) showEditMode(currentData, currentSchedules);
+			});
+
+			// ========== 유효성 검사 ==========
+			function validate() {
+				return AdminUtils.validateTitleAndContent(editorMgr);
+			}
+
+			document.getElementById("inputTitle").addEventListener("input", function () { this.classList.remove("is-invalid"); });
+
+			// ========== 폼 데이터 수집 ==========
+			function collectFormData(isTemp) {
+				var selectedFieldIds = [];
+				document.querySelectorAll("#inputFieldGroup input[type=checkbox]:checked").forEach(function (cb) {
+					selectedFieldIds.push(parseInt(cb.value));
+				});
+
+				return {
+					title: document.getElementById("inputTitle").value.trim(),
+					isNotification: document.getElementById("inputNotice").checked,
+					isTemp: isTemp,
+					trialCode: document.getElementById("inputTrialCode").value.trim(),
+					trialName: document.getElementById("inputTrialName").value.trim(),
+					participationNumber: parseInt(document.getElementById("inputParticipationNumber").value) || null,
+					participationCost: document.getElementById("inputParticipationCost").value.trim(),
+					participationGroup: document.getElementById("inputParticipationGroup").value.trim(),
+					trialPart: document.getElementById("inputTrialPart").value.trim(),
+					recruitmentFieldIds: JSON.stringify(selectedFieldIds),
+					startDate: document.getElementById("inputStartDate").value || null,
+					endDate: document.getElementById("inputEndDate").value || null,
+					status: document.getElementById("inputStatus").value,
+					requirements: document.getElementById("inputRequirements").value.trim(),
+					content: editorMgr.getData(),
+					userId: null
+				};
+			}
+
+			// ========== 저장 처리 ==========
+			function doSave(isTemp) {
+				var recId = document.getElementById("recruitmentId").value;
+				var body = collectFormData(isTemp);
+				var isMultiBulk = !recId && getSelectedFieldCount() >= 2;
+
+				var btnSave = document.getElementById("btnSave");
+				var btnTemp = document.getElementById("btnSaveTemp");
+				btnSave.disabled = true;
+				btnTemp.disabled = true;
+
+				if (isMultiBulk) {
+					fetch("/api/recruitments/bulk", {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify(body)
+					})
+					.then(function (res) {
+						if (!res.ok) throw new Error("저장 실패: " + res.status);
+						return res.json();
+					})
+					.then(function (savedList) {
+						alert(savedList.length + "개 공고가 생성되었습니다.\n각 공고에서 일정을 개별 설정해주세요.");
+						location.href = "list";
+					})
+					.catch(function (err) {
+						alert("저장 중 오류가 발생했습니다.\n" + err.message);
+					})
+					.finally(function () {
+						btnSave.disabled = false;
+						btnTemp.disabled = false;
+					});
+				} else {
+					var url, method;
+					if (recId) {
+						url = "/api/recruitments/" + recId;
+						method = "PUT";
+					} else {
+						url = "/api/recruitments";
+						method = "POST";
+					}
+
+					var savedId;
+					fetch(url, {
+						method: method,
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify(body)
+					})
+					.then(function (res) {
+						if (!res.ok) throw new Error("저장 실패: " + res.status);
+						return res.json();
+					})
+					.then(function (saved) {
+						savedId = saved.id;
+
+						var tasks = [];
+
+						// 스케줄 저장
+						var schedulePayload = buildSchedulePayload();
+						if (schedulePayload.length > 0) {
+							tasks.push(
+								fetch("/api/recruitment-schedules/recruitment/" + savedId, {
+									method: "POST",
+									headers: { "Content-Type": "application/json" },
+									body: JSON.stringify(schedulePayload)
+								})
+							);
+						}
+
+						// 기존 이미지 삭제
+						if (detailImageRemoved && detailImageFileId) {
+							tasks.push(fetch("/api/files/" + detailImageFileId, { method: "DELETE" }));
+							detailImageFileId = null;
+						}
+
+						// 새 이미지 업로드
+						var imageInput = document.getElementById("inputDetailImage");
+						if (imageInput.files && imageInput.files[0]) {
+							tasks.push(uploadDetailImage(imageInput.files[0], savedId));
+						}
+
+						return Promise.all(tasks);
+					})
+					.then(function () {
+						location.href = "list";
+					})
+					.catch(function (err) {
+						alert("저장 중 오류가 발생했습니다.\n" + err.message);
+					})
+					.finally(function () {
+						btnSave.disabled = false;
+						btnTemp.disabled = false;
+					});
+				}
+			}
+
+			// 게시 저장
+			document.getElementById("btnSave").addEventListener("click", function () {
+				if (!validate()) return;
+				doSave(false);
+			});
+
+			// 임시 저장
+			document.getElementById("btnSaveTemp").addEventListener("click", function () {
+				var titleInput = document.getElementById("inputTitle");
+				if (!titleInput.value.trim()) {
+					titleInput.classList.add("is-invalid");
+					return;
+				}
+				doSave(true);
+			});
+
+			// ========== 삭제 ==========
+			document.getElementById("btnConfirmDelete").addEventListener("click", function () {
+				if (!id) return;
+				fetch("/api/recruitments/" + id, { method: "DELETE" })
+					.then(function (res) {
+						if (!res.ok) throw new Error("삭제 실패: " + res.status);
+						location.href = "list";
+					})
+					.catch(function (err) {
+						alert("삭제 중 오류가 발생했습니다.\n" + err.message);
+					});
+			});
+		});
+	</script>
+</body>
+
+</html>

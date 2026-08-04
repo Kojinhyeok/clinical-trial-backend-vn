@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+	<link rel="preconnect" href="https://fonts.gstatic.com">
+	<link rel="shortcut icon" href="../img/icons/icon-48x48.png" />
+
+	<title>피험자 신청 관리 - Human Clinical 관리자</title>
+
+	<link href="../css/app.css" rel="stylesheet">
+	<link href="../css/custom.css" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body data-page="trial-application-list" data-base="../">
+	<div class="wrapper">
+
+		<div id="sidebar-container"></div>
+
+		<div class="main">
+			<div id="header-container"></div>
+
+			<main class="content">
+				<div class="container-fluid p-0">
+
+					<div class="d-flex justify-content-between align-items-center mb-3">
+						<h1 class="h3 mb-0"><strong>피험자 신청 관리</strong></h1>
+					</div>
+
+					<!-- 검색 필터 -->
+					<div id="searchFilterContainer"></div>
+
+					<!-- 신청 목록 -->
+					<div class="card">
+						<div class="card-header">
+							<h5 class="card-title mb-0">신청 목록</h5>
+						</div>
+						<table class="table table-hover my-0" id="applicationTable">
+							<thead>
+								<tr>
+									<th>모집 공고</th>
+									<th class="d-none d-md-table-cell" style="width:100px;">참여 지역</th>
+									<th style="width:90px;">신청자</th>
+									<th class="d-none d-md-table-cell" style="width:70px;">성별</th>
+									<th class="d-none d-md-table-cell" style="width:120px;">연락처</th>
+									<th class="d-none d-md-table-cell" style="width:100px;">희망시간</th>
+									<th style="width:80px;">상태</th>
+									<th class="d-none d-md-table-cell" style="width:120px;">신청일</th>
+								</tr>
+							</thead>
+							<tbody></tbody>
+						</table>
+						<div class="card-footer d-flex justify-content-between align-items-center">
+							<span class="text-muted small" id="pageInfo"></span>
+							<nav><ul class="pagination pagination-sm mb-0" id="pageNav"></ul></nav>
+						</div>
+					</div>
+
+				</div>
+			</main>
+
+			<footer class="footer">
+				<div class="container-fluid">
+					<div class="row text-muted">
+						<div class="col-12 text-start">
+							<p class="mb-0">&copy; Human Clinical</p>
+						</div>
+					</div>
+				</div>
+			</footer>
+		</div>
+	</div>
+
+	<script src="../js/app.js"></script>
+	<script src="../js/admin-utils.js"></script>
+	<script src="../js/pagination.js"></script>
+	<script src="../js/search-filter.js"></script>
+	<script src="../js/common.js"></script>
+	<script>
+		var FIELD_MAP = {};
+		var RECRUITMENT_MAP = {};
+		var GENDER_MAP = { "MALE": "남", "FEMALE": "여" };
+		var STATUS_MAP = {
+			"PENDING": '<span class="badge bg-warning text-dark">대기</span>',
+			"APPROVED": '<span class="badge bg-success">승인</span>',
+			"REJECTED": '<span class="badge bg-danger">거절</span>'
+		};
+
+		function parseFieldIds(jsonStr) {
+			if (!jsonStr) return [];
+			try { return JSON.parse(jsonStr); } catch (e) { return []; }
+		}
+
+		function getApplicationRegion(app) {
+			if (app.recruitmentFieldId) {
+				return FIELD_MAP[String(app.recruitmentFieldId)] || "-";
+			}
+			// recruitmentFieldId가 없는 기존 데이터는 모집공고 지역 표시
+			var rec = RECRUITMENT_MAP[String(app.recruitmentId)];
+			if (!rec) return "-";
+			var ids = parseFieldIds(rec.recruitmentFieldIds);
+			return ids.map(function (fid) { return FIELD_MAP[String(fid)] || fid; }).join(", ");
+		}
+
+		function loadFields() {
+			return fetch("/api/recruitment-fields")
+				.then(function (res) { return res.ok ? res.json() : []; })
+				.then(function (fields) {
+					(fields || []).forEach(function (f) {
+						FIELD_MAP[String(f.id)] = f.fieldName;
+					});
+				});
+		}
+
+		function loadRecruitments() {
+			return fetch("/api/recruitments/all")
+				.then(function (res) { return res.ok ? res.json() : []; })
+				.then(function (list) {
+					(list || []).forEach(function (r) {
+						RECRUITMENT_MAP[String(r.id)] = r;
+					});
+				});
+		}
+
+		function loadApplications(recruitmentId) {
+			var url = recruitmentId
+				? "/api/trial-applications/recruitment/" + recruitmentId
+				: "/api/trial-applications";
+			return fetch(url)
+				.then(function (res) { return res.ok ? res.json() : []; });
+		}
+
+		function renderRows(applications) {
+			var tbody = document.querySelector("#applicationTable tbody");
+			tbody.innerHTML = "";
+
+			if (!applications || applications.length === 0) {
+				tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">신청 내역이 없습니다.</td></tr>';
+				return;
+			}
+
+			applications.forEach(function (app) {
+				var rec = RECRUITMENT_MAP[String(app.recruitmentId)];
+				var recTitle = rec ? rec.title : "-";
+				var region = getApplicationRegion(app);
+
+				var tr = document.createElement("tr");
+				tr.style.cursor = "pointer";
+				tr.setAttribute("data-recruitment", String(app.recruitmentId));
+				tr.setAttribute("data-status", app.status || "");
+				tr.setAttribute("data-field", region);
+				tr.addEventListener("click", function () {
+					var href = "detail.html?id=" + app.id;
+					var params = new URLSearchParams(window.location.search);
+					if (params.get("recruitment_id")) {
+						href += "&recruitment_id=" + params.get("recruitment_id");
+					}
+					location.href = href;
+				});
+
+				tr.innerHTML =
+					'<td class="text-truncate" style="max-width:200px;">' + (recTitle || "-") + '</td>' +
+					'<td class="d-none d-md-table-cell">' + region + '</td>' +
+					'<td>' + (app.name || "-") + '</td>' +
+					'<td class="d-none d-md-table-cell">' + (GENDER_MAP[app.gender] || app.gender || "-") + '</td>' +
+					'<td class="d-none d-md-table-cell">' + (app.phone || "-") + '</td>' +
+					'<td class="d-none d-md-table-cell">' + (app.startTime || "-") + '</td>' +
+					'<td>' + (STATUS_MAP[app.status] || app.status || "-") + '</td>' +
+					'<td class="d-none d-md-table-cell">' + AdminUtils.formatDate(app.createdAt) + '</td>';
+
+				tbody.appendChild(tr);
+			});
+		}
+
+		document.addEventListener("DOMContentLoaded", function () {
+			var params = new URLSearchParams(window.location.search);
+			var recruitmentId = params.get("recruitment_id");
+
+			Promise.all([loadFields(), loadRecruitments()]).then(function () {
+				// 검색필터 모집공고 옵션 동적 생성
+				var recruitmentOptions = [];
+				Object.keys(RECRUITMENT_MAP).forEach(function (key) {
+					var r = RECRUITMENT_MAP[key];
+					if (!r.isTemp) {
+						recruitmentOptions.push({ value: String(r.id), text: r.title });
+					}
+				});
+
+				// 검색필터 지역 옵션 동적 생성
+				var fieldOptions = [];
+				Object.keys(FIELD_MAP).forEach(function (key) {
+					fieldOptions.push({ value: FIELD_MAP[key], text: FIELD_MAP[key] });
+				});
+
+				var sf = initSearchFilter({
+					containerId: "searchFilterContainer",
+					tableId: "applicationTable",
+					pagination: { perPage: 10, infoId: "pageInfo", navId: "pageNav" },
+					showReset: true,
+					fields: [
+						{ type: "select", id: "searchRecruitment", label: "모집 공고", colClass: "col-md-3", dataKey: "recruitment",
+							options: recruitmentOptions },
+						{ type: "select", id: "searchStatus", label: "상태", colClass: "col-md-2", dataKey: "status",
+							options: [{ value: "PENDING", text: "대기" }, { value: "APPROVED", text: "승인" }, { value: "REJECTED", text: "거절" }] },
+						{ type: "text", id: "searchKeyword", label: "신청자명 / 연락처", placeholder: "이름 또는 연락처 검색", colClass: "col-md-3", targets: [3, 5] }
+					]
+				});
+
+				// 데이터 로드
+				loadApplications(recruitmentId).then(function (applications) {
+					renderRows(applications);
+					sf.refresh();
+
+					// URL 파라미터로 모집공고 필터 자동 적용
+					if (recruitmentId) {
+						sf.setFieldValue("searchRecruitment", recruitmentId);
+						sf.applyFilter();
+					}
+				});
+			});
+		});
+	</script>
+</body>
+
+</html>

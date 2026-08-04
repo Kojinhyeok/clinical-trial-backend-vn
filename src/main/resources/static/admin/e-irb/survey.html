@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+	<link rel="preconnect" href="https://fonts.gstatic.com">
+	<link rel="shortcut icon" href="../img/icons/icon-48x48.png" />
+
+	<title>심사참여 템플릿 - Human Clinical 관리자</title>
+
+	<link href="../css/app.css" rel="stylesheet">
+	<link href="../css/custom.css" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+	<style>
+		.survey-section {
+			margin-bottom: 2rem;
+		}
+		.survey-section .survey-header {
+			font-weight: 600;
+			padding: 10px 16px;
+			background: #f8f9fa;
+			border: 1px solid #dee2e6;
+			border-bottom: none;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+		}
+		.survey-section .survey-header .header-radios {
+			display: flex;
+			gap: 16px;
+			flex-shrink: 0;
+		}
+		.survey-table {
+			width: 100%;
+			border-collapse: collapse;
+		}
+		.survey-table td {
+			padding: 10px 16px;
+			border: 1px solid #dee2e6;
+			vertical-align: middle;
+		}
+		.survey-table td:first-child {
+			font-size: 0.93rem;
+		}
+		.survey-table td.radio-cell {
+			width: 100px;
+			text-align: center;
+			white-space: nowrap;
+		}
+	</style>
+</head>
+
+<body data-page="e-irb-list" data-base="../">
+	<div class="wrapper">
+
+		<div id="sidebar-container"></div>
+
+		<div class="main">
+			<div id="header-container"></div>
+
+			<main class="content">
+				<div class="container-fluid p-0">
+
+					<div class="d-flex justify-content-between align-items-center mb-3">
+						<h1 class="h3 mb-0"><strong>심사참여 템플릿</strong></h1>
+						<a href="#" class="btn btn-outline-secondary" id="btnBackToDetail">
+							<i class="align-middle" data-feather="arrow-left" style="width:14px;height:14px;"></i>
+							<span class="align-middle ms-1">시험 상세로</span>
+						</a>
+					</div>
+
+					<!-- 시험 정보 요약 -->
+					<div class="card mb-3">
+						<div class="card-body py-3">
+							<div class="row">
+								<div class="col-md-5">
+									<span class="text-muted small">제목</span>
+									<p class="mb-0 fw-bold" id="infoTitle">-</p>
+								</div>
+								<div class="col-md-2">
+									<span class="text-muted small">시험구분(항목)</span>
+									<p class="mb-0" id="infoCategory">-</p>
+								</div>
+								<div class="col-md-2">
+									<span class="text-muted small">상태</span>
+									<p class="mb-0" id="infoStatus">-</p>
+								</div>
+								<div class="col-md-3">
+									<span class="text-muted small">심사참여 기간</span>
+									<p class="mb-0" id="infoPeriod">-</p>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- 심사참여 템플릿 -->
+					<div class="card">
+						<div class="card-header d-flex justify-content-between align-items-center">
+							<h5 class="card-title mb-0">BASIC 심사 템플릿</h5>
+							<div id="participantSelector" style="display:none;">
+								<div class="d-flex align-items-center gap-2">
+									<label class="form-label mb-0 small text-muted text-nowrap">참여자</label>
+									<select class="form-select form-select-sm" id="selectParticipant" style="width:auto;min-width:200px;">
+										<option value="">-- 선택 --</option>
+									</select>
+								</div>
+							</div>
+							<span id="participantInfo" class="badge bg-light text-dark border" style="display:none;font-weight:normal;"></span>
+						</div>
+						<div class="card-body" id="surveyTemplateArea"></div>
+						<div class="card-footer d-flex gap-2">
+							<button class="btn btn-warning" id="btnEditMode" style="display:none;">
+								<i class="align-middle" data-feather="edit" style="width:14px;height:14px;"></i>
+								<span class="align-middle ms-1">수정</span>
+							</button>
+							<button class="btn btn-primary" id="btnSubmitSurvey">
+								<i class="align-middle" data-feather="check" style="width:14px;height:14px;"></i>
+								<span class="align-middle ms-1">심사 제출</span>
+							</button>
+							<button class="btn btn-outline-secondary" id="btnSaveDraft">
+								<i class="align-middle" data-feather="file" style="width:14px;height:14px;"></i>
+								<span class="align-middle ms-1">임시저장</span>
+							</button>
+							<button class="btn btn-danger ms-auto" id="btnDeleteAnswer" style="display:none;" data-bs-toggle="modal" data-bs-target="#deleteAnswerModal">
+								<i class="align-middle" data-feather="trash-2" style="width:14px;height:14px;"></i>
+								<span class="align-middle ms-1">삭제</span>
+							</button>
+						</div>
+					</div>
+
+				</div>
+			</main>
+
+			<footer class="footer">
+				<div class="container-fluid">
+					<div class="row text-muted">
+						<div class="col-12 text-start">
+							<p class="mb-0">&copy; Human Clinical</p>
+						</div>
+					</div>
+				</div>
+			</footer>
+		</div>
+	</div>
+
+	<!-- 심사참여 삭제 확인 모달 -->
+	<div class="modal fade" id="deleteAnswerModal" tabindex="-1" aria-labelledby="deleteAnswerModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-sm">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="deleteAnswerModalLabel">심사참여 삭제</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<p><strong id="deleteAnswerUserName"></strong>의 심사참여 기록을 삭제하시겠습니까?</p>
+					<p class="text-danger small mb-0">삭제된 심사 기록은 복구할 수 없습니다.</p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+					<button type="button" class="btn btn-danger" id="btnConfirmDeleteAnswer">삭제</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../js/app.js"></script>
+	<script src="../js/common.js"></script>
+	<script src="../js/admin-utils.js"></script>
+	<script>
+		// ========== 전역 변수 ==========
+		var CATEGORY_MAP = {};
+		var BADGE_COLORS = ["bg-info", "bg-success", "bg-danger", "bg-primary", "bg-warning text-dark", "bg-secondary"];
+
+		// BASIC 템플릿 질문 데이터
+		var SURVEY_TEMPLATE = {
+			DOCUMENTS: {
+				title: "모든 서류가 제출되었으며, 심사를 위한 충분한 정보가 제공되었는가",
+				questions: [
+					"임상연구계획서",
+					"시험 대상자 설명문",
+					"임상시험 참여 동의서",
+					"시험 대상자모집관련 공고",
+					"안전성 정보",
+					"증례기록서(CRF)",
+					"이해상충서약서",
+					"생명윤리준수서약서"
+				]
+			},
+			PLAN: {
+				title: "Part A: 시험계획서",
+				questions: [
+					"시험목적, 방법이 명확히 기술되어 있다.",
+					"시험의 타당성 및 시험의 안전성에 대해 관련 내용이 명확히 기술되어 있다.",
+					"시험대상자의 시험 대상 집단 (나이, 성별, 인종 등), 예상 시험대상자 수 및 선정/제외 기준이 명확히 기술되어 있다",
+					"타당한 시험설계를 통해 위험이 최소화되었다. (시험대상자를 불필요한 위험에 노출시키지 않도록 시험이 설계되었다.)",
+					"시험의 의뢰기관이나 시험비 지원기관에 대하여 명확히 기술되어 있다",
+					"개인의 사생활 보호를 위한 항목이 충분하고, 적절하다. (시험 과정이 사생활 침해 가능성을 최소화하도록 설계되어 있다.)",
+					"시험대상자의 시험 대상 집단 (나이, 성별, 인종 등), 예상 시험대상자 수 및 선정/제외 기준이 명확히 기술되어 있다."
+				]
+			},
+			AGREEMENTS: {
+				title: "Part B: 시험 참여 동의 설명문 및 동의서 승인 기준",
+				questions: [
+					"인간대상시험의 목적",
+					"시험대상자의 참여 기간, 수, 절차 및 방법",
+					"시험대상자에게 예상되는 위험 및 이득",
+					"개인정보보호에 관한 사항",
+					"시험 참여에 따른 손실에 대한 보상",
+					"개인정보 제공에 관한 사항",
+					"자발적 참여에 관한 사항",
+					"동의의 철회에 관한 사항",
+					"취약한 시험대상자를 포함하는 시험의 경우, 그 필요성이 기술되어있는가? 또한 이들에 대한 보호대책에 관한 사항",
+					"시험자 또는 시험기관의 의무를 소홀히 하거나 책임을 면제하는 내용이 배제에 관한 사항",
+					"인간대상시험에서 발생한 문제, 우려, 질문에 대하여 상의할 담당자의 연락처 및 시험대상자의 권익에 대한 문제, 우려, 질문이 있을 때 상의할 IRB 연락처"
+				]
+			}
+		};
+
+		// 심사 결과 옵션
+		var REVIEW_RESULTS = [
+			{ value: "APPROVED", text: "승인" },
+			{ value: "CONDITIONALLY_APPROVED", text: "조건부 승인" },
+			{ value: "REVISION_REQUIRED", text: "보완 후 재 심의" },
+			{ value: "REJECTED", text: "반려" },
+			{ value: "ON_HOLD", text: "심의 보류" },
+			{ value: "SUSPENDED", text: "시험 중지" }
+		];
+
+		var currentUser = null;
+		var currentTestData = null;
+		var currentSurvey = null;
+		var isViewMode = false;
+
+		// ========== API 로드 ==========
+		function loadCategories() {
+			return fetch("/api/irb-categories")
+				.then(function (res) { return res.json(); })
+				.then(function (list) {
+					list.forEach(function (cat, idx) {
+						CATEGORY_MAP[cat.id] = {
+							code: cat.categoryCode,
+							text: cat.category,
+							badge: BADGE_COLORS[idx % BADGE_COLORS.length]
+						};
+					});
+				});
+		}
+
+		function loadCurrentUser() {
+			return fetch("/api/auth/current-user")
+				.then(function (res) {
+					if (!res.ok) return null;
+					return res.json();
+				})
+				.then(function (user) { currentUser = user; })
+				.catch(function () { currentUser = null; });
+		}
+
+		function loadTestDetail(id) {
+			return fetch("/api/irbs/" + id)
+				.then(function (res) {
+					if (!res.ok) return null;
+					return res.json();
+				});
+		}
+
+		function loadSurveyByUser(testId, userId) {
+			return fetch("/api/irb-surveys")
+				.then(function (res) {
+					if (!res.ok) return null;
+					return res.json();
+				})
+				.then(function (list) {
+					if (!list) return null;
+					for (var i = 0; i < list.length; i++) {
+						var s = list[i];
+						if (s.testResponseDTO && s.testResponseDTO.id === testId &&
+							s.answerDTO && s.answerDTO.userId === userId) {
+							return s;
+						}
+					}
+					return null;
+				})
+				.catch(function () { return null; });
+		}
+
+		function loadProfessors() {
+			return fetch("/api/users/professors")
+				.then(function (res) { return res.json(); })
+				.catch(function () { return []; });
+		}
+
+		// ========== 시험 정보 표시 ==========
+		function renderTestInfo(data) {
+			document.getElementById("infoTitle").textContent = data.title || "-";
+			document.getElementById("infoPeriod").textContent = (data.startDate || "-") + " ~ " + (data.endDate || "-");
+
+			var cat = CATEGORY_MAP[data.categoryId];
+			if (cat) {
+				document.getElementById("infoCategory").innerHTML = '<span class="badge ' + cat.badge + '">' + cat.text + '</span>';
+			}
+
+			if (data.status === "COMPLETED") {
+				document.getElementById("infoStatus").innerHTML = '<span class="badge bg-success">심의완료</span>';
+			} else {
+				document.getElementById("infoStatus").innerHTML = '<span class="badge bg-warning text-dark">심의중</span>';
+			}
+		}
+
+		// ========== 심사 템플릿 렌더링 ==========
+		function renderSurveyTemplate() {
+			var area = document.getElementById("surveyTemplateArea");
+			var html = "";
+			var prefixes = { PLAN: "abcdefg", AGREEMENTS: "abcdefghijk" };
+
+			Object.keys(SURVEY_TEMPLATE).forEach(function (sectionKey) {
+				var section = SURVEY_TEMPLATE[sectionKey];
+				var sectionId = sectionKey.toLowerCase();
+
+				html += '<div class="survey-section">';
+				html += '<div class="survey-header">';
+				html += '<span>' + section.title + '</span>';
+				html += '<div class="header-radios">';
+				html += '<div class="form-check form-check-inline mb-0">';
+				html += '<input class="form-check-input survey-all" type="radio" name="allRadio_' + sectionId + '" data-section="' + sectionId + '" data-val="yes">';
+				html += '<label class="form-check-label small">모두 예</label>';
+				html += '</div>';
+				html += '<div class="form-check form-check-inline mb-0">';
+				html += '<input class="form-check-input survey-all" type="radio" name="allRadio_' + sectionId + '" data-section="' + sectionId + '" data-val="no">';
+				html += '<label class="form-check-label small">모두 아니오</label>';
+				html += '</div>';
+				html += '</div>';
+				html += '</div>';
+				html += '<table class="survey-table">';
+
+				section.questions.forEach(function (q, idx) {
+					var prefix = prefixes[sectionKey] ? prefixes[sectionKey][idx] + ". " : "";
+					var qName = sectionId + "_q" + idx;
+					html += '<tr>';
+					html += '<td>' + prefix + q + '</td>';
+					html += '<td class="radio-cell"><div class="form-check d-inline-block mb-0">';
+					html += '<input class="form-check-input survey-q" type="radio" name="' + qName + '" value="yes" data-section="' + sectionId + '"> 예';
+					html += '</div></td>';
+					html += '<td class="radio-cell"><div class="form-check d-inline-block mb-0">';
+					html += '<input class="form-check-input survey-q" type="radio" name="' + qName + '" value="no" data-section="' + sectionId + '"> 아니오';
+					html += '</div></td>';
+					html += '</tr>';
+				});
+
+				html += '</table>';
+				html += '</div>';
+			});
+
+			// 심사 결과
+			html += '<div class="survey-section">';
+			html += '<div class="survey-header">';
+			html += '<span>심사 결과</span>';
+			html += '</div>';
+			html += '<div style="padding:16px;border:1px solid #dee2e6;border-top:none;">';
+			html += '<div class="d-flex flex-wrap gap-3 mb-3">';
+			REVIEW_RESULTS.forEach(function (r) {
+				html += '<div class="form-check">';
+				html += '<input class="form-check-input" type="radio" name="reviewResult" id="result_' + r.value + '" value="' + r.value + '">';
+				html += '<label class="form-check-label" for="result_' + r.value + '">' + r.text + '</label>';
+				html += '</div>';
+			});
+			html += '</div>';
+			html += '<textarea class="form-control" id="reviewText" rows="3" placeholder="내용을 입력해주세요."></textarea>';
+			html += '</div>';
+			html += '</div>';
+
+			area.innerHTML = html;
+
+			// 모두 예 / 모두 아니오 이벤트
+			area.querySelectorAll(".survey-all").forEach(function (radio) {
+				radio.addEventListener("change", function () {
+					var sec = this.dataset.section;
+					var val = this.dataset.val;
+					area.querySelectorAll('.survey-q[data-section="' + sec + '"][value="' + val + '"]').forEach(function (q) {
+						q.checked = true;
+					});
+				});
+			});
+		}
+
+		// ========== 참여자 선택 (새 심사 작성 시) ==========
+		function renderParticipantSelector(professorList) {
+			var selector = document.getElementById("participantSelector");
+			var select = document.getElementById("selectParticipant");
+
+			// 새 심사 작성 시 항상 교수 드롭다운 표시
+			selector.style.display = "";
+			var html = '<option value="">-- 참여자 선택 --</option>';
+			(professorList || []).forEach(function (p) {
+				html += '<option value="' + p.id + '">' + p.name + ' (' + p.email + ')</option>';
+			});
+			select.innerHTML = html;
+
+			// 로그인된 사용자가 있으면 자동 선택
+			if (currentUser) {
+				select.value = String(currentUser.id);
+			}
+		}
+
+		function getSelectedUserId() {
+			if (currentSurvey && currentSurvey.answerDTO) {
+				return currentSurvey.answerDTO.userId;
+			}
+			var select = document.getElementById("selectParticipant");
+			var val = select ? select.value : "";
+			return val ? parseInt(val) : null;
+		}
+
+		// ========== 기존 답변 로드 ==========
+		function loadExistingAnswer(surveyData, professorList) {
+			var answerDTO = surveyData.answerDTO;
+			var resultDTO = surveyData.resultDTO;
+
+			// 참여자 정보 표시
+			var userName = "사용자 " + (answerDTO ? answerDTO.userId : "?");
+			var userEmail = "";
+
+			if (answerDTO && professorList) {
+				for (var i = 0; i < professorList.length; i++) {
+					if (professorList[i].id === answerDTO.userId) {
+						userName = professorList[i].name;
+						userEmail = professorList[i].email;
+						break;
+					}
+				}
+			}
+
+			var emailInfo = userEmail ? ' (' + userEmail + ')' : '';
+			var infoEl = document.getElementById("participantInfo");
+			infoEl.textContent = userName + emailInfo;
+			infoEl.style.display = "";
+			document.getElementById("participantSelector").style.display = "none";
+
+			// 질문 답변 채우기 (answerList Map)
+			if (answerDTO && answerDTO.answerList) {
+				Object.keys(answerDTO.answerList).forEach(function (key) {
+					var val = answerDTO.answerList[key];
+					var radio = document.querySelector('input[name="' + key + '"][value="' + val + '"]');
+					if (radio) radio.checked = true;
+				});
+			}
+
+			// 심사 결과 채우기
+			if (resultDTO && resultDTO.reviewResult) {
+				var resultRadio = document.querySelector('input[name="reviewResult"][value="' + resultDTO.reviewResult + '"]');
+				if (resultRadio) resultRadio.checked = true;
+			}
+
+			// 심사 의견 채우기
+			if (resultDTO && resultDTO.reviewText) {
+				document.getElementById("reviewText").value = resultDTO.reviewText;
+			}
+
+			// 삭제 버튼에 사용자 이름 표시
+			document.getElementById("deleteAnswerUserName").textContent = userName;
+
+			// 읽기 전용 모드
+			setReadOnlyMode(true);
+		}
+
+		// ========== 읽기 전용 / 수정 모드 전환 ==========
+		function setReadOnlyMode(readonly) {
+			isViewMode = readonly;
+			var area = document.getElementById("surveyTemplateArea");
+
+			area.querySelectorAll('input[type="radio"]').forEach(function (r) {
+				r.disabled = readonly;
+			});
+
+			document.querySelectorAll('input[name="reviewResult"]').forEach(function (r) {
+				r.disabled = readonly;
+			});
+
+			document.getElementById("reviewText").disabled = readonly;
+
+			document.getElementById("btnEditMode").style.display = readonly ? "" : "none";
+			document.getElementById("btnSubmitSurvey").style.display = readonly ? "none" : "";
+			document.getElementById("btnSaveDraft").style.display = readonly ? "none" : "";
+		}
+
+		// ========== 답변 수집 ==========
+		function collectAnswers() {
+			var answerList = {};
+			Object.keys(SURVEY_TEMPLATE).forEach(function (sectionKey) {
+				var section = SURVEY_TEMPLATE[sectionKey];
+				var sectionId = sectionKey.toLowerCase();
+				section.questions.forEach(function (q, idx) {
+					var name = sectionId + "_q" + idx;
+					var checked = document.querySelector('input[name="' + name + '"]:checked');
+					if (checked) answerList[name] = checked.value;
+				});
+			});
+			return answerList;
+		}
+
+		function collectResult() {
+			var resultRadio = document.querySelector('input[name="reviewResult"]:checked');
+			return {
+				reviewResult: resultRadio ? resultRadio.value : null,
+				reviewText: document.getElementById("reviewText").value.trim()
+			};
+		}
+
+		// ========== 미응답 체크 ==========
+		function checkUnanswered() {
+			var unanswered = [];
+			Object.keys(SURVEY_TEMPLATE).forEach(function (sectionKey) {
+				var section = SURVEY_TEMPLATE[sectionKey];
+				var sectionId = sectionKey.toLowerCase();
+				section.questions.forEach(function (q, idx) {
+					var name = sectionId + "_q" + idx;
+					var checked = document.querySelector('input[name="' + name + '"]:checked');
+					if (!checked) unanswered.push(sectionId + " " + (idx + 1) + "번");
+				});
+			});
+
+			var result = document.querySelector('input[name="reviewResult"]:checked');
+			if (!result) unanswered.push("심사 결과");
+
+			return unanswered;
+		}
+
+		// ========== 초기화 ==========
+		document.addEventListener("DOMContentLoaded", function () {
+			var params = new URLSearchParams(window.location.search);
+			var id = params.get("id");
+			var userId = params.get("userId");
+
+			// 뒤로가기 링크 설정
+			document.getElementById("btnBackToDetail").href = id ? "detail?id=" + id : "list";
+
+			if (!id) {
+				alert("IRB 시험 ID가 필요합니다.");
+				location.href = "list";
+				return;
+			}
+
+			var testId = parseInt(id);
+			var targetUserId = userId ? parseInt(userId) : null;
+
+			Promise.all([loadCategories(), loadCurrentUser(), loadTestDetail(testId), loadProfessors()])
+				.then(function (results) {
+					var testData = results[2];
+					var professorList = results[3];
+
+					if (!testData) {
+						alert("IRB 시험을 찾을 수 없습니다.");
+						location.href = "list";
+						return;
+					}
+
+					currentTestData = testData;
+					renderTestInfo(testData);
+					renderSurveyTemplate();
+
+					// 기존 답변 로드 (userId가 있는 경우)
+					if (targetUserId) {
+						return loadSurveyByUser(testId, targetUserId).then(function (survey) {
+							if (survey) {
+								currentSurvey = survey;
+								loadExistingAnswer(survey, professorList);
+								document.getElementById("btnDeleteAnswer").style.display = "";
+							} else {
+								alert("해당 사용자의 심사 기록을 찾을 수 없습니다.");
+							}
+						});
+					} else {
+						// 새 심사 작성: 참여자 선택 UI 표시
+						renderParticipantSelector(professorList);
+					}
+				})
+				.catch(function (err) {
+					console.error("초기화 실패:", err);
+				});
+
+			// 수정 모드 전환
+			document.getElementById("btnEditMode").addEventListener("click", function () {
+				setReadOnlyMode(false);
+			});
+
+			// 심사 제출
+			document.getElementById("btnSubmitSurvey").addEventListener("click", function () {
+				var selectedUserId = getSelectedUserId();
+				if (!selectedUserId) {
+					alert("참여자를 선택해주세요.");
+					return;
+				}
+
+				var unanswered = checkUnanswered();
+				if (unanswered.length > 0) {
+					alert("미응답 항목이 있습니다.\n\n" + unanswered.join(", "));
+					return;
+				}
+
+				var answerList = collectAnswers();
+				var resultData = collectResult();
+				var isUpdate = !!currentSurvey;
+
+				var answerDTO = {
+					userId: selectedUserId,
+					irbTestId: testId,
+					surveyTemplateId: (currentSurvey && currentSurvey.answerDTO) ? currentSurvey.answerDTO.surveyTemplateId : null,
+					answerList: answerList
+				};
+
+				var resultDTO = {
+					userId: answerDTO.userId,
+					irbTestId: testId,
+					surveyTemplateId: answerDTO.surveyTemplateId,
+					reviewResult: resultData.reviewResult,
+					reviewText: resultData.reviewText
+				};
+
+				var requestBody = {
+					answerDTO: answerDTO,
+					resultDTO: resultDTO
+				};
+
+				var url, method;
+				if (isUpdate) {
+					url = "/api/irb-surveys/" + testId + "?userId=" + answerDTO.userId;
+					method = "PUT";
+				} else {
+					url = "/api/irb-surveys";
+					method = "POST";
+				}
+
+				var btn = this;
+				btn.disabled = true;
+
+				fetch(url, {
+					method: method,
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify(requestBody)
+				})
+				.then(function (res) {
+					if (!res.ok) throw new Error("저장 실패: " + res.status);
+					alert(isUpdate ? "심사가 수정되었습니다." : "심사가 제출되었습니다.");
+					location.href = "detail?id=" + testId;
+				})
+				.catch(function (err) {
+					alert("심사 저장 중 오류가 발생했습니다.\n" + err.message);
+				})
+				.finally(function () {
+					btn.disabled = false;
+				});
+			});
+
+			// 임시저장
+			document.getElementById("btnSaveDraft").addEventListener("click", function () {
+				var selectedUserId = getSelectedUserId();
+				if (!selectedUserId) {
+					alert("참여자를 선택해주세요.");
+					return;
+				}
+
+				var answerList = collectAnswers();
+				var resultData = collectResult();
+
+				var answerDTO = {
+					userId: selectedUserId,
+					irbTestId: testId,
+					surveyTemplateId: (currentSurvey && currentSurvey.answerDTO) ? currentSurvey.answerDTO.surveyTemplateId : null,
+					answerList: answerList
+				};
+
+				var resultDTO = {
+					userId: answerDTO.userId,
+					irbTestId: testId,
+					surveyTemplateId: answerDTO.surveyTemplateId,
+					reviewResult: resultData.reviewResult,
+					reviewText: resultData.reviewText
+				};
+
+				var requestBody = {
+					answerDTO: answerDTO,
+					resultDTO: resultDTO
+				};
+
+				var isUpdate = !!currentSurvey;
+				var url, method;
+				if (isUpdate) {
+					url = "/api/irb-surveys/" + testId + "?userId=" + answerDTO.userId;
+					method = "PUT";
+				} else {
+					url = "/api/irb-surveys";
+					method = "POST";
+				}
+
+				var btn = this;
+				btn.disabled = true;
+
+				fetch(url, {
+					method: method,
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify(requestBody)
+				})
+				.then(function (res) {
+					if (!res.ok) throw new Error("저장 실패: " + res.status);
+					alert("임시저장되었습니다.");
+				})
+				.catch(function (err) {
+					alert("임시저장 중 오류가 발생했습니다.\n" + err.message);
+				})
+				.finally(function () {
+					btn.disabled = false;
+				});
+			});
+
+			// 심사참여 삭제 확인
+			document.getElementById("btnConfirmDeleteAnswer").addEventListener("click", function () {
+				if (!currentSurvey || !currentSurvey.answerDTO) return;
+
+				var deleteUserId = currentSurvey.answerDTO.userId;
+				this.disabled = true;
+				var self = this;
+
+				fetch("/api/irb-surveys/" + testId + "?userId=" + deleteUserId, { method: "DELETE" })
+					.then(function (res) {
+						if (!res.ok) throw new Error("삭제 실패");
+						alert("심사참여 기록이 삭제되었습니다.");
+						location.href = "detail?id=" + testId;
+					})
+					.catch(function (err) {
+						alert("삭제 중 오류가 발생했습니다.\n" + err.message);
+					})
+					.finally(function () {
+						self.disabled = false;
+					});
+			});
+		});
+	</script>
+</body>
+
+</html>

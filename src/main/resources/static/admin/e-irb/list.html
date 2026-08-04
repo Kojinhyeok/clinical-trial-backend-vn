@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+	<link rel="preconnect" href="https://fonts.gstatic.com">
+	<link rel="shortcut icon" href="../img/icons/icon-48x48.png" />
+
+	<title>E-IRB 관리 - Human Clinical 관리자</title>
+
+	<link href="../css/app.css" rel="stylesheet">
+	<link href="../css/custom.css" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body data-page="e-irb-list" data-base="../">
+	<div class="wrapper">
+
+		<div id="sidebar-container"></div>
+
+		<div class="main">
+			<div id="header-container"></div>
+
+			<main class="content">
+				<div class="container-fluid p-0">
+
+					<div class="d-flex justify-content-between align-items-center mb-3">
+						<h1 class="h3 mb-0"><strong>E-IRB 관리</strong></h1>
+						<a href="detail" class="btn btn-primary">
+							<i class="align-middle" data-feather="plus"></i>
+							<span class="align-middle ms-1">IRB 시험 등록</span>
+						</a>
+					</div>
+
+					<!-- 검색 필터 -->
+					<div id="searchFilterContainer"></div>
+
+					<!-- IRB 시험 목록 -->
+					<div class="card">
+						<div class="card-header d-flex justify-content-between align-items-center">
+							<h5 class="card-title mb-0">IRB 시험 목록</h5>
+							<button class="btn btn-danger btn-sm" id="btnBulkDelete" style="display:none;" data-bs-toggle="modal" data-bs-target="#deleteModal">
+								<i class="align-middle" data-feather="trash-2" style="width:14px;height:14px;"></i>
+								<span class="align-middle ms-1">선택 삭제 (<span id="deleteCount">0</span>)</span>
+							</button>
+						</div>
+						<table class="table table-hover my-0" id="irbTable">
+							<thead>
+								<tr>
+									<th style="width:40px;" class="text-center">
+										<input class="form-check-input" type="checkbox" id="checkAll">
+									</th>
+									<th style="width:120px;">시험구분(항목)</th>
+									<th>제목</th>
+									<th style="width:90px;">상태</th>
+									<th class="d-none d-md-table-cell" style="width:240px;">심사참여 기간</th>
+									<th class="d-none d-md-table-cell" style="width:120px;">등록일</th>
+								</tr>
+							</thead>
+							<tbody>
+							</tbody>
+						</table>
+						<div class="card-footer d-flex justify-content-between align-items-center">
+							<span class="text-muted small" id="pageInfo"></span>
+							<nav><ul class="pagination pagination-sm mb-0" id="pageNav"></ul></nav>
+						</div>
+					</div>
+
+				</div>
+			</main>
+
+			<footer class="footer">
+				<div class="container-fluid">
+					<div class="row text-muted">
+						<div class="col-12 text-start">
+							<p class="mb-0">&copy; Human Clinical</p>
+						</div>
+					</div>
+				</div>
+			</footer>
+		</div>
+	</div>
+
+	<!-- 삭제 확인 모달 -->
+	<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-sm">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="deleteModalLabel">IRB 시험 삭제</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<p>선택한 <strong id="deleteCountModal">0</strong>건의 IRB 시험을 삭제하시겠습니까?</p>
+					<p class="text-danger small mb-0">첨부파일도 함께 삭제됩니다. 이 작업은 되돌릴 수 없습니다.</p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+					<button type="button" class="btn btn-danger" id="btnConfirmDelete">삭제</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../js/app.js"></script>
+	<script src="../js/pagination.js"></script>
+	<script src="../js/search-filter.js"></script>
+	<script src="../js/common.js"></script>
+	<script src="../js/admin-utils.js"></script>
+	<script>
+	function escapeHtml(str) {
+		if (!str) return "";
+		var div = document.createElement("div");
+		div.textContent = str;
+		return div.innerHTML;
+	}
+
+	var CATEGORY_MAP = {};
+	var BADGE_COLORS = ["bg-info", "bg-success", "bg-danger", "bg-primary", "bg-warning text-dark", "bg-secondary"];
+
+	function getReviewBadge(item) {
+		if (item.reviewStatus === "REVIEW_NEEDED") return '<span class="badge bg-danger ms-1">재심사 필요</span>';
+		return "";
+	}
+
+	function getCategoryBadge(catId) {
+		var cat = CATEGORY_MAP[catId];
+		if (!cat) return '<span class="badge bg-secondary">-</span>';
+		return '<span class="badge ' + cat.badge + '">' + escapeHtml(cat.category) + "</span>";
+	}
+
+	function getStatusBadge(item) {
+		if (item.isTemp === 1) return '<span class="badge bg-secondary">임시저장</span>';
+		if (item.status === "COMPLETED") return '<span class="badge bg-success">심의완료</span>';
+		return '<span class="badge bg-warning text-dark">심의중</span>';
+	}
+
+	function loadCategories() {
+		return fetch("/api/irb-categories")
+		.then(function (res) {
+			return res.json();
+		})
+		.then(function (list) {
+			list.forEach(function (cat, idx) {
+			CATEGORY_MAP[cat.id] = {
+				code: cat.categoryCode,
+				category: cat.category,
+				badge: BADGE_COLORS[idx % BADGE_COLORS.length],
+			};
+			});
+		});
+	}
+
+	/**
+	 * ✅ 트리 정렬(대댓글 포함)
+	 * - 원글(depth=0) 최신순
+	 * - 같은 스레드(irbTestId=원글id) 내부에서
+	 *   부모(irbTestIdRef) 바로 아래에 자식들을 붙임
+	 * - 같은 부모의 자식들끼리는 createdAt 최신순
+	 */
+	function sortByRootThenReplies(items) {
+		function timeOf(x) {
+		var t = new Date(x && x.createdAt ? x.createdAt : 0).getTime();
+		return isNaN(t) ? 0 : t;
+		}
+
+		// 원글만
+		var roots = items.filter(function (it) {
+		return (it.depth || 0) === 0;
+		});
+
+		// 원글 최신순
+		roots.sort(function (a, b) {
+		return timeOf(b) - timeOf(a);
+		});
+
+		var result = [];
+
+		roots.forEach(function (root) {
+		// 같은 스레드(원글 포함)
+		var threadItems = items.filter(function (x) {
+			return x.irbTestId === root.irbTestId; // root.irbTestId === root.id
+		});
+
+		// parentId(irbTestIdRef) -> children[]
+		var childrenMap = {};
+		threadItems.forEach(function (x) {
+			var parentId = x.irbTestIdRef;
+			if (parentId == null) return; // 원글은 ref가 null
+			if (!childrenMap[parentId]) childrenMap[parentId] = [];
+			childrenMap[parentId].push(x);
+		});
+
+		// 같은 부모의 자식들은 최신순
+		Object.keys(childrenMap).forEach(function (pid) {
+			childrenMap[pid].sort(function (a, b) {
+			return timeOf(b) - timeOf(a);
+			});
+		});
+
+		// DFS: 부모 바로 아래에 자식 붙이고, 자식의 자식도 붙임
+		function walk(parentId) {
+			var kids = childrenMap[parentId] || [];
+			kids.forEach(function (child) {
+			result.push(child);
+			walk(child.id);
+			});
+		}
+
+		// root -> root의 자식들 재귀
+		result.push(root);
+		walk(root.id);
+		});
+
+		// (옵션) 루트가 없는 고아 글은 맨 아래 최신순
+		var used = new Set(result.map(function (x) { return x.id; }));
+		var orphans = items.filter(function (x) { return !used.has(x.id); });
+		orphans.sort(function (a, b) { return timeOf(b) - timeOf(a); });
+		orphans.forEach(function (x) { result.push(x); });
+
+		return result;
+	}
+
+	function loadIrbs() {
+		return fetch("/api/irbs")
+		.then(function (res) {
+			if (!res.ok) throw new Error("API 오류: " + res.status);
+			return res.json();
+		})
+		.then(function (list) {
+			var items = Array.isArray(list) ? list : [];
+			var sorted = sortByRootThenReplies(items); // ✅ 대댓글 포함 트리 정렬
+			renderRows(sorted);
+		})
+		.catch(function (err) {
+			console.error("IRB 목록 로딩 실패:", err);
+			document.querySelector("#irbTable tbody").innerHTML =
+			'<tr><td colspan="6" class="text-center text-muted py-4">데이터를 불러올 수 없습니다.</td></tr>';
+		});
+	}
+
+	function renderRows(items) {
+		var tbody = document.querySelector("#irbTable tbody");
+		tbody.innerHTML = "";
+
+		if (items.length === 0) {
+		tbody.innerHTML =
+			'<tr><td colspan="6" class="text-center text-muted py-4">등록된 IRB 시험이 없습니다.</td></tr>';
+		return;
+		}
+
+		items.forEach(function (item) {
+		var tr = document.createElement("tr");
+		var cat = CATEGORY_MAP[item.categoryId];
+		var catCode = cat ? cat.code : "";
+
+		tr.setAttribute("data-status", item.isTemp === 1 ? "" : item.status || "");
+		tr.setAttribute("data-category", catCode);
+		tr.setAttribute("data-temp", item.isTemp || 0);
+		tr.setAttribute("data-id", item.id);
+		tr.setAttribute("data-depth", item.depth || 0);
+
+		var depth = item.depth || 0;
+		var paddingStyle = depth > 0 ? "padding-left:" + (8 + depth * 16) + "px;" : "";
+
+		var rePrefix = "";
+		if (depth > 0) {
+			var re = "";
+			for (var i = 0; i < depth; i++) re += "Re:";
+			rePrefix = '<span class="text-primary fw-bold me-1">ㄴ' + re + "</span> ";
+		}
+
+		var tempBadge = item.isTemp === 1 ? '<span class="badge bg-secondary me-1">임시</span>' : "";
+		var period = (item.startDate || "-") + " ~ " + (item.endDate || "-");
+
+		tr.innerHTML =
+			'<td class="text-center" onclick="event.stopPropagation()">' +
+			'<input class="form-check-input row-check" type="checkbox" value="' + item.id + '">' +
+			"</td>" +
+			"<td>" + getCategoryBadge(item.categoryId) + "</td>" +
+			'<td style="cursor:pointer;' + paddingStyle + '" onclick="location.href=\'detail?id=' + item.id + '\'">' +
+			rePrefix + tempBadge + escapeHtml(item.title || "") + getReviewBadge(item) + "</td>" +
+			"<td>" + getStatusBadge(item) + "</td>" +
+			'<td class="d-none d-md-table-cell">' + period + "</td>" +
+			'<td class="d-none d-md-table-cell">' + AdminUtils.formatDate(item.createdAt) + "</td>";
+
+		tbody.appendChild(tr);
+		});
+	}
+
+	var searchFilterInited = false;
+	function initSearchAndPagination() {
+		if (!searchFilterInited) {
+		var catOptions = [];
+		Object.keys(CATEGORY_MAP).forEach(function (id) {
+			var cat = CATEGORY_MAP[id];
+			catOptions.push({ value: cat.code, text: cat.category });
+		});
+
+		initSearchFilter({
+			containerId: "searchFilterContainer",
+			tableId: "irbTable",
+			pagination: { perPage: 10, infoId: "pageInfo", navId: "pageNav" },
+			fields: [
+			{ type: "text", id: "searchTitle", label: "제목", placeholder: "제목 검색", colClass: "col-md-3", targets: [3] },
+			{
+				type: "select",
+				id: "searchCategory",
+				label: "시험구분(항목)",
+				colClass: "col-md-2",
+				dataKey: "category",
+				options: catOptions,
+			},
+			{
+				type: "select",
+				id: "searchStatus",
+				label: "상태",
+				colClass: "col-md-2",
+				dataKey: "status",
+				options: [
+				{ value: "IN_REVIEW", text: "심의중" },
+				{ value: "COMPLETED", text: "심의완료" },
+				],
+			},
+			],
+		});
+		searchFilterInited = true;
+		} else {
+		if (typeof initPagination === "function") {
+			initPagination({ tableId: "irbTable", perPage: 10, infoId: "pageInfo", navId: "pageNav" });
+		}
+		}
+	}
+
+	document.addEventListener("DOMContentLoaded", function () {
+		loadCategories()
+		.then(function () { return loadIrbs(); })
+		.then(function () { initSearchAndPagination(); });
+
+		var checkAll = document.getElementById("checkAll");
+		var btnBulkDelete = document.getElementById("btnBulkDelete");
+
+		function updateDeleteButton() {
+		var checked = document.querySelectorAll(".row-check:checked");
+		var count = checked.length;
+		document.getElementById("deleteCount").textContent = count;
+		document.getElementById("deleteCountModal").textContent = count;
+		btnBulkDelete.style.display = count > 0 ? "" : "none";
+
+		var all = document.querySelectorAll(".row-check");
+		checkAll.checked = all.length > 0 && checked.length === all.length;
+		checkAll.indeterminate = checked.length > 0 && checked.length < all.length;
+		}
+
+		checkAll.addEventListener("change", function () {
+		document.querySelectorAll(".row-check").forEach(function (cb) {
+			cb.checked = checkAll.checked;
+		});
+		updateDeleteButton();
+		});
+
+		document.getElementById("irbTable").addEventListener("change", function (e) {
+		if (e.target.classList.contains("row-check")) updateDeleteButton();
+		});
+
+		document.getElementById("btnConfirmDelete").addEventListener("click", function () {
+		var checked = document.querySelectorAll(".row-check:checked");
+		var ids = [];
+		checked.forEach(function (cb) { ids.push(cb.value); });
+		if (ids.length === 0) return;
+
+		var btn = this;
+		btn.disabled = true;
+
+		var promises = ids.map(function (id) {
+			return fetch("/api/irbs/" + id, { method: "DELETE" });
+		});
+
+		Promise.all(promises)
+			.then(function () {
+			document.querySelector('#deleteModal [data-bs-dismiss="modal"]').click();
+			return loadIrbs();
+			})
+			.then(function () {
+			initSearchAndPagination();
+			checkAll.checked = false;
+			updateDeleteButton();
+			})
+			.catch(function () {
+			alert("삭제 중 오류가 발생했습니다.");
+			})
+			.finally(function () {
+			btn.disabled = false;
+			});
+		});
+	});
+	</script>
+</body>
+
+</html>

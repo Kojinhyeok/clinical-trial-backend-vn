@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+	<link rel="preconnect" href="https://fonts.gstatic.com">
+	<link rel="shortcut icon" href="../img/icons/icon-48x48.png" />
+
+	<title>시험문의 상세 - Human Clinical 관리자</title>
+
+	<link href="../css/app.css" rel="stylesheet">
+	<link href="../css/custom.css" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+	<style>
+		.answer-section {
+			border-top: 2px solid #3b7ddd;
+			padding-top: 1.25rem;
+			margin-top: 1.5rem;
+		}
+		.answer-box {
+			background: #f8f9fa;
+			border: 1px solid #e9ecef;
+			border-radius: 8px;
+			padding: 1rem 1.25rem;
+			margin-bottom: 0.75rem;
+		}
+		.answer-box .answer-meta {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 0.5rem;
+		}
+		.answer-box .answer-meta .answer-author {
+			font-weight: 600;
+			color: #3b7ddd;
+		}
+		.answer-box .answer-meta .answer-date {
+			font-size: 0.85rem;
+			color: #6c757d;
+		}
+		.answer-box .answer-content {
+			white-space: pre-wrap;
+			line-height: 1.7;
+		}
+		.answer-box .answer-actions {
+			margin-top: 0.75rem;
+			display: flex;
+			gap: 0.5rem;
+			justify-content: flex-end;
+		}
+	</style>
+</head>
+
+<body data-page="trial-question-list" data-base="../">
+	<div class="wrapper">
+
+		<div id="sidebar-container"></div>
+
+		<div class="main">
+			<div id="header-container"></div>
+
+			<main class="content">
+				<div class="container-fluid p-0">
+
+					<div class="d-flex justify-content-between align-items-center mb-3">
+						<h1 class="h3 mb-0"><strong id="pageTitle">시험문의 상세</strong></h1>
+						<a href="list" class="btn btn-outline-secondary">
+							<i class="align-middle" data-feather="arrow-left" style="width:14px;height:14px;"></i>
+							<span class="align-middle ms-1">목록으로</span>
+						</a>
+					</div>
+
+					<!-- ===== 상세 보기 모드 ===== -->
+					<div class="card detail-view" id="viewMode" style="display:none;">
+						<div class="card-body">
+							<!-- 상태 & 날짜 -->
+							<div class="row mb-3">
+								<div class="col-md-4">
+									<label class="form-label text-muted">상태</label>
+									<p id="viewStatus"></p>
+								</div>
+								<div class="col-md-4">
+									<label class="form-label text-muted">등록일</label>
+									<p class="form-control-plaintext" id="viewCreatedAt"></p>
+								</div>
+								<div class="col-md-4">
+									<label class="form-label text-muted">수정일</label>
+									<p class="form-control-plaintext" id="viewUpdatedAt"></p>
+								</div>
+							</div>
+
+							<!-- 제목 -->
+							<div class="mb-3">
+								<label class="form-label text-muted">제목</label>
+								<p class="form-control-plaintext fw-bold fs-5" id="viewTitle"></p>
+							</div>
+
+							<!-- 회사 정보 -->
+							<div class="row mb-3">
+								<div class="col-md-4">
+									<label class="form-label text-muted">회사명</label>
+									<p class="form-control-plaintext" id="viewCompanyName"></p>
+								</div>
+								<div class="col-md-4">
+									<label class="form-label text-muted">사업자번호</label>
+									<p class="form-control-plaintext" id="viewCompanyId"></p>
+								</div>
+								<div class="col-md-4">
+									<label class="form-label text-muted">제품 종류</label>
+									<p class="form-control-plaintext" id="viewProductType"></p>
+								</div>
+							</div>
+
+							<!-- 담당자 정보 -->
+							<div class="row mb-3">
+								<div class="col-md-4">
+									<label class="form-label text-muted">담당자명</label>
+									<p class="form-control-plaintext" id="viewRepName"></p>
+								</div>
+								<div class="col-md-4">
+									<label class="form-label text-muted">담당자 직책</label>
+									<p class="form-control-plaintext" id="viewRepPosition"></p>
+								</div>
+							</div>
+							<div class="row mb-3">
+								<div class="col-md-4">
+									<label class="form-label text-muted">연락처</label>
+									<p class="form-control-plaintext" id="viewPhone"></p>
+								</div>
+								<div class="col-md-4">
+									<label class="form-label text-muted">이메일</label>
+									<p class="form-control-plaintext" id="viewEmail"></p>
+								</div>
+							</div>
+
+							<!-- 시험 희망일 -->
+							<div class="row mb-3">
+								<div class="col-md-4">
+									<label class="form-label text-muted">희망 시작일</label>
+									<p class="form-control-plaintext" id="viewStartDate"></p>
+								</div>
+								<div class="col-md-4">
+									<label class="form-label text-muted">희망 결과 보고일</label>
+									<p class="form-control-plaintext" id="viewEndDate"></p>
+								</div>
+								<div class="col-md-4">
+									<label class="form-label text-muted">상담 희망 방식</label>
+									<p class="form-control-plaintext" id="viewContactType"></p>
+								</div>
+							</div>
+
+							<!-- 문의 내용 -->
+							<div class="mb-3">
+								<label class="form-label text-muted">문의 내용</label>
+								<p class="form-control-plaintext" id="viewContent" style="white-space:pre-wrap;"></p>
+							</div>
+
+							<hr>
+
+							<!-- ===== 답변 영역 ===== -->
+							<div class="answer-section" id="answerSection">
+								<h5 class="mb-3">
+									<i class="align-middle" data-feather="message-circle" style="width:18px;height:18px;"></i>
+									<span class="align-middle ms-1">답변</span>
+								</h5>
+
+								<!-- 답변 목록 -->
+								<div id="answerList"></div>
+
+								<!-- 답변 입력/수정 폼 -->
+								<div id="answerForm" style="display:none;">
+									<div class="mb-2">
+										<textarea class="form-control" id="inputAnswer" rows="4" placeholder="답변 내용을 입력하세요"></textarea>
+										<div class="invalid-feedback">답변 내용을 입력해주세요.</div>
+									</div>
+									<div class="d-flex gap-2 justify-content-end">
+										<button class="btn btn-sm btn-secondary" id="btnCancelAnswer">취소</button>
+										<button class="btn btn-sm btn-primary" id="btnSaveAnswer">
+											<i class="align-middle" data-feather="send" style="width:12px;height:12px;"></i>
+											<span class="align-middle ms-1" id="btnSaveAnswerLabel">답변 등록</span>
+										</button>
+									</div>
+								</div>
+
+								<!-- 답변 추가 버튼 -->
+								<div id="answerAddBtn">
+									<button class="btn btn-primary btn-sm" id="btnAddAnswer">
+										<i class="align-middle" data-feather="plus" style="width:12px;height:12px;"></i>
+										<span class="align-middle ms-1">답변 작성</span>
+									</button>
+								</div>
+							</div>
+						</div>
+						<div class="card-footer d-flex gap-2">
+							<button class="btn btn-danger" id="btnDeleteView" data-bs-toggle="modal" data-bs-target="#deleteModal">
+								<i class="align-middle" data-feather="trash-2" style="width:14px;height:14px;"></i>
+								<span class="align-middle ms-1">문의 삭제</span>
+							</button>
+						</div>
+					</div>
+
+				</div>
+			</main>
+
+			<footer class="footer">
+				<div class="container-fluid">
+					<div class="row text-muted">
+						<div class="col-12 text-start">
+							<p class="mb-0">&copy; Human Clinical</p>
+						</div>
+					</div>
+				</div>
+			</footer>
+		</div>
+	</div>
+
+	<!-- 문의 삭제 확인 모달 -->
+	<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-sm">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="deleteModalLabel">시험문의 삭제</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<p>이 시험문의를 삭제하시겠습니까?</p>
+					<p class="text-danger small mb-0">이 작업은 되돌릴 수 없습니다.</p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+					<button type="button" class="btn btn-danger" id="btnConfirmDelete">삭제</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 답변 삭제 확인 모달 -->
+	<div class="modal fade" id="deleteAnswerModal" tabindex="-1" aria-labelledby="deleteAnswerModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-sm">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="deleteAnswerModalLabel">답변 삭제</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<p>이 답변을 삭제하시겠습니까?</p>
+					<p class="text-danger small mb-0">이 작업은 되돌릴 수 없습니다.</p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+					<button type="button" class="btn btn-danger" id="btnConfirmDeleteAnswer">삭제</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../js/app.js"></script>
+	<script src="../js/common.js"></script>
+	<script src="../js/admin-utils.js"></script>
+	<script>
+		var CONTACT_TYPE_MAP = {
+			"PHONE": "전화 상담",
+			"EMAIL": "이메일 상담",
+			"VISIT": "방문 상담",
+			"VIDEO": "화상 상담"
+		};
+
+		var currentData = null;
+		var currentUserId = null;
+		var editingAnswerId = null; // null = 새 답변, 숫자 = 수정 중인 답변 ID
+		var deleteAnswerId = null;
+
+		function escapeHtml(str) {
+			if (!str) return "";
+			var div = document.createElement("div");
+			div.textContent = str;
+			return div.innerHTML;
+		}
+
+		function fetchCurrentUser() {
+			return fetch("/api/auth/current-user")
+				.then(function (res) { return res.ok ? res.json() : null; })
+				.then(function (user) { if (user && user.id) currentUserId = user.id; })
+				.catch(function () { currentUserId = null; });
+		}
+
+		document.addEventListener("DOMContentLoaded", function () {
+			var params = new URLSearchParams(window.location.search);
+			var id = params.get("id");
+
+			if (!id) {
+				alert("잘못된 접근입니다.");
+				location.href = "list";
+				return;
+			}
+
+			fetchCurrentUser().then(function () {
+				loadDetail(id);
+			});
+
+			// ===== 상세 데이터 로드 =====
+			function loadDetail(questionId) {
+				fetch("/api/trial-questions/" + questionId)
+					.then(function (res) {
+						if (!res.ok) throw new Error("NOT_FOUND");
+						return res.json();
+					})
+					.then(function (data) {
+						currentData = data;
+						showViewMode(data);
+					})
+					.catch(function () {
+						alert("시험문의를 찾을 수 없습니다.");
+						location.href = "list";
+					});
+			}
+
+			// ===== 상세 보기 =====
+			function showViewMode(data) {
+				document.getElementById("viewMode").style.display = "";
+
+				if (data.status === "ANSWERED") {
+					document.getElementById("viewStatus").innerHTML = '<span class="badge bg-success">답변완료</span>';
+				} else {
+					document.getElementById("viewStatus").innerHTML = '<span class="badge bg-warning text-dark">대기중</span>';
+				}
+
+				document.getElementById("viewCreatedAt").textContent = AdminUtils.formatDate(data.createdAt);
+				document.getElementById("viewUpdatedAt").textContent = AdminUtils.formatDate(data.updatedAt);
+				document.getElementById("viewTitle").textContent = data.title || "-";
+				document.getElementById("viewCompanyName").textContent = data.companyName || "-";
+				document.getElementById("viewCompanyId").textContent = data.companyId || "-";
+				document.getElementById("viewProductType").textContent = data.productType || "-";
+				document.getElementById("viewRepName").textContent = data.representativeName || "-";
+				document.getElementById("viewRepPosition").textContent = data.representativePosition || "-";
+				document.getElementById("viewPhone").textContent = data.phone || "-";
+				document.getElementById("viewEmail").textContent = data.email || "-";
+				document.getElementById("viewStartDate").textContent = data.startDate || "-";
+				document.getElementById("viewEndDate").textContent = data.endDate || "-";
+				document.getElementById("viewContactType").textContent = CONTACT_TYPE_MAP[data.contactType] || data.contactType || "-";
+				document.getElementById("viewContent").textContent = data.content || "-";
+
+				renderAnswers(data.answers || []);
+				if (window.feather) feather.replace();
+			}
+
+			// ===== 답변 목록 렌더링 =====
+			function renderAnswers(answers) {
+				var listEl = document.getElementById("answerList");
+				var formEl = document.getElementById("answerForm");
+				var addBtnEl = document.getElementById("answerAddBtn");
+
+				formEl.style.display = "none";
+				editingAnswerId = null;
+				listEl.innerHTML = "";
+
+				if (answers.length === 0) {
+					listEl.innerHTML = '<p class="text-muted mb-2">등록된 답변이 없습니다.</p>';
+				} else {
+					answers.forEach(function (ans) {
+						var box = document.createElement("div");
+						box.className = "answer-box";
+
+						var dateText = AdminUtils.formatDate(ans.createdAt);
+						if (ans.updatedAt && ans.updatedAt !== ans.createdAt) {
+							dateText = AdminUtils.formatDate(ans.updatedAt) + " (수정됨)";
+						}
+
+						box.innerHTML =
+							'<div class="answer-meta">' +
+								'<span class="answer-author">' + escapeHtml(ans.userName || "관리자") + '</span>' +
+								'<span class="answer-date">' + dateText + '</span>' +
+							'</div>' +
+							'<div class="answer-content">' + escapeHtml(ans.content) + '</div>' +
+							'<div class="answer-actions">' +
+								'<button class="btn btn-sm btn-outline-primary btn-edit-answer" data-answer-id="' + ans.id + '">' +
+									'<i class="align-middle" data-feather="edit-2" style="width:12px;height:12px;"></i>' +
+									'<span class="align-middle ms-1">수정</span>' +
+								'</button>' +
+								'<button class="btn btn-sm btn-outline-danger btn-delete-answer" data-answer-id="' + ans.id + '">' +
+									'<i class="align-middle" data-feather="trash-2" style="width:12px;height:12px;"></i>' +
+									'<span class="align-middle ms-1">삭제</span>' +
+								'</button>' +
+							'</div>';
+
+						listEl.appendChild(box);
+					});
+
+					// 수정/삭제 버튼 이벤트
+					listEl.querySelectorAll(".btn-edit-answer").forEach(function (btn) {
+						btn.addEventListener("click", function () {
+							var answerId = parseInt(this.dataset.answerId);
+							var ans = answers.find(function (a) { return a.id === answerId; });
+							if (ans) {
+								editingAnswerId = answerId;
+								document.getElementById("inputAnswer").value = ans.content;
+								document.getElementById("btnSaveAnswerLabel").textContent = "답변 수정";
+								formEl.style.display = "";
+								addBtnEl.style.display = "none";
+							}
+						});
+					});
+
+					listEl.querySelectorAll(".btn-delete-answer").forEach(function (btn) {
+						btn.addEventListener("click", function () {
+							deleteAnswerId = parseInt(this.dataset.answerId);
+							var modal = new bootstrap.Modal(document.getElementById("deleteAnswerModal"));
+							modal.show();
+						});
+					});
+				}
+
+				addBtnEl.style.display = "";
+				if (window.feather) feather.replace();
+			}
+
+			// ===== 답변 작성 버튼 =====
+			document.getElementById("btnAddAnswer").addEventListener("click", function () {
+				editingAnswerId = null;
+				document.getElementById("inputAnswer").value = "";
+				document.getElementById("btnSaveAnswerLabel").textContent = "답변 등록";
+				document.getElementById("answerForm").style.display = "";
+				document.getElementById("answerAddBtn").style.display = "none";
+				if (window.feather) feather.replace();
+			});
+
+			// ===== 답변 저장 (등록/수정) =====
+			document.getElementById("btnSaveAnswer").addEventListener("click", function () {
+				var content = document.getElementById("inputAnswer").value.trim();
+				if (!content) {
+					document.getElementById("inputAnswer").classList.add("is-invalid");
+					return;
+				}
+				document.getElementById("inputAnswer").classList.remove("is-invalid");
+
+				var btn = this;
+				btn.disabled = true;
+
+				var userId = currentUserId;
+				if (!userId) {
+					alert("로그인 정보를 가져올 수 없습니다. 다시 로그인해주세요.");
+					btn.disabled = false;
+					return;
+				}
+
+				if (editingAnswerId) {
+					// 답변 수정
+					fetch("/api/trial-questions/" + id + "/answer/" + editingAnswerId, {
+						method: "PUT",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({ content: content })
+					})
+					.then(function (res) {
+						if (!res.ok) throw new Error("답변 수정 실패");
+						return res.json();
+					})
+					.then(function (data) {
+						currentData = data;
+						alert("답변이 수정되었습니다.");
+						renderAnswers(data.answers || []);
+					})
+					.catch(function (err) {
+						alert("오류: " + err.message);
+					})
+					.finally(function () { btn.disabled = false; });
+				} else {
+					// 답변 등록
+					fetch("/api/trial-questions/" + id + "/answer", {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({ userId: userId, content: content })
+					})
+					.then(function (res) {
+						if (!res.ok) throw new Error("답변 등록 실패");
+						return res.json();
+					})
+					.then(function (data) {
+						currentData = data;
+						document.getElementById("viewStatus").innerHTML = '<span class="badge bg-success">답변완료</span>';
+						alert("답변이 등록되었습니다.");
+						renderAnswers(data.answers || []);
+					})
+					.catch(function (err) {
+						alert("오류: " + err.message);
+					})
+					.finally(function () { btn.disabled = false; });
+				}
+			});
+
+			// ===== 답변 취소 =====
+			document.getElementById("btnCancelAnswer").addEventListener("click", function () {
+				document.getElementById("answerForm").style.display = "none";
+				document.getElementById("answerAddBtn").style.display = "";
+				document.getElementById("inputAnswer").classList.remove("is-invalid");
+				editingAnswerId = null;
+			});
+
+			// ===== 답변 입력 시 에러 초기화 =====
+			document.getElementById("inputAnswer").addEventListener("input", function () {
+				this.classList.remove("is-invalid");
+			});
+
+			// ===== 답변 삭제 =====
+			document.getElementById("btnConfirmDeleteAnswer").addEventListener("click", function () {
+				if (!deleteAnswerId) return;
+
+				var btn = this;
+				btn.disabled = true;
+
+				fetch("/api/trial-questions/" + id + "/answer/" + deleteAnswerId, { method: "DELETE" })
+					.then(function (res) {
+						if (!res.ok) throw new Error("답변 삭제 실패");
+
+						var modal = bootstrap.Modal.getInstance(document.getElementById("deleteAnswerModal"));
+						if (modal) modal.hide();
+
+						alert("답변이 삭제되었습니다.");
+						// 다시 로드
+						loadDetail(id);
+					})
+					.catch(function (err) {
+						alert("오류: " + err.message);
+					})
+					.finally(function () {
+						btn.disabled = false;
+						deleteAnswerId = null;
+					});
+			});
+
+			// ===== 문의 삭제 =====
+			document.getElementById("btnConfirmDelete").addEventListener("click", function () {
+				var btn = this;
+				btn.disabled = true;
+
+				fetch("/api/trial-questions/" + id + "/admin", { method: "DELETE" })
+					.then(function (res) {
+						if (!res.ok) throw new Error("삭제 실패");
+						alert("시험문의가 삭제되었습니다.");
+						location.href = "list";
+					})
+					.catch(function (err) {
+						alert("삭제 중 오류가 발생했습니다: " + err.message);
+						btn.disabled = false;
+					});
+			});
+		});
+	</script>
+</body>
+
+</html>

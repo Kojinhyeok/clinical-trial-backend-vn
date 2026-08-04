@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+	<link rel="preconnect" href="https://fonts.gstatic.com">
+	<link rel="shortcut icon" href="../img/icons/icon-48x48.png" />
+
+	<title>유효성 평가 항목 - Human Clinical 관리자</title>
+
+	<link href="../css/app.css" rel="stylesheet">
+	<link href="../css/custom.css" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+	<style>
+		.img-preview-box {
+			position: relative;
+			display: inline-block;
+		}
+		.img-preview-box img {
+			max-width: 280px;
+			max-height: 200px;
+			border-radius: 6px;
+			border: 1px solid #dee2e6;
+		}
+		.img-preview-box .btn-remove-img {
+			position: absolute;
+			top: -8px;
+			right: -8px;
+			width: 22px;
+			height: 22px;
+			border-radius: 50%;
+			border: none;
+			background: #dc3545;
+			color: #fff;
+			font-size: 12px;
+			line-height: 1;
+			padding: 0;
+			cursor: pointer;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+		.ba-compare {
+			display: flex;
+			gap: 24px;
+			flex-wrap: wrap;
+		}
+		.ba-compare .ba-item {
+			text-align: center;
+		}
+		.ba-compare .ba-item img {
+			max-width: 280px;
+			max-height: 200px;
+			border-radius: 6px;
+			border: 1px solid #dee2e6;
+		}
+		.ba-compare .ba-label {
+			display: block;
+			font-size: 12px;
+			font-weight: 600;
+			color: #6c757d;
+			margin-top: 6px;
+		}
+		.ba-placeholder {
+			width: 280px;
+			height: 200px;
+			background: #f0f0f0;
+			border-radius: 6px;
+			border: 2px dashed #ced4da;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			color: #adb5bd;
+			font-size: 14px;
+		}
+
+		/* 이미지 쌍 블록 */
+		.image-pair-block {
+			border: 1px solid #dee2e6;
+			border-radius: 8px;
+			padding: 16px;
+			margin-bottom: 12px;
+			background: #fafafa;
+		}
+		.image-pair-block .pair-header {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			margin-bottom: 12px;
+		}
+		.image-pair-block .pair-title {
+			font-size: 13px;
+			font-weight: 600;
+			color: #495057;
+		}
+		.btn-remove-pair {
+			width: 26px;
+			height: 26px;
+			border-radius: 50%;
+			border: none;
+			background: #dc3545;
+			color: #fff;
+			font-size: 14px;
+			line-height: 1;
+			padding: 0;
+			cursor: pointer;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			flex-shrink: 0;
+		}
+		.btn-remove-pair:hover { background: #b02a37; }
+
+		/* 상세보기 이미지 쌍 */
+		.view-pair-block {
+			margin-bottom: 20px;
+			padding-bottom: 20px;
+			border-bottom: 1px dashed #dee2e6;
+		}
+		.view-pair-block:last-child {
+			border-bottom: none;
+			margin-bottom: 0;
+			padding-bottom: 0;
+		}
+		.view-pair-label {
+			font-size: 12px;
+			font-weight: 600;
+			color: #6c757d;
+			margin-bottom: 10px;
+		}
+	</style>
+</head>
+
+<body data-page="trial-list" data-base="../">
+	<div class="wrapper">
+
+		<div id="sidebar-container"></div>
+
+		<div class="main">
+			<div id="header-container"></div>
+
+			<main class="content">
+				<div class="container-fluid p-0">
+
+					<div class="d-flex justify-content-between align-items-center mb-3">
+						<h1 class="h3 mb-0"><strong id="pageTitle">유효성 평가 항목 등록</strong></h1>
+						<a href="list.html" class="btn btn-outline-secondary">
+							<i class="align-middle" data-feather="arrow-left" style="width:14px;height:14px;"></i>
+							<span class="align-middle ms-1">목록으로</span>
+						</a>
+					</div>
+
+					<!-- 상세 보기 모드 -->
+					<div class="card detail-view" id="viewMode" style="display:none;">
+						<div class="card-body">
+							<div class="row mb-3">
+								<div class="col-md-4">
+									<label class="form-label text-muted">카테고리(탭)</label>
+									<p id="viewCategory"></p>
+								</div>
+								<div class="col-md-4">
+									<label class="form-label text-muted">등록일</label>
+									<p class="form-control-plaintext" id="viewCreatedAt"></p>
+								</div>
+								<div class="col-md-4">
+									<label class="form-label text-muted">수정일</label>
+									<p class="form-control-plaintext" id="viewUpdatedAt"></p>
+								</div>
+							</div>
+							<div class="mb-3">
+								<label class="form-label text-muted">시험 제목</label>
+								<p class="form-control-plaintext fw-bold fs-5" id="viewTitle"></p>
+							</div>
+							<div class="mb-3">
+								<label class="form-label text-muted">시험 부제</label>
+								<p class="form-control-plaintext" id="viewSubtitle"></p>
+							</div>
+							<div class="mb-3">
+								<label class="form-label text-muted">시험 상세설명</label>
+								<p class="form-control-plaintext" id="viewDescription"></p>
+							</div>
+							<div class="row mb-3">
+								<div class="col-md-3">
+									<label class="form-label text-muted">인원</label>
+									<p class="form-control-plaintext" id="viewPersonnel"></p>
+								</div>
+								<div class="col-md-3">
+									<label class="form-label text-muted">필요시료량</label>
+									<p class="form-control-plaintext" id="viewSample"></p>
+								</div>
+								<div class="col-md-3">
+									<label class="form-label text-muted">보고서 수령일</label>
+									<p class="form-control-plaintext" id="viewReportDate"></p>
+								</div>
+								<div class="col-md-3">
+									<label class="form-label text-muted">보고서 수령일 상세</label>
+									<p class="form-control-plaintext" id="viewReportDateSub"></p>
+								</div>
+								<div class="col-md-3">
+									<label class="form-label text-muted">시험 측정 시점</label>
+									<p class="form-control-plaintext" id="viewTimePoint"></p>
+								</div>
+							</div>
+							<div class="row mb-3">
+								<div class="col-md-3">
+									<label class="form-label text-muted">시험부위</label>
+									<p class="form-control-plaintext" id="viewPart"></p>
+								</div>
+								<div class="col-md-3">
+									<label class="form-label text-muted">산출물</label>
+									<p class="form-control-plaintext" id="viewResultType"></p>
+								</div>
+							</div>
+							<hr>
+							<div class="mb-0">
+								<label class="form-label text-muted">BEFORE / AFTER 이미지</label>
+								<div id="viewImages"></div>
+							</div>
+						</div>
+						<div class="card-footer d-flex gap-2">
+							<button class="btn btn-primary" id="btnEditMode">
+								<i class="align-middle" data-feather="edit-2" style="width:14px;height:14px;"></i>
+								<span class="align-middle ms-1">수정</span>
+							</button>
+							<button class="btn btn-danger" id="btnDeleteView" data-bs-toggle="modal" data-bs-target="#deleteModal">
+								<i class="align-middle" data-feather="trash-2" style="width:14px;height:14px;"></i>
+								<span class="align-middle ms-1">삭제</span>
+							</button>
+						</div>
+					</div>
+
+					<!-- 등록/수정 폼 -->
+					<div class="card" id="editMode">
+						<div class="card-body">
+							<input type="hidden" id="trialId">
+
+							<!-- 탭 선택 -->
+							<div class="row">
+								<div class="col-md-6 mb-3">
+									<label class="form-label" for="inputTab">탭 <span class="text-danger">*</span></label>
+									<select class="form-select" id="inputTab">
+										<option value="">선택</option>
+									</select>
+									<div class="invalid-feedback">탭을 선택해주세요.</div>
+								</div>
+							</div>
+
+							<hr>
+
+							<div class="mb-3">
+								<label class="form-label" for="inputTitle">시험 제목 <span class="text-danger">*</span></label>
+								<input type="text" class="form-control" id="inputTitle" placeholder="시험 제목을 입력하세요">
+								<div class="invalid-feedback">시험 제목을 입력해주세요.</div>
+							</div>
+							<div class="mb-3">
+								<label class="form-label" for="inputSubtitle">시험 부제 <span class="text-muted fw-normal small">(예: 기능성 화장품만 가능합니다)</span></label>
+								<input type="text" class="form-control" id="inputSubtitle" placeholder="시험 부제를 입력하세요">
+							</div>
+							<div class="mb-3">
+								<label class="form-label" for="inputDescription">시험 상세설명</label>
+								<textarea class="form-control" id="inputDescription" rows="3" placeholder="시험 상세설명을 입력하세요"></textarea>
+							</div>
+							<div class="row">
+								<div class="col-md-6 mb-3">
+									<label class="form-label" for="inputPersonnel">인원</label>
+									<input type="text" class="form-control" id="inputPersonnel" placeholder="예: 30명">
+								</div>
+								<div class="col-md-6 mb-3">
+									<label class="form-label" for="inputSample">필요시료량</label>
+									<input type="text" class="form-control" id="inputSample" placeholder="예: 50ml">
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-md-6 mb-3">
+									<label class="form-label" for="inputReportDate">보고서 수령일</label>
+									<input type="text" class="form-control" id="inputReportDate" placeholder="예: 시험 종료일로부터 2주 후 (변동 가능)">
+								</div>
+								<div class="col-md-6 mb-3">
+									<label class="form-label" for="inputReportDateSub">보고서 수령일 상세</label>
+									<input type="text" class="form-control" id="inputReportDateSub" placeholder="예: 변동 가능, 협의 후 결정">
+								</div>
+								<div class="col-md-6 mb-3">
+									<label class="form-label" for="inputTimePoint">시험 측정 시점</label>
+									<input type="text" class="form-control" id="inputTimePoint" placeholder="예: 0h, 2h, 4h, 8h">
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-md-6 mb-3">
+									<label class="form-label" for="inputPart">시험부위</label>
+									<input type="text" class="form-control" id="inputPart" placeholder="예: 전완 내측부">
+								</div>
+								<div class="col-md-6 mb-3">
+									<label class="form-label" for="inputResultType">산출물</label>
+									<input type="text" class="form-control" id="inputResultType" placeholder="예: 시험 보고서">
+								</div>
+							</div>
+
+							<hr>
+
+							<!-- BEFORE / AFTER 이미지 쌍 -->
+							<div class="d-flex align-items-center justify-content-between mb-3">
+								<label class="form-label mb-0 fw-semibold">BEFORE / AFTER 이미지</label>
+								<button type="button" class="btn btn-sm btn-outline-primary" id="btnAddPair">
+									<i class="align-middle" data-feather="plus" style="width:13px;height:13px;"></i>
+									<span class="align-middle ms-1">이미지 쌍 추가</span>
+								</button>
+							</div>
+							<div id="imagePairsContainer">
+								<!-- 이미지 쌍 블록이 동적으로 삽입됩니다 -->
+							</div>
+
+						</div>
+						<div class="card-footer d-flex gap-2">
+							<button class="btn btn-primary" id="btnSave">
+								<i class="align-middle" data-feather="save" style="width:14px;height:14px;"></i>
+								<span class="align-middle ms-1">저장</span>
+							</button>
+							<button class="btn btn-danger ms-auto" id="btnDeleteEdit" data-bs-toggle="modal" data-bs-target="#deleteModal" style="display:none;">
+								<i class="align-middle" data-feather="trash-2" style="width:14px;height:14px;"></i>
+								<span class="align-middle ms-1">삭제</span>
+							</button>
+						</div>
+					</div>
+
+				</div>
+			</main>
+
+			<footer class="footer">
+				<div class="container-fluid">
+					<div class="row text-muted">
+						<div class="col-12 text-start">
+							<p class="mb-0">&copy; Human Clinical</p>
+						</div>
+					</div>
+				</div>
+			</footer>
+		</div>
+	</div>
+
+	<!-- 삭제 확인 모달 -->
+	<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-sm">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="deleteModalLabel">평가 항목 삭제</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<p>이 평가 항목을 삭제하시겠습니까?</p>
+					<p class="text-danger small mb-0">이 작업은 되돌릴 수 없습니다.</p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+					<button type="button" class="btn btn-danger" id="btnConfirmDelete">삭제</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../js/app.js"></script>
+	<script src="../js/admin-utils.js"></script>
+	<script src="../js/common.js"></script>
+	<script>
+		var removedFileIds = [];
+		var TAB_BADGE_MAP = {
+			"SKIN_TONER_MIST":   "bg-primary",
+			"ESSENCE_LOTION":    "bg-info text-dark",
+			"CREAM_OIL":         "bg-success",
+			"MASK":              "bg-warning text-dark",
+			"CLEANSING":         "bg-secondary",
+			"MAKEUP":            "bg-danger",
+			"SUN_CARE":          "bg-warning",
+			"HAIR_DYE":          "bg-dark",
+			"SHAMPOO_TREATMENT": "bg-info",
+			"SCALP_HAIR_TONIC":  "bg-primary",
+			"BEAUTY_DEVICE":     "bg-success",
+			"ETC":               "bg-secondary"
+		};
+
+		var TABS_DATA   = [];
+		var currentData = null;
+
+		/*
+		 * imagePairs 배열 - 각 요소:
+		 * {
+		 *   uid:           string,       // DOM id 충돌 방지용 고유값 (p1, p2, ...)
+		 *   pairIndex:     number,       // 화면 표시 순서 (1-based)
+		 *   beforeFileId:  number|null,  // 기존 서버 파일 ID
+		 *   afterFileId:   number|null,
+		 *   beforeRemoved: boolean,      // 기존 이미지 삭제 여부
+		 *   afterRemoved:  boolean,
+		 *   beforeUrl:     string|null,  // 기존 이미지 URL (수정 시 미리보기)
+		 *   afterUrl:      string|null,
+		 * }
+		 *
+		 * fileCategory 규칙: "BEFORE_1", "AFTER_1", "BEFORE_2", "AFTER_2" ...
+		 * 구버전("BEFORE", "AFTER") → 쌍 1로 처리
+		 */
+		var imagePairs  = [];
+		var pairCounter = 0;
+
+		// ===== API =====
+
+		function loadTabs() {
+			return fetch("/api/trial-keyword-groups/tabs")
+				.then(function (res) { return res.ok ? res.json() : []; })
+				.then(function (data) { TABS_DATA = data || []; });
+		}
+
+		function loadTrial(id) {
+			return fetch("/api/trials/" + id)
+				.then(function (res) {
+					if (!res.ok) throw new Error("not found");
+					return res.json();
+				});
+		}
+
+		function loadFileList(entityId) {
+			return fetch("/api/files/list?entityType=TRIAL_LIST&entityId=" + entityId)
+				.then(function (res) { return res.ok ? res.json() : []; });
+		}
+
+		function saveTrial(body, trialId) {
+			var url    = trialId ? "/api/trials/" + trialId : "/api/trials";
+			var method = trialId ? "PUT" : "POST";
+			return fetch(url, {
+				method: method,
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(body)
+			}).then(function (res) {
+				if (!res.ok) throw new Error("save failed");
+				return res.json();
+			});
+		}
+
+		function deleteTrial(id) {
+			return fetch("/api/trials/" + id, { method: "DELETE" })
+				.then(function (res) { if (!res.ok) throw new Error("delete failed"); });
+		}
+
+		function uploadImageFile(file, entityId, category) {
+			var reqBody = {
+				entityType: "TRIAL_LIST",
+				entityId: entityId,
+				fileCategory: category,
+				originalFilename: file.name,
+				mimeType: file.type,
+				fileSize: file.size
+			};
+			return fetch("/api/files/upload-link", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(reqBody)
+			})
+			.then(function (res) {
+				if (!res.ok) throw new Error("upload-link failed");
+				return res.json();
+			})
+			.then(function (data) {
+				return fetch(data.uploadUrl, {
+					method: "PUT",
+					headers: { "Content-Type": file.type },
+					body: file
+				}).then(function () { return data.id; });
+			});
+		}
+
+		function deleteFile(fileId) {
+			return fetch("/api/files/" + fileId, { method: "DELETE" });
+		}
+
+		// ===== 탭 셀렉트 =====
+
+		function initTabSelect() {
+			var tabEl = document.getElementById("inputTab");
+			TABS_DATA.forEach(function (tab) {
+				var opt = document.createElement("option");
+				opt.value = tab.id;
+				opt.dataset.tabCode = tab.tabCode;
+				opt.textContent = tab.tabName;
+				tabEl.appendChild(opt);
+			});
+			tabEl.addEventListener("change", function () { tabEl.classList.remove("is-invalid"); });
+		}
+
+		function setTabValue(keywordGroupId) {
+			document.getElementById("inputTab").value = keywordGroupId;
+		}
+
+		function getTabName(tabCode) {
+			var tab = TABS_DATA.find(function (t) { return t.tabCode === tabCode; });
+			return tab ? tab.tabName : tabCode || "-";
+		}
+
+		// ===== 이미지 쌍 관리 =====
+
+		function getPairByUid(uid) {
+			return imagePairs.find(function (p) { return p.uid === uid; }) || null;
+		}
+
+		function createPairBlock(pair) {
+			var uid = pair.uid;
+			var idx = pair.pairIndex;
+
+			var block = document.createElement("div");
+			block.className = "image-pair-block";
+			block.dataset.uid = uid;
+
+			block.innerHTML =
+				'<div class="pair-header">' +
+					'<span class="pair-title">이미지 쌍 ' + idx + '</span>' +
+					'<button type="button" class="btn-remove-pair" title="이 쌍 삭제">&times;</button>' +
+				'</div>' +
+				'<div class="row">' +
+					'<div class="col-md-6 mb-2">' +
+						'<label class="form-label small text-muted">BEFORE 이미지</label>' +
+						'<div id="beforePreviewWrap_' + uid + '" style="display:none;" class="mb-2">' +
+							'<div class="img-preview-box">' +
+								'<img id="beforePreview_' + uid + '" src="" alt="BEFORE 미리보기">' +
+								'<button type="button" class="btn-remove-img" data-side="before" title="이미지 삭제">&times;</button>' +
+							'</div>' +
+						'</div>' +
+						'<input type="file" class="form-control form-control-sm" id="inputBefore_' + uid + '" accept="image/*">' +
+					'</div>' +
+					'<div class="col-md-6 mb-2">' +
+						'<label class="form-label small text-muted">AFTER 이미지</label>' +
+						'<div id="afterPreviewWrap_' + uid + '" style="display:none;" class="mb-2">' +
+							'<div class="img-preview-box">' +
+								'<img id="afterPreview_' + uid + '" src="" alt="AFTER 미리보기">' +
+								'<button type="button" class="btn-remove-img" data-side="after" title="이미지 삭제">&times;</button>' +
+							'</div>' +
+						'</div>' +
+						'<input type="file" class="form-control form-control-sm" id="inputAfter_' + uid + '" accept="image/*">' +
+					'</div>' +
+				'</div>';
+
+			// 기존 이미지 URL → 미리보기
+			if (pair.beforeUrl) {
+				block.querySelector("#beforePreview_" + uid).src = pair.beforeUrl;
+				block.querySelector("#beforePreviewWrap_" + uid).style.display = "";
+			}
+			if (pair.afterUrl) {
+				block.querySelector("#afterPreview_" + uid).src = pair.afterUrl;
+				block.querySelector("#afterPreviewWrap_" + uid).style.display = "";
+			}
+
+			// 파일 선택 → 미리보기
+			block.querySelector("#inputBefore_" + uid).addEventListener("change", function () {
+				var file = this.files[0];
+				if (file && file.type.startsWith("image/")) {
+					var reader = new FileReader();
+					reader.onload = function (e) {
+						block.querySelector("#beforePreview_" + uid).src = e.target.result;
+						block.querySelector("#beforePreviewWrap_" + uid).style.display = "";
+					};
+					reader.readAsDataURL(file);
+				}
+			});
+			block.querySelector("#inputAfter_" + uid).addEventListener("change", function () {
+				var file = this.files[0];
+				if (file && file.type.startsWith("image/")) {
+					var reader = new FileReader();
+					reader.onload = function (e) {
+						block.querySelector("#afterPreview_" + uid).src = e.target.result;
+						block.querySelector("#afterPreviewWrap_" + uid).style.display = "";
+					};
+					reader.readAsDataURL(file);
+				}
+			});
+
+			// 이미지 개별 삭제 (X 버튼)
+			block.querySelectorAll(".btn-remove-img").forEach(function (btn) {
+				btn.addEventListener("click", function () {
+					var p = getPairByUid(uid);
+					if (!p) return;
+					if (this.dataset.side === "before") {
+						block.querySelector("#beforePreviewWrap_" + uid).style.display = "none";
+						block.querySelector("#beforePreview_"    + uid).src = "";
+						block.querySelector("#inputBefore_"      + uid).value = "";
+						p.beforeRemoved = true;
+					} else {
+						block.querySelector("#afterPreviewWrap_" + uid).style.display = "none";
+						block.querySelector("#afterPreview_"     + uid).src = "";
+						block.querySelector("#inputAfter_"       + uid).value = "";
+						p.afterRemoved = true;
+					}
+				});
+			});
+
+			// 쌍 전체 삭제
+			block.querySelector(".btn-remove-pair").addEventListener("click", function () {
+				removePair(uid);
+			});
+
+			return block;
+		}
+
+		function addPair(opts) {
+			pairCounter++;
+			var uid  = "p" + pairCounter;
+			var pair = {
+				uid:           uid,
+				pairIndex:     imagePairs.length + 1,
+				beforeFileId:  (opts && opts.beforeFileId) || null,
+				afterFileId:   (opts && opts.afterFileId)  || null,
+				beforeRemoved: false,
+				afterRemoved:  false,
+				beforeUrl:     (opts && opts.beforeUrl) || null,
+				afterUrl:      (opts && opts.afterUrl)  || null
+			};
+			imagePairs.push(pair);
+			document.getElementById("imagePairsContainer").appendChild(createPairBlock(pair));
+			if (window.feather) feather.replace();
+		}
+
+		function removePair(uid) {
+			var idx = imagePairs.findIndex(function (p) { return p.uid === uid; });
+			if (idx === -1) return;
+			var pair = imagePairs[idx];
+
+			// 삭제할 파일 ID 기억
+			if (pair.beforeFileId) removedFileIds.push(pair.beforeFileId);
+			if (pair.afterFileId)  removedFileIds.push(pair.afterFileId);
+
+			imagePairs.splice(idx, 1);
+			var block = document.querySelector(".image-pair-block[data-uid='" + uid + "']");
+			if (block) block.remove();
+			reindexPairs();
+		}
+
+		function reindexPairs() {
+			imagePairs.forEach(function (p, i) {
+				p.pairIndex = i + 1;
+				var block = document.querySelector(".image-pair-block[data-uid='" + p.uid + "']");
+				if (block) {
+					var title = block.querySelector(".pair-title");
+					if (title) title.textContent = "이미지 쌍 " + (i + 1);
+				}
+			});
+		}
+
+		function resetPairs() {
+			imagePairs = [];
+			removedFileIds = [];
+			document.getElementById("imagePairsContainer").innerHTML = "";
+		}
+
+		// ===== 상세보기 이미지 렌더링 =====
+
+		function renderViewImages(filePairs) {
+			var container = document.getElementById("viewImages");
+			container.innerHTML = "";
+
+			if (!filePairs || filePairs.length === 0) {
+				container.innerHTML = '<p class="text-muted small">등록된 이미지가 없습니다.</p>';
+				return;
+			}
+
+			filePairs.forEach(function (fp) {
+				var div = document.createElement("div");
+				div.className = "view-pair-block";
+
+				var labelHtml = filePairs.length > 1
+					? '<p class="view-pair-label">이미지 쌍 ' + fp.pairIndex + '</p>'
+					: '';
+
+				var beforeHtml = fp.beforeUrl
+					? '<img src="' + fp.beforeUrl + '" alt="BEFORE">'
+					: '<div class="ba-placeholder">이미지 없음</div>';
+				var afterHtml = fp.afterUrl
+					? '<img src="' + fp.afterUrl + '" alt="AFTER">'
+					: '<div class="ba-placeholder">이미지 없음</div>';
+
+				div.innerHTML =
+					labelHtml +
+					'<div class="ba-compare">' +
+						'<div class="ba-item">' + beforeHtml + '<span class="ba-label">BEFORE</span></div>' +
+						'<div class="ba-item">' + afterHtml  + '<span class="ba-label">AFTER</span></div>' +
+					'</div>';
+
+				container.appendChild(div);
+			});
+		}
+
+		// ===== 파일 목록 → 쌍 배열 변환 =====
+		// fileCategory: "BEFORE_1", "AFTER_2" ... / 구버전: "BEFORE", "AFTER" → 쌍 1
+
+		function parseFilesToPairs(files) {
+			var map = {};
+			(files || []).forEach(function (f) {
+				var cat   = f.fileCategory || "";
+				var match = cat.match(/^(BEFORE|AFTER)_(\d+)$/);
+				var side, idx;
+				if (match) {
+					side = match[1];
+					idx  = parseInt(match[2], 10);
+				} else if (cat === "BEFORE") {
+					side = "BEFORE"; idx = 1;
+				} else if (cat === "AFTER") {
+					side = "AFTER"; idx = 1;
+				} else {
+					return;
+				}
+				if (!map[idx]) map[idx] = { pairIndex: idx, beforeFileId: null, afterFileId: null, beforeUrl: null, afterUrl: null };
+				if (side === "BEFORE") { map[idx].beforeFileId = f.id; map[idx].beforeUrl = f.s3Url || null; }
+				if (side === "AFTER")  { map[idx].afterFileId  = f.id; map[idx].afterUrl  = f.s3Url || null; }
+			});
+			return Object.values(map).sort(function (a, b) { return a.pairIndex - b.pairIndex; });
+		}
+
+		// ===== 페이지 초기화 =====
+
+		document.addEventListener("DOMContentLoaded", function () {
+			var params = new URLSearchParams(window.location.search);
+			var id = params.get("id");
+
+			loadTabs().then(function () {
+				initTabSelect();
+
+				if (id) {
+					loadTrial(id)
+						.then(function (data) {
+							currentData = data;
+							return loadFileList(id).then(function (files) {
+								currentData._filePairs = parseFilesToPairs(files);
+								showViewMode(data, currentData._filePairs);
+							});
+						})
+						.catch(function () {
+							alert("평가 항목을 찾을 수 없습니다.");
+							location.href = "list.html";
+						});
+				} else {
+					showCreateMode();
+				}
+			});
+
+			// ===== 상세 보기 =====
+			function showViewMode(data, filePairs) {
+				document.getElementById("pageTitle").textContent = "유효성 평가 항목 상세";
+				document.getElementById("viewMode").style.display = "";
+				document.getElementById("editMode").style.display = "none";
+
+				var tabName    = data.tabName || getTabName(data.tabCode);
+				var badgeClass = TAB_BADGE_MAP[data.tabCode] || "bg-secondary";
+				document.getElementById("viewCategory").innerHTML =
+					'<span class="badge ' + badgeClass + '">' + tabName + '</span>';
+
+				document.getElementById("viewTitle").textContent       = data.trialTitle || "-";
+				document.getElementById("viewSubtitle").textContent    = data.trialSubtitle || "-";
+				document.getElementById("viewDescription").textContent = data.trialDescription || "-";
+				document.getElementById("viewPersonnel").textContent   = data.trialPersonnel || "-";
+				document.getElementById("viewSample").textContent      = data.trialRequiredSample || "-";
+				document.getElementById("viewReportDate").textContent  = data.trialReportDate || "-";
+				document.getElementById("viewReportDateSub").textContent = data.trialReportDateSub || "-"; 
+				document.getElementById("viewTimePoint").textContent   = data.trialTimePoint || "-";
+				document.getElementById("viewPart").textContent        = data.trialPart || "-";
+				document.getElementById("viewResultType").textContent  = data.trialResultType || "-";
+				document.getElementById("viewCreatedAt").textContent   = AdminUtils.formatDate(data.createdAt);
+				document.getElementById("viewUpdatedAt").textContent   = AdminUtils.formatDate(data.updatedAt);
+
+				// 구버전 호환: filePairs 없으면 beforeImageUrl/afterImageUrl 사용
+				var pairs = filePairs && filePairs.length > 0
+					? filePairs
+					: [{ pairIndex: 1, beforeUrl: data.beforeImageUrl || null, afterUrl: data.afterImageUrl || null }];
+				renderViewImages(pairs);
+			}
+
+			// ===== 등록 모드 =====
+			function showCreateMode() {
+				document.getElementById("pageTitle").textContent = "유효성 평가 항목 등록";
+				document.getElementById("viewMode").style.display = "none";
+				document.getElementById("editMode").style.display = "";
+				document.getElementById("btnDeleteEdit").style.display = "none";
+				resetPairs();
+				addPair(); // 기본 1쌍
+			}
+
+			// ===== 수정 모드 =====
+			function showEditMode(data, filePairs) {
+				document.getElementById("pageTitle").textContent = "유효성 평가 항목 수정";
+				document.getElementById("viewMode").style.display = "none";
+				document.getElementById("editMode").style.display = "";
+				document.getElementById("btnDeleteEdit").style.display = "";
+
+				document.getElementById("trialId").value          = data.id;
+				document.getElementById("inputTitle").value       = data.trialTitle || "";
+				document.getElementById("inputSubtitle").value    = data.trialSubtitle || "";
+				document.getElementById("inputDescription").value = data.trialDescription || "";
+				document.getElementById("inputPersonnel").value   = data.trialPersonnel || "";
+				document.getElementById("inputSample").value      = data.trialRequiredSample || "";
+				document.getElementById("inputReportDate").value  = data.trialReportDate || "";
+				document.getElementById("inputReportDateSub").value = data.trialReportDateSub || "";
+				document.getElementById("inputTimePoint").value   = data.trialTimePoint || "";
+				document.getElementById("inputPart").value        = data.trialPart || "";
+				document.getElementById("inputResultType").value  = data.trialResultType || "";
+				setTabValue(data.keywordGroupId);
+
+				// 이미지 쌍 복원
+				resetPairs();
+				var pairs = filePairs && filePairs.length > 0
+					? filePairs
+					: [{ pairIndex: 1, beforeFileId: null, afterFileId: null,
+						 beforeUrl: data.beforeImageUrl || null, afterUrl: data.afterImageUrl || null }];
+				pairs.forEach(function (fp) {
+					addPair({ beforeFileId: fp.beforeFileId, afterFileId: fp.afterFileId,
+							  beforeUrl: fp.beforeUrl, afterUrl: fp.afterUrl });
+				});
+			}
+
+			// 수정 버튼
+			document.getElementById("btnEditMode").addEventListener("click", function () {
+				if (currentData) showEditMode(currentData, currentData._filePairs);
+			});
+
+			// 이미지 쌍 추가 버튼
+			document.getElementById("btnAddPair").addEventListener("click", function () {
+				addPair();
+			});
+
+			// 입력 에러 초기화
+			document.getElementById("inputTitle").addEventListener("input", function () {
+				this.classList.remove("is-invalid");
+			});
+
+			// ===== 유효성 검사 =====
+			function validate() {
+				var valid      = true;
+				var titleInput = document.getElementById("inputTitle");
+				var tabInput   = document.getElementById("inputTab");
+				if (!titleInput.value.trim()) { titleInput.classList.add("is-invalid"); valid = false; }
+				else { titleInput.classList.remove("is-invalid"); }
+				if (!tabInput.value) { tabInput.classList.add("is-invalid"); valid = false; }
+				else { tabInput.classList.remove("is-invalid"); }
+				return valid;
+			}
+
+			// ===== 이미지 업로드 처리 =====
+			function handleImageUploads(entityId) {
+				var promises = [];
+
+				imagePairs.forEach(function (pair, i) {
+					var num            = i + 1;
+					var beforeCategory = "BEFORE_" + num;
+					var afterCategory  = "AFTER_"  + num;
+
+					var beforeInput = document.getElementById("inputBefore_" + pair.uid);
+					var afterInput  = document.getElementById("inputAfter_"  + pair.uid);
+					var beforeFile  = beforeInput ? beforeInput.files[0] : null;
+					var afterFile   = afterInput  ? afterInput.files[0]  : null;
+
+					if (beforeFile) {
+						promises.push(
+							(pair.beforeFileId ? deleteFile(pair.beforeFileId) : Promise.resolve())
+							.then(function () { return uploadImageFile(beforeFile, entityId, beforeCategory); })
+						);
+					} else if (pair.beforeRemoved && pair.beforeFileId) {
+						promises.push(deleteFile(pair.beforeFileId));
+					}
+
+					if (afterFile) {
+						promises.push(
+							(pair.afterFileId ? deleteFile(pair.afterFileId) : Promise.resolve())
+							.then(function () { return uploadImageFile(afterFile, entityId, afterCategory); })
+						);
+					} else if (pair.afterRemoved && pair.afterFileId) {
+						promises.push(deleteFile(pair.afterFileId));
+					}
+				});
+				removedFileIds.forEach(function (fileId) {
+					promises.push(deleteFile(fileId));
+				});	
+				return Promise.all(promises);
+			}
+
+			// ===== 저장 =====
+			document.getElementById("btnSave").addEventListener("click", function () {
+				if (!validate()) return;
+
+				var trialId  = document.getElementById("trialId").value;
+				var tabInput = document.getElementById("inputTab");
+				var body = {
+					keywordGroupId:      parseInt(tabInput.value),
+					trialTitle:          document.getElementById("inputTitle").value.trim(),
+					trialSubtitle:       document.getElementById("inputSubtitle").value.trim() || null,
+					trialDescription:    document.getElementById("inputDescription").value.trim() || null,
+					trialPersonnel:      document.getElementById("inputPersonnel").value.trim() || null,
+					trialRequiredSample: document.getElementById("inputSample").value.trim() || null,
+					trialReportDate:     document.getElementById("inputReportDate").value.trim() || null,
+					trialReportDateSub:  document.getElementById("inputReportDateSub").value.trim() || null,
+					trialTimePoint:      document.getElementById("inputTimePoint").value.trim() || null,
+					trialPart:           document.getElementById("inputPart").value.trim() || null,
+					trialResultType:     document.getElementById("inputResultType").value.trim() || null
+				};
+
+				var btnSave = document.getElementById("btnSave");
+				btnSave.disabled = true;
+				btnSave.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> 저장 중...';
+
+				saveTrial(body, trialId || null)
+					.then(function (saved) { return handleImageUploads(saved.id); })
+					.then(function () {
+						alert(trialId ? "수정되었습니다." : "등록되었습니다.");
+						location.href = "list.html";
+					})
+					.catch(function (err) {
+						alert("저장 중 오류가 발생했습니다.");
+						console.error(err);
+						btnSave.disabled = false;
+						btnSave.innerHTML = '<i class="align-middle" data-feather="save" style="width:14px;height:14px;"></i><span class="align-middle ms-1">저장</span>';
+						if (window.feather) feather.replace();
+					});
+			});
+
+			// ===== 삭제 =====
+			document.getElementById("btnConfirmDelete").addEventListener("click", function () {
+				deleteTrial(id)
+					.then(function () {
+						alert("삭제되었습니다.");
+						location.href = "list.html";
+					})
+					.catch(function (err) {
+						alert("삭제 중 오류가 발생했습니다.");
+						console.error(err);
+					});
+			});
+		});
+	</script>
+</body>
+
+</html>

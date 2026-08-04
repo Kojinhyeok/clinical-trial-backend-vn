@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+	<link rel="preconnect" href="https://fonts.gstatic.com">
+	<link rel="shortcut icon" href="../img/icons/icon-48x48.png" />
+
+	<title>시험문의 관리 - Human Clinical 관리자</title>
+
+	<link href="../css/app.css" rel="stylesheet">
+	<link href="../css/custom.css" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body data-page="trial-question-list" data-base="../">
+	<div class="wrapper">
+
+		<div id="sidebar-container"></div>
+
+		<div class="main">
+			<div id="header-container"></div>
+
+			<main class="content">
+				<div class="container-fluid p-0">
+
+					<div class="d-flex justify-content-between align-items-center mb-3">
+						<h1 class="h3 mb-0"><strong>시험문의 관리</strong></h1>
+					</div>
+
+					<!-- 검색 필터 -->
+					<div id="searchFilterContainer"></div>
+
+					<!-- 시험문의 목록 -->
+					<div class="card">
+						<div class="card-header">
+							<h5 class="card-title mb-0">시험문의 목록</h5>
+						</div>
+						<div class="table-responsive">
+							<table class="table table-hover my-0" id="questionTable">
+								<thead>
+									<tr>
+										<th>제목</th>
+										<th>회사명</th>
+										<th class="d-none d-md-table-cell">담당자</th>
+										<th class="d-none d-md-table-cell">제품 종류</th>
+										<th style="width:90px;">상태</th>
+										<th class="d-none d-md-table-cell" style="width:110px;">등록일</th>
+									</tr>
+								</thead>
+								<tbody>
+								</tbody>
+							</table>
+						</div>
+						<div class="card-footer d-flex justify-content-between align-items-center">
+							<span class="text-muted small" id="pageInfo"></span>
+							<nav><ul class="pagination pagination-sm mb-0" id="pageNav"></ul></nav>
+						</div>
+					</div>
+
+				</div>
+			</main>
+
+			<footer class="footer">
+				<div class="container-fluid">
+					<div class="row text-muted">
+						<div class="col-12 text-start">
+							<p class="mb-0">&copy; Human Clinical</p>
+						</div>
+					</div>
+				</div>
+			</footer>
+		</div>
+	</div>
+
+	<script src="../js/app.js"></script>
+	<script src="../js/pagination.js"></script>
+	<script src="../js/search-filter.js"></script>
+	<script src="../js/common.js"></script>
+	<script src="../js/admin-utils.js"></script>
+	<script>
+		function escapeHtml(str) {
+			if (!str) return "";
+			var div = document.createElement("div");
+			div.textContent = str;
+			return div.innerHTML;
+		}
+
+		function loadQuestions() {
+			fetch("/api/trial-questions/admin")
+				.then(function (res) {
+					if (!res.ok) throw new Error("API 오류: " + res.status);
+					return res.json();
+				})
+				.then(function (list) {
+					renderRows(Array.isArray(list) ? list : []);
+				})
+				.catch(function (err) {
+					console.error("시험문의 목록 로딩 실패:", err);
+					document.querySelector("#questionTable tbody").innerHTML =
+						'<tr><td colspan="6" class="text-center text-muted py-4">데이터를 불러올 수 없습니다.</td></tr>';
+				});
+		}
+
+		function renderRows(questions) {
+			var tbody = document.querySelector("#questionTable tbody");
+			tbody.innerHTML = "";
+
+			if (questions.length === 0) {
+				tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">등록된 시험문의가 없습니다.</td></tr>';
+				initSearchAndPagination();
+				return;
+			}
+
+			questions.forEach(function (q) {
+				var tr = document.createElement("tr");
+				tr.style.cursor = "pointer";
+				tr.setAttribute("data-status", q.status || "");
+				tr.setAttribute("data-company", q.companyName || "");
+				tr.setAttribute("data-keyword", (q.title || "") + " " + (q.content || ""));
+				tr.addEventListener("click", function () {
+					location.href = "detail?id=" + q.id;
+				});
+
+				var statusBadge;
+				if (q.status === "ANSWERED") {
+					statusBadge = '<span class="badge bg-success">답변완료</span>';
+				} else {
+					statusBadge = '<span class="badge bg-warning text-dark">대기중</span>';
+				}
+
+				tr.innerHTML =
+					'<td>' + escapeHtml(q.title || "제목 없음") + '</td>' +
+					'<td>' + escapeHtml(q.companyName || "-") + '</td>' +
+					'<td class="d-none d-md-table-cell">' + escapeHtml(q.representativeName || "-") + '</td>' +
+					'<td class="d-none d-md-table-cell">' + escapeHtml(q.productType || "-") + '</td>' +
+					'<td>' + statusBadge + '</td>' +
+					'<td class="d-none d-md-table-cell">' + AdminUtils.formatDate(q.createdAt) + '</td>';
+
+				tbody.appendChild(tr);
+			});
+
+			initSearchAndPagination();
+		}
+
+		var searchFilterInited = false;
+		function initSearchAndPagination() {
+			if (!searchFilterInited) {
+				initSearchFilter({
+					containerId: "searchFilterContainer",
+					tableId: "questionTable",
+					pagination: { perPage: 10, infoId: "pageInfo", navId: "pageNav" },
+					showReset: true,
+					fields: [
+						{ type: "select", id: "filterStatus", label: "상태", colClass: "col-md-2", dataKey: "status",
+							options: [{ value: "PENDING", text: "대기중" }, { value: "ANSWERED", text: "답변완료" }] },
+						{ type: "text", id: "filterCompany", label: "회사명", placeholder: "회사명 검색", colClass: "col-md-3", dataKey: "company" },
+						{ type: "text", id: "filterKeyword", label: "제목/내용 검색", placeholder: "키워드 검색", colClass: "col-md-3", dataKey: "keyword" }
+					]
+				});
+				searchFilterInited = true;
+			} else {
+				if (typeof initPagination === "function") {
+					initPagination({ tableId: "questionTable", perPage: 10, infoId: "pageInfo", navId: "pageNav" });
+				}
+			}
+		}
+
+		document.addEventListener("DOMContentLoaded", function () {
+			loadQuestions();
+		});
+	</script>
+</body>
+
+</html>

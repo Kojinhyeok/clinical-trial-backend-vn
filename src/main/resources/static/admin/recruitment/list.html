@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+	<link rel="preconnect" href="https://fonts.gstatic.com">
+	<link rel="shortcut icon" href="../img/icons/icon-48x48.png" />
+
+	<title>모집 공고 관리 - Human Clinical 관리자</title>
+
+	<link href="../css/app.css" rel="stylesheet">
+	<link href="../css/custom.css" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body data-page="recruitment-list" data-base="../">
+	<div class="wrapper">
+
+		<div id="sidebar-container"></div>
+
+		<div class="main">
+			<div id="header-container"></div>
+
+			<main class="content">
+				<div class="container-fluid p-0">
+
+					<div class="d-flex justify-content-between align-items-center mb-3">
+						<h1 class="h3 mb-0"><strong>모집 공고 관리</strong></h1>
+						<a href="detail" class="btn btn-primary">
+							<i class="align-middle" data-feather="plus"></i>
+							<span class="align-middle ms-1">모집 공고 등록</span>
+						</a>
+					</div>
+
+					<!-- 검색 필터 -->
+					<div class="card mb-3">
+						<div class="card-body py-2">
+							<div class="row g-2 align-items-end">
+								<div class="col-md-3">
+									<label class="form-label small mb-1">제목 / 시험번호</label>
+									<input type="text" class="form-control form-control-sm" id="searchKeyword" placeholder="제목 또는 시험번호 검색">
+								</div>
+								<div class="col-md-2">
+									<label class="form-label small mb-1">모집 상태</label>
+									<select class="form-select form-select-sm" id="searchStatus">
+										<option value="">전체</option>
+										<option value="OPEN">모집중</option>
+										<option value="ALWAYS">상시모집</option>
+										<option value="CLOSED">마감</option>
+										<option value="TEMP">임시저장</option>
+									</select>
+								</div>
+								<div class="col-md-auto">
+									<button class="btn btn-primary btn-sm" id="btnSearch">검색</button>
+									<button class="btn btn-outline-secondary btn-sm ms-1" id="btnReset">초기화</button>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- 모집 공고 목록 -->
+					<div class="card">
+						<div class="card-header">
+							<h5 class="card-title mb-0">모집 공고 목록</h5>
+						</div>
+						<table class="table table-hover my-0" id="recruitmentTable">
+							<thead>
+								<tr>
+									<th>제목</th>
+									<th class="d-none d-md-table-cell" style="width:110px;">시험번호</th>
+									<th class="d-none d-md-table-cell" style="width:100px;">지역</th>
+									<th style="width:70px;">공지</th>
+									<th style="width:90px;">상태</th>
+									<th class="d-none d-md-table-cell" style="width:120px;">등록일</th>
+									<th class="d-none d-md-table-cell" style="width:110px;">시험자 목록</th>
+								</tr>
+							</thead>
+							<tbody id="recruitmentTbody">
+								<tr><td colspan="7" class="text-center text-muted py-4">
+									<span class="spinner-border spinner-border-sm"></span> 불러오는 중...
+								</td></tr>
+							</tbody>
+						</table>
+						<div class="card-footer d-flex justify-content-between align-items-center">
+							<span class="text-muted small" id="pageInfo"></span>
+							<nav><ul class="pagination pagination-sm mb-0" id="pageNav"></ul></nav>
+						</div>
+					</div>
+
+				</div>
+			</main>
+
+			<footer class="footer">
+				<div class="container-fluid">
+					<div class="row text-muted">
+						<div class="col-12 text-start">
+							<p class="mb-0">&copy; Human Clinical</p>
+						</div>
+					</div>
+				</div>
+			</footer>
+		</div>
+	</div>
+
+	<script src="../js/app.js"></script>
+	<script src="../js/common.js"></script>
+	<script src="../js/admin-utils.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+	<script>
+		var FIELD_MAP = {};
+		var currentPage = 0;
+		var currentKeyword = "";
+		var currentStatus = "";
+		var totalPages = 0;
+		var PAGE_SIZE = 10;
+
+		function escapeHtml(str) {
+			var div = document.createElement("div");
+			div.textContent = str;
+			return div.innerHTML;
+		}
+
+		function parseFieldIds(jsonStr) {
+			if (!jsonStr) return [];
+			try { return JSON.parse(jsonStr); } catch (e) { return []; }
+		}
+
+		function fieldIdsToNames(jsonStr) {
+			var ids = parseFieldIds(jsonStr);
+			return ids.map(function (id) { return FIELD_MAP[String(id)] || id; }).join(", ");
+		}
+
+		function getStatusBadge(item) {
+			if (item.isTemp) return '<span class="badge bg-warning text-dark">임시저장</span>';
+			if (item.status === "OPEN") return '<span class="badge bg-success">모집중</span>';
+			if (item.status === "ALWAYS") return '<span class="badge bg-info">상시모집</span>';
+			return '<span class="badge bg-secondary">마감</span>';
+		}
+
+		// ========== 엑셀 다운로드 ==========
+		function downloadExcel(recruitmentId, recruitmentTitle, btnEl) {
+			btnEl.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+			btnEl.disabled = true;
+
+			fetch("/api/trial-applications/recruitment/" + recruitmentId)
+				.then(function (res) {
+					if (!res.ok) throw new Error("API 오류: " + res.status);
+					return res.json();
+				})
+				.then(function (applications) {
+					if (!applications || applications.length === 0) {
+						alert("시험자 신청 내역이 없습니다.");
+						return;
+					}
+
+					function formatBirth(birth) {
+						if (!birth) return "";
+						var s = String(birth).replace(/\D/g, "");
+						if (s.length === 8) return s.slice(0,4) + "-" + s.slice(4,6) + "-" + s.slice(6,8);
+						return birth;
+					}
+
+					applications.sort(function(a, b) {
+						var ta = a.createdAt || "";
+						var tb = b.createdAt || "";
+						return ta < tb ? -1 : ta > tb ? 1 : 0;
+					});
+
+					var rows = applications.map(function (app) {
+						return {
+							"이름": app.name || "",
+							"연락처": app.phone || "",
+							"생년월일": formatBirth(app.birth),
+							"희망일": AdminUtils.formatDate(app.startDate),
+							"희망시간": app.startTime || ""
+						};
+					});
+
+					var wb = XLSX.utils.book_new();
+					var ws = XLSX.utils.json_to_sheet(rows);
+					ws["!cols"] = [{ wch: 12 }, { wch: 16 }, { wch: 14 }, { wch: 14 }];
+					XLSX.utils.book_append_sheet(wb, ws, "시험자목록");
+
+					var today = new Date();
+					var dateStr = today.getFullYear() +
+						String(today.getMonth() + 1).padStart(2, "0") +
+						String(today.getDate()).padStart(2, "0");
+					var safeTitle = (recruitmentTitle || "모집공고").replace(/[\/\\:*?"<>|]/g, "_").substring(0, 30);
+					XLSX.writeFile(wb, "시험자목록_" + safeTitle + "_" + dateStr + ".xlsx");
+				})
+				.catch(function (err) {
+					console.error("엑셀 다운로드 실패:", err);
+					alert("시험자 목록을 불러오는 데 실패했습니다.");
+				})
+				.finally(function () {
+					btnEl.innerHTML = '<i data-feather="download" style="width:14px;height:14px;"></i>';
+					btnEl.disabled = false;
+					if (typeof feather !== "undefined") feather.replace();
+				});
+		}
+
+		// ========== 목록 로딩 (백엔드 페이징) ==========
+		function loadRecruitments(page) {
+			page = page || 0;
+			currentPage = page;
+
+			var url = "/api/recruitments/all?page=" + page + "&size=" + PAGE_SIZE;
+			if (currentKeyword) url += "&keyword=" + encodeURIComponent(currentKeyword);
+			if (currentStatus) url += "&status=" + encodeURIComponent(currentStatus);
+
+			document.querySelector("#recruitmentTbody").innerHTML =
+				'<tr><td colspan="7" class="text-center text-muted py-4"><span class="spinner-border spinner-border-sm"></span> 불러오는 중...</td></tr>';
+
+			fetch(url)
+				.then(function (res) {
+					if (!res.ok) throw new Error("API 오류: " + res.status);
+					return res.json();
+				})
+				.then(function (data) {
+					// 백엔드 Page 객체 구조: { content: [], totalElements, totalPages, number, size }
+					var items = data.content || [];
+					totalPages = data.totalPages || 0;
+					var totalElements = data.totalElements || 0;
+
+					renderRows(items);
+					renderPageInfo(page, totalElements);
+					renderPagination(page, totalPages);
+				})
+				.catch(function (err) {
+					console.error("모집 공고 목록 로딩 실패:", err);
+					document.querySelector("#recruitmentTbody").innerHTML =
+						'<tr><td colspan="7" class="text-center text-muted py-4">데이터를 불러올 수 없습니다.</td></tr>';
+				});
+		}
+
+		function renderRows(items) {
+			var tbody = document.querySelector("#recruitmentTbody");
+			tbody.innerHTML = "";
+
+			if (items.length === 0) {
+				tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">등록된 모집 공고가 없습니다.</td></tr>';
+				return;
+			}
+
+			var fragment = document.createDocumentFragment();
+
+			items.forEach(function (item) {
+				var tr = document.createElement("tr");
+				tr.style.cursor = "pointer";
+
+				var regionStr = fieldIdsToNames(item.recruitmentFieldIds);
+				var noticeBadge = item.isNotification ? '<span class="badge bg-danger me-1">공지</span>' : '';
+				var noticeCol = item.isNotification
+					? '<span class="badge bg-danger">공지</span>'
+					: '<span class="badge bg-secondary">일반</span>';
+
+				tr.addEventListener("click", function () {
+					location.href = "detail?id=" + item.id;
+				});
+
+				tr.innerHTML =
+					'<td>' + noticeBadge + escapeHtml(item.title || "") + '</td>' +
+					'<td class="d-none d-md-table-cell">' + escapeHtml(item.trialCode || "-") + '</td>' +
+					'<td class="d-none d-md-table-cell">' + escapeHtml(regionStr || "-") + '</td>' +
+					'<td>' + noticeCol + '</td>' +
+					'<td>' + getStatusBadge(item) + '</td>' +
+					'<td class="d-none d-md-table-cell">' + AdminUtils.formatDate(item.createdAt) + '</td>';
+
+				// 버튼 td
+				var td = document.createElement("td");
+				td.className = "d-none d-md-table-cell text-center";
+
+				var btnExcel = document.createElement("button");
+				btnExcel.className = "btn btn-sm btn-outline-success";
+				btnExcel.title = "시험자 목록 엑셀 다운로드";
+				btnExcel.innerHTML = '<i data-feather="download" style="width:14px;height:14px;"></i>';
+				btnExcel.addEventListener("click", function (e) {
+					e.stopPropagation();
+					downloadExcel(item.id, item.title, btnExcel);
+				});
+				td.appendChild(btnExcel);
+
+				var btnRefresh = document.createElement("button");
+				btnRefresh.className = "btn btn-sm btn-outline-secondary ms-1";
+				btnRefresh.title = "수정시간 갱신 (목록 상단으로)";
+				btnRefresh.innerHTML = '<i data-feather="refresh-cw" style="width:14px;height:14px;"></i>';
+				btnRefresh.addEventListener("click", function (e) {
+					e.stopPropagation();
+					updateRecruitmentTime(item.id, btnRefresh);
+				});
+				td.appendChild(btnRefresh);
+
+				tr.appendChild(td);
+				fragment.appendChild(tr);
+			});
+
+			tbody.appendChild(fragment);
+			if (typeof feather !== "undefined") feather.replace();
+		}
+
+		// ========== 페이지 정보 표시 ==========
+		function renderPageInfo(page, totalElements) {
+			var start = totalElements === 0 ? 0 : page * PAGE_SIZE + 1;
+			var end = Math.min((page + 1) * PAGE_SIZE, totalElements);
+			document.getElementById("pageInfo").textContent =
+				totalElements + "개 중 " + start + " - " + end + " 표시";
+		}
+
+		// ========== 페이지네이션 렌더링 ==========
+		function renderPagination(currentPage, totalPages) {
+			var nav = document.getElementById("pageNav");
+			nav.innerHTML = "";
+
+			if (totalPages <= 1) return;
+
+			var startPage = Math.max(0, currentPage - 2);
+			var endPage = Math.min(totalPages - 1, currentPage + 2);
+
+			// 이전
+			var prevLi = document.createElement("li");
+			prevLi.className = "page-item" + (currentPage === 0 ? " disabled" : "");
+			prevLi.innerHTML = '<a class="page-link" href="#">&laquo;</a>';
+			prevLi.addEventListener("click", function (e) {
+				e.preventDefault();
+				if (currentPage > 0) loadRecruitments(currentPage - 1);
+			});
+			nav.appendChild(prevLi);
+
+			// 페이지 번호
+			for (var i = startPage; i <= endPage; i++) {
+				(function(pageNum) {
+					var li = document.createElement("li");
+					li.className = "page-item" + (pageNum === currentPage ? " active" : "");
+					li.innerHTML = '<a class="page-link" href="#">' + (pageNum + 1) + '</a>';
+					li.addEventListener("click", function (e) {
+						e.preventDefault();
+						loadRecruitments(pageNum);
+					});
+					nav.appendChild(li);
+				})(i);
+			}
+
+			// 다음
+			var nextLi = document.createElement("li");
+			nextLi.className = "page-item" + (currentPage >= totalPages - 1 ? " disabled" : "");
+			nextLi.innerHTML = '<a class="page-link" href="#">&raquo;</a>';
+			nextLi.addEventListener("click", function (e) {
+				e.preventDefault();
+				if (currentPage < totalPages - 1) loadRecruitments(currentPage + 1);
+			});
+			nav.appendChild(nextLi);
+		}
+
+		// ========== 검색 ==========
+		function doSearch() {
+			currentKeyword = document.getElementById("searchKeyword").value.trim();
+			currentStatus = document.getElementById("searchStatus").value;
+			loadRecruitments(0);
+		}
+
+		function doReset() {
+			document.getElementById("searchKeyword").value = "";
+			document.getElementById("searchStatus").value = "";
+			currentKeyword = "";
+			currentStatus = "";
+			loadRecruitments(0);
+		}
+
+		// ========== 수정시간 갱신 ==========
+		function updateRecruitmentTime(recruitmentId, btnEl) {
+			btnEl.disabled = true;
+			btnEl.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+			fetch("/api/recruitments/" + recruitmentId + "/touch", { method: "PATCH" })
+				.then(function (res) {
+					if (!res.ok) throw new Error("API 오류: " + res.status);
+					loadRecruitments(currentPage);
+				})
+				.catch(function (err) {
+					console.error("갱신 실패:", err);
+					alert("수정시간 갱신에 실패했습니다.");
+				})
+				.finally(function () {
+					btnEl.disabled = false;
+					btnEl.innerHTML = '<i data-feather="refresh-cw" style="width:14px;height:14px;"></i>';
+					if (typeof feather !== "undefined") feather.replace();
+				});
+		}
+
+		// ========== 지역 정보 로드 ==========
+		function loadFields() {
+			return fetch("/api/recruitment-fields")
+				.then(function (res) { return res.ok ? res.json() : []; })
+				.then(function (fields) {
+					(fields || []).forEach(function (f) {
+						FIELD_MAP[String(f.id)] = f.fieldName;
+					});
+				});
+		}
+
+		// ========== 초기화 ==========
+		document.addEventListener("DOMContentLoaded", function () {
+			document.getElementById("btnSearch").addEventListener("click", doSearch);
+			document.getElementById("btnReset").addEventListener("click", doReset);
+			document.getElementById("searchKeyword").addEventListener("keydown", function (e) {
+				if (e.key === "Enter") doSearch();
+			});
+
+			loadFields().then(function () {
+				loadRecruitments(0);
+			});
+		});
+	</script>
+</body>
+
+</html>
