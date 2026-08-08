@@ -85,11 +85,6 @@
             </div>
             <div class="content">
                 <div class="board_tab2">
-                    <div class="wrap">
-                        <a href="#" class="tab-link active" data-field="SEOUL">Seoul</a>
-                        <a href="#" class="tab-link" data-field="DAEGU">Daegu</a>
-                        <a href="#" class="tab-link" data-field="JEJU">Jeju</a>
-                    </div>
                     <div class="filter_calendar">
                         <input type="date" id="dateFilter">
                     </div>
@@ -123,7 +118,7 @@
             $("#foot").load("/foot.html");
         });
 
-        let currentField = 'SEOUL';
+        let currentField = 'HCMC';
         let allRecruitments = [];
         let filteredRecruitments = [];
         let currentPage = 1;
@@ -148,15 +143,6 @@
             }
 
             loadRecruitments();
-
-            $('.tab-link').on('click', function(e) {
-                e.preventDefault();
-                $('.tab-link').removeClass('active');
-                $(this).addClass('active');
-                currentField = $(this).data('field');
-                currentPage = 1;
-                loadRecruitments();
-            });
 
             $('#dateFilter').on('change', function() {
                 currentPage = 1;
