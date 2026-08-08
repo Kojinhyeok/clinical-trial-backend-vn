@@ -11,9 +11,9 @@
   <body class="main">
     <div id="head"></div>
 
-    <!-- 팝업 모달 (샘플 고정 데이터) -->
+    <!-- 팝업 모달 (동적 렌더링) -->
     <div class="modal_overlay" id="popup" style="display: none">
-      <div class="modal_content is-single">
+      <div class="modal_content">
         <button class="modal_nav prev" aria-label="Slide trước">
           <img src="/images/icon/popup_prev.svg" alt="" />
         </button>
@@ -22,9 +22,7 @@
         </button>
         <div class="modal_wrap">
           <div class="modal_track">
-            <div class="modal_slide">
-              <img src="/images/main/popup1.jpg" alt="Thông báo HUMAN">
-            </div>
+            <!-- JavaScript로 동적 렌더링 -->
           </div>
         </div>
         <div class="modal_bottom">
@@ -137,6 +135,7 @@
                 </button>
                 <ul class="dropdown_list" id="dropdownList" style="display:none;">
                     <li data-tab-id="" class="active">Tất cả</li>
+                    <!-- JavaScript로 동적 생성 -->
                 </ul>
             </div>
             <div style="display: flex; justify-content: center; margin-top: 20px;">
@@ -152,39 +151,7 @@
         </div>
           <div class="card_slide">
             <div class="board_card" id="main_trial_cards">
-              <a href="/entry/entry_sample.html" class="item">
-                <div class="badge"><span>Đánh giá hiệu quả</span></div>
-                <div class="img">
-                  <div class="thumb"><img src="/images/board/sample.jpg" alt="Trước thử nghiệm"></div>
-                  <div class="thumb"><img src="/images/board/sample.jpg" alt="Sau thử nghiệm"></div>
-                </div>
-                <div class="txt">
-                  <span class="tit">Đánh giá hiệu quả dưỡng ẩm da</span>
-                  <span class="caution">Cải thiện độ ẩm da rõ rệt sau 4 tuần</span>
-                </div>
-              </a>
-              <a href="/entry/entry_sample.html" class="item">
-                <div class="badge"><span>Đánh giá an toàn</span></div>
-                <div class="img">
-                  <div class="thumb"><img src="/images/board/sample.jpg" alt="Trước thử nghiệm"></div>
-                  <div class="thumb"><img src="/images/board/sample.jpg" alt="Sau thử nghiệm"></div>
-                </div>
-                <div class="txt">
-                  <span class="tit">Đánh giá kích ứng da</span>
-                  <span class="caution">Không phát hiện phản ứng kích ứng</span>
-                </div>
-              </a>
-              <a href="/entry/entry_sample.html" class="item">
-                <div class="badge"><span>Đánh giá chức năng</span></div>
-                <div class="img">
-                  <div class="thumb"><img src="/images/board/sample.jpg" alt="Trước thử nghiệm"></div>
-                  <div class="thumb"><img src="/images/board/sample.jpg" alt="Sau thử nghiệm"></div>
-                </div>
-                <div class="txt">
-                  <span class="tit">Đánh giá hiệu quả làm sáng da</span>
-                  <span class="caution">Cải thiện sắc tố da sau 8 tuần sử dụng</span>
-                </div>
-              </a>
+              <div style="text-align: center; padding: 50px">Đang tải...</div>
             </div>
             <div class="slide_index"></div>
           </div>
@@ -208,7 +175,7 @@
                 </div>
                 <div class="tit">Số lượt thử nghiệm tích lũy</div>
                 <div class="num">
-                  <span class="count" data-value="5773">5,773</span>
+                  <span class="count" data-value="0">0</span>
                 </div>
               </div>
               <div class="item">
@@ -217,7 +184,7 @@
                 </div>
                 <div class="tit">Số sản phẩm tích lũy</div>
                 <div class="num">
-                  <span class="count" data-value="15281">15,281</span>
+                  <span class="count" data-value="0">0</span>
                 </div>
               </div>
               <div class="item">
@@ -226,7 +193,7 @@
                 </div>
                 <div class="tit">Số khách hàng tích lũy</div>
                 <div class="num">
-                  <span class="count" data-value="4502">4,502</span>
+                  <span class="count" data-value="0">0</span>
                 </div>
               </div>
             </div>
@@ -335,17 +302,67 @@
     $("#head").load("/head.html");
     $("#foot").load("/foot.html");
 
-    // 2단계(백엔드 연동)에서 /api/popups, /api/trials, /api/statistics
-    // 붙이면서 아래 샘플 렌더링을 다시 AJAX 호출로 교체 예정.
+    let allTrials = [];
 
-    checkPopupDisplay();
+    // 데이터 로드
+    loadPopups();
+    loadMainTrials();
+    loadStatistics();
 
-    $(".modal_close")
-      .off("click")
-      .on("click", function () {
-        if ($(this).hasClass("today")) setPopupCookie();
-        $("#popup").hide();
+    /**
+     * 팝업 로드 및 표시
+     */
+    function loadPopups() {
+      $.ajax({
+        url: "/api/popups",
+        method: "GET",
+        success: function (response) {
+          if (response && response.length > 0) {
+            const isSingle = response.length === 1;
+
+            if (isSingle) {
+              $(".modal_content").addClass("is-single");
+            } else {
+              $(".modal_content").removeClass("is-single");
+            }
+
+            renderPopups(response);
+            checkPopupDisplay();
+
+            if (!isSingle) {
+              requestAnimationFrame(function () {
+                if (window.PopupSlider) window.PopupSlider.init({ gap: 30 });
+              });
+              setTimeout(function () {
+                if (window.PopupSlider && window.PopupSlider.refresh)
+                  window.PopupSlider.refresh();
+              }, 50);
+            }
+          } else {
+            $("#popup").hide();
+          }
+        },
+        error: function () {
+          $("#popup").hide();
+        },
       });
+    }
+
+    function renderPopups(popups) {
+      const slidesHtml = popups.map((popup) => {
+          const imgHtml = `<img src="${popup.imageUrl || "/images/main/popup1.jpg"}"
+              alt="${popup.title || ""}"
+              onerror="this.src='/images/main/popup1.jpg'"
+              style="${popup.linkUrl ? 'cursor:pointer;' : ''}">`;
+
+          const content = popup.linkUrl
+              ? `<a href="${popup.linkUrl}" target="_blank" style="display:block;">${imgHtml}</a>`
+              : imgHtml;
+
+          return `<div class="modal_slide">${content}</div>`;
+      }).join("");
+      $(".modal_track").html(slidesHtml);
+  }
 
     function checkPopupDisplay() {
       const hidePopup = getCookie("hidePopupToday");
@@ -354,7 +371,18 @@
         return;
       }
       $("#popup").show();
+      requestAnimationFrame(function () {
+        if (window.PopupSlider && window.PopupSlider.refresh)
+          window.PopupSlider.refresh();
+      });
     }
+
+    $(".modal_close")
+      .off("click")
+      .on("click", function () {
+        if ($(this).hasClass("today")) setPopupCookie();
+        $("#popup").hide();
+      });
 
     function setPopupCookie() {
       const now = new Date();
@@ -369,19 +397,132 @@
       return null;
     }
 
+    /**
+     * Main1 - 시험목록 데이터 로드
+     */
+    function loadMainTrials() {
+      $.ajax({
+        url: "/api/trials",
+        method: "GET",
+        success: function (response) {
+          allTrials = response || [];
+          renderMainTrials(allTrials.slice(0, 3));
+          loadTabDropdown();
+        },
+        error: function () {
+          console.error("Trial 로드 실패");
+          $("#main_trial_cards").html(
+            '<div style="text-align: center; padding: 50px;">Không thể tải dữ liệu.</div>',
+          );
+        },
+      });
+    }
+
+    /**
+     * 드롭다운 탭 로드
+     */
+    function loadTabDropdown() {
+      $.ajax({
+        url: "/api/trial-keyword-groups/tabs",
+        method: "GET",
+        success: function (response) {
+          var listHtml = '<li data-tab-id="" class="active">Tất cả</li>';
+          (response || []).forEach(function (tab) {
+            listHtml +=
+              '<li data-tab-id="' + tab.id + '" data-tab-code="' + (tab.tabCode || "") + '">' +
+              tab.tabName +
+              "</li>";
+          });
+          $("#dropdownList").html(listHtml);
+
+          $("#dropdownList li").on("click", function () {
+            var tabId = $(this).data("tab-id");
+            var tabName = $(this).text();
+
+            $("#dropdownList li").removeClass("active");
+            $(this).addClass("active");
+            $("#dropdownToggleBtn").html(tabName + ' <span class="arrow">▼</span>');
+            $("#dropdownList").hide();
+
+            if (!tabId) {
+              renderMainTrials(allTrials.slice(0, 3));
+            } else {
+              $.ajax({
+                url: "/api/trials",
+                method: "GET",
+                data: { keywordGroupId: tabId },
+                success: function (res) {
+                  renderMainTrials((res || []).slice(0, 3));
+                },
+                error: function () {
+                  renderMainTrials([]);
+                },
+              });
+            }
+          });
+        },
+      });
+    }
+
     $("#dropdownToggleBtn").on("click", function (e) {
       e.stopPropagation();
       $("#dropdownList").toggle();
     });
+
     $(document).on("click", function () {
       $("#dropdownList").hide();
     });
-    $("#dropdownList li").on("click", function () {
-      $("#dropdownList li").removeClass("active");
-      $(this).addClass("active");
-      $("#dropdownToggleBtn").html($(this).text() + ' <span class="arrow">▼</span>');
-      $("#dropdownList").hide();
-    });
+
+    /**
+     * Trial 카드 렌더링 (최대 3개)
+     */
+    function renderMainTrials(trials) {
+      if (!trials || trials.length === 0) {
+        $("#main_trial_cards").html(
+          '<div style="text-align: center; padding: 50px;">Không có kết quả.</div>',
+        );
+        return;
+      }
+
+      var cardsHtml = trials
+        .map(function (trial) {
+          return (
+            '<a href="/entry/entry_sample.html?id=' + trial.id + '" class="item">' +
+            '<div class="badge"><span>' + (trial.groupName || trial.tabName || "") + "</span></div>" +
+            '<div class="img">' +
+            '<div class="thumb"><img src="' + (trial.beforeImageUrl || "/images/board/sample.jpg") + '" alt="Trước thử nghiệm"></div>' +
+            '<div class="thumb"><img src="' + (trial.afterImageUrl || "/images/board/sample.jpg") + '" alt="Sau thử nghiệm"></div>' +
+            "</div>" +
+            '<div class="txt">' +
+            '<span class="tit">' + (trial.trialTitle || "") + "</span>" +
+            '<span class="caution">' + (trial.trialSubtitle || "") + "</span>" +
+            "</div>" +
+            "</a>"
+          );
+        })
+        .join("");
+
+      $("#main_trial_cards").html(cardsHtml);
+    }
+
+    /**
+     * Main2 - 통계 데이터 로드
+     */
+    function loadStatistics() {
+      $.ajax({
+        url: "/api/statistics",
+        method: "GET",
+        success: function (data) {
+          $(".data .item").eq(0).find(".count").attr("data-value", data.totalTrials).text("0");
+          $(".data .item").eq(1).find(".count").attr("data-value", data.totalProducts).text("0");
+          $(".data .item").eq(2).find(".count").attr("data-value", data.totalClients).text("0");
+        },
+        error: function () {
+          console.error("통계 데이터 로드 실패");
+        },
+      });
+    }
+
   });
 </script>
   </body>
