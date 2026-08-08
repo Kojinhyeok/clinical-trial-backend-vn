@@ -26,6 +26,7 @@
             flex: 1;
             aspect-ratio: 4/5;
         }
+
         .board_card .item {
             padding: 30px;
         }
@@ -74,53 +75,21 @@
                 <div class="board_top">
                     <div class="board_tab">
                         <div class="wrap">
-                            <a href="#" class="tab-link active" data-tab="">Tất cả</a>
+                            <!-- JavaScript로 동적 생성 -->
                         </div>
                     </div>
                     <div class="search_wrap">
                         <div class="search">
                             <div class="box">
                                 <div class="img"><img src="/images/icon/search.svg" alt=""></div>
-                                <input id="search_input" placeholder="Tìm theo loại sản phẩm hoặc hạng mục lâm sàng.">
+                                <input id="search_input" placeholder="Tìm kiếm loại sản phẩm hoặc hạng mục lâm sàng.">
                             </div>
                             <button id="search_btn" type="button">Tìm kiếm</button>
                         </div>
                     </div>
                 </div>
                 <div class="board_content">
-                    <!-- 샘플 데이터로 고정 렌더링 (백엔드 연동 전) -->
-                    <div class="board_card">
-                        <a href="/entry/entry_sample.html" class="item">
-                            <div class="img">
-                                <div class="thumb"><img src="/images/board/sample.jpg" alt="Trước thử nghiệm"></div>
-                                <div class="thumb"><img src="/images/board/sample.jpg" alt="Sau thử nghiệm"></div>
-                            </div>
-                            <div class="txt">
-                                <span class="tit">Đánh giá hiệu quả dưỡng ẩm da</span>
-                                <span class="caution">Cải thiện độ ẩm da rõ rệt sau 4 tuần</span>
-                            </div>
-                        </a>
-                        <a href="/entry/entry_sample.html" class="item">
-                            <div class="img">
-                                <div class="thumb"><img src="/images/board/sample.jpg" alt="Trước thử nghiệm"></div>
-                                <div class="thumb"><img src="/images/board/sample.jpg" alt="Sau thử nghiệm"></div>
-                            </div>
-                            <div class="txt">
-                                <span class="tit">Đánh giá hiệu quả làm sáng da</span>
-                                <span class="caution">Cải thiện sắc tố da sau 8 tuần sử dụng</span>
-                            </div>
-                        </a>
-                        <a href="/entry/entry_sample.html" class="item">
-                            <div class="img">
-                                <div class="thumb"><img src="/images/board/sample.jpg" alt="Trước thử nghiệm"></div>
-                                <div class="thumb"><img src="/images/board/sample.jpg" alt="Sau thử nghiệm"></div>
-                            </div>
-                            <div class="txt">
-                                <span class="tit">Đánh giá hiệu quả giảm nếp nhăn</span>
-                                <span class="caution">Cải thiện độ đàn hồi da sau 8 tuần</span>
-                            </div>
-                        </a>
-                    </div>
+                    <!-- JavaScript로 동적 생성 -->
                 </div>
             </div>
         </div>
@@ -136,13 +105,251 @@
             $("#head").load("/head.html");
             $("#foot").load("/foot.html");
 
-            // 2단계(백엔드 연동)에서 아래 기능 복원 예정:
-            // - /api/trial-keyword-groups/tabs, /api/trials 연동
-            // - 탭 필터링, 검색, 페이지네이션, 이미지 슬라이더(다중 before/after) 로직
+            var tabsData       = [];
+            var allTrials      = [];
+            var currentTabCode = null;
+            var currentKeyword = null;
+            var currentPage    = 1;
+            var itemsPerPage   = 9;
+
+            var sliderIntervals = [];
+
+            loadTabsData();
+
+            function loadTabsData() {
+                $.ajax({
+                    url: '/api/trial-keyword-groups/tabs',
+                    method: 'GET',
+                    success: function(response) {
+                        tabsData = response || [];
+                        renderTabs();
+                        loadTrials();
+                    },
+                    error: function() {
+                        console.error('탭 데이터 로드 실패');
+                        loadTrials();
+                    }
+                });
+            }
+
+            function loadTrials() {
+                $.ajax({
+                    url: '/api/trials',
+                    method: 'GET',
+                    success: function(response) {
+                        allTrials = response || [];
+                        currentPage = 1;
+                        renderTrials();
+                        renderPagination();
+                    },
+                    error: function() {
+                        console.error('데이터 로드 실패');
+                    }
+                });
+            }
+
+            function renderTabs() {
+                var tabsHtml = '<a href="#" class="tab-link active" data-tab="">Tất cả</a>';
+                tabsData.forEach(function(tab) {
+                    tabsHtml += '<a href="#" class="tab-link" data-tab="' + tab.tabCode + '">' + tab.tabName + '</a>';
+                });
+                $('.board_tab .wrap').html(tabsHtml);
+
+                $('.board_tab .wrap').off('click', '.tab-link').on('click', '.tab-link', function(e) {
+                    e.preventDefault();
+                    $('.tab-link').removeClass('active');
+                    $(this).addClass('active');
+                    currentTabCode     = $(this).data('tab') || null;
+                    currentKeyword     = null;
+                    window.searchResults = null;
+                    $('#search_input').val('');
+                    currentPage = 1;
+                    renderTrials();
+                    renderPagination();
+                });
+            }
+
+            function doSearch(keyword) {
+                if (!keyword) {
+                    currentKeyword       = null;
+                    window.searchResults = null;
+                    currentPage = 1;
+                    renderTrials();
+                    renderPagination();
+                    return;
+                }
+                currentKeyword = keyword;
+                var lowerKeyword = keyword.toLowerCase();
+                var baseTrials = currentTabCode
+                    ? allTrials.filter(function(t) { return t.tabCode === currentTabCode; })
+                    : allTrials;
+
+                window.searchResults = baseTrials.filter(function(trial) {
+                    return (trial.trialTitle || '').toLowerCase().includes(lowerKeyword)
+                        || (trial.tabName  || '').toLowerCase().includes(lowerKeyword);
+                });
+                currentPage = 1;
+                renderTrials();
+                renderPagination();
+            }
 
             $('#search_btn').on('click', function() {
-                // TODO: 백엔드 연동 후 실제 검색 기능 복원
+                doSearch($('#search_input').val().trim());
             });
+            $('#search_input').on('keypress', function(e) {
+                if (e.which === 13) doSearch($(this).val().trim());
+            });
+
+            function buildImgHtml(trial) {
+                var pairs = trial.imagePairs;
+
+                if (!pairs || pairs.length === 0) {
+                    return '<div class="img">' +
+                        '<div class="thumb"><img src="' + (trial.beforeImageUrl || '/images/board/sample.jpg') + '" alt="Trước thử nghiệm"></div>' +
+                        '<div class="thumb"><img src="' + (trial.afterImageUrl  || '/images/board/sample.jpg') + '" alt="Sau thử nghiệm"></div>' +
+                    '</div>';
+                }
+
+                if (pairs.length === 1) {
+                    var p = pairs[0];
+                    return '<div class="img">' +
+                        '<div class="thumb"><img src="' + (p.beforeImageUrl || '/images/board/sample.jpg') + '" alt="Trước thử nghiệm"></div>' +
+                        '<div class="thumb"><img src="' + (p.afterImageUrl  || '/images/board/sample.jpg') + '" alt="Sau thử nghiệm"></div>' +
+                    '</div>';
+                }
+
+                var slidesHtml = pairs.map(function(p) {
+                    return '<div class="slide">' +
+                        '<div class="thumb"><img src="' + (p.beforeImageUrl || '/images/board/sample.jpg') + '" alt="Trước thử nghiệm"></div>' +
+                        '<div class="thumb"><img src="' + (p.afterImageUrl  || '/images/board/sample.jpg') + '" alt="Sau thử nghiệm"></div>' +
+                    '</div>';
+                }).join('');
+
+                var dotsHtml = pairs.map(function(_, i) {
+                    return '<span class="dot' + (i === 0 ? ' active' : '') + '" data-index="' + i + '"></span>';
+                }).join('');
+
+                return '<div class="img img-slider" data-total="' + pairs.length + '" data-current="0">' +
+                    '<div class="slides">' + slidesHtml + '</div>' +
+                '</div>';
+            }
+
+            function initSliders() {
+                sliderIntervals.forEach(function(id) { clearInterval(id); });
+                sliderIntervals = [];
+
+                $('.img-slider').each(function() {
+                    var $slider  = $(this);
+                    var total    = parseInt($slider.data('total'), 10);
+                    var current  = 0;
+
+                    function goTo(index) {
+                        current = index;
+                        $slider.data('current', current);
+                        $slider.find('.slides').css('transform', 'translateX(-' + (current * 100) + '%)');
+                        $slider.find('.dot').removeClass('active').eq(current).addClass('active');
+                    }
+
+                    $slider.find('.dot').on('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        goTo(parseInt($(this).data('index'), 10));
+                    });
+
+                    var intervalId = setInterval(function() {
+                        goTo((current + 1) % total);
+                    }, 3000);
+
+                    sliderIntervals.push(intervalId);
+                });
+            }
+
+            function renderTrials() {
+                var trials;
+                if (currentKeyword && window.searchResults) {
+                    trials = window.searchResults;
+                } else {
+                    trials = currentTabCode
+                        ? allTrials.filter(function(t) { return t.tabCode === currentTabCode; })
+                        : allTrials;
+                }
+                window.currentFilteredTrials = trials;
+
+                var startIdx   = (currentPage - 1) * itemsPerPage;
+                var pageTrials = trials.slice(startIdx, startIdx + itemsPerPage);
+                var contentHtml = '';
+
+                if (pageTrials.length === 0) {
+                    contentHtml = '<p style="text-align:center;padding:50px;">Không có kết quả.</p>';
+                } else {
+                    var cardsHtml = pageTrials.map(function(trial) {
+                        return '<a href="/entry/entry_sample.html?id=' + trial.id + '" class="item">' +
+                            buildImgHtml(trial) +
+                            '<div class="txt">' +
+                                '<span class="tit">'    + (trial.trialTitle    || '') + '</span>' +
+                                '<span class="caution">' + (trial.trialSubtitle || '') + '</span>' +
+                            '</div>' +
+                        '</a>';
+                    }).join('');
+                    contentHtml = '<div class="board_card">' + cardsHtml + '</div>';
+                }
+
+                $('.board_content').html(contentHtml);
+
+                initSliders();
+            }
+
+            function renderPagination() {
+                var totalTrials = window.currentFilteredTrials ? window.currentFilteredTrials.length : 0;
+                var totalPages  = Math.ceil(totalTrials / itemsPerPage);
+
+                $('.content .pagination').remove();
+                if (totalPages <= 1) return;
+
+                var pageButtons = '';
+                for (var i = 1; i <= totalPages; i++) {
+                    pageButtons += '<button class="page-num' + (i === currentPage ? ' active' : '') + '" data-page="' + i + '">' + i + '</button>';
+                }
+
+                var paginationHtml =
+                    '<div class="pagination">' +
+                        '<button class="prev"' + (currentPage === 1 ? ' disabled' : '') + '>' +
+                            '<img src="/images/icon/prev.svg" alt="">Trước' +
+                        '</button>' +
+                        '<div class="num">' + pageButtons + '</div>' +
+                        '<button class="next"' + (currentPage === totalPages ? ' disabled' : '') + '>' +
+                            'Sau<img src="/images/icon/next.svg" alt="">' +
+                        '</button>' +
+                    '</div>';
+
+                $('.content').append(paginationHtml);
+                attachPaginationEvents(totalPages);
+            }
+
+            function attachPaginationEvents(totalPages) {
+                $('.page-num').on('click', function() {
+                    currentPage = $(this).data('page');
+                    renderTrials();
+                    renderPagination();
+                    $('html, body').animate({ scrollTop: $('.sub1').offset().top - 100 }, 300);
+                });
+                $('.pagination .prev').on('click', function() {
+                    if (currentPage > 1) {
+                        currentPage--;
+                        renderTrials();
+                        renderPagination();
+                        $('html, body').animate({ scrollTop: $('.sub1').offset().top - 100 }, 300);
+                    }
+                });
+                $('.pagination .next').on('click', function() {
+                    if (currentPage < totalPages) {
+                        currentPage++;
+                        renderTrials();
+                        renderPagination();
+                        $('html, body').animate({ scrollTop: $('.sub1').offset().top - 100 }, 300);
+                    }
+                });
+            }
         });
     </script>
 </body>

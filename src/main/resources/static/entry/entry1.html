@@ -34,7 +34,7 @@
             <h2 class="normal">Hành trình khám phá giá trị thực sự của sản phẩm, <br><span class="bold purple">lĩnh vực nghiên cứu</span> của HUMAN</h2>
         </div>
         <div class="image">
-            <h3>“Hành trình sản phẩm gặp gỡ thế giới, <br class="m_only">bắt đầu từ lâm sàng.” <br>HUMAN chứng minh giá trị mà thương hiệu muốn truyền tải <br class="m_only">bằng ngôn ngữ khoa học.</h3>
+            <h3>"Hành trình sản phẩm gặp gỡ thế giới, <br class="m_only">bắt đầu từ lâm sàng." <br>HUMAN chứng minh giá trị mà thương hiệu muốn truyền tải <br class="m_only">bằng ngôn ngữ khoa học.</h3>
         </div>
     </div>
 </section>
@@ -49,31 +49,7 @@
         </div>
         <div class="content">
             <div class="list1" id="safetyListContainer">
-                <!-- 샘플 데이터로 고정 렌더링 (백엔드 연동 전) -->
-                <div class="item">
-                    <div class="text">
-                        <div class="tit">Đánh giá kích ứng da (Patch Test)</div>
-                        <div class="txt">
-                            <p>Thời gian thử nghiệm : 4 tuần</p><br>
-                            <p>Số lượng người tham gia : 30 người</p><br>
-                            <p>Vị trí thử nghiệm : Cánh tay trên / Lưng</p><br>
-                            <p>Sản phẩm bàn giao : Báo cáo <br class="pc_only">kết quả thử nghiệm</p>
-                        </div>
-                    </div>
-                    <div class="img"><img src="/images/icon/symbol.svg" alt="Đánh giá kích ứng da"></div>
-                </div>
-                <div class="item">
-                    <div class="text">
-                        <div class="tit">Đánh giá độ nhạy cảm da</div>
-                        <div class="txt">
-                            <p>Thời gian thử nghiệm : 2 tuần</p><br>
-                            <p>Số lượng người tham gia : 30 người</p><br>
-                            <p>Vị trí thử nghiệm : Mặt</p><br>
-                            <p>Sản phẩm bàn giao : Báo cáo <br class="pc_only">kết quả thử nghiệm</p>
-                        </div>
-                    </div>
-                    <div class="img"><img src="/images/icon/symbol.svg" alt="Đánh giá độ nhạy cảm da"></div>
-                </div>
+
             </div>
         </div>
     </div>
@@ -82,16 +58,56 @@
 
 <script>
     $(function(){
-        // 1. 레이아웃 로드
         $("#head").load("/head.html");
         $("#foot").load("/foot.html");
 
-        // 2단계(백엔드 연동)에서 /api/trial-safety 붙이면서
-        // 위 샘플 렌더링을 다시 loadSafetyData() AJAX 호출로 교체 예정.
-        setTimeout(function() {
-            $(window).trigger('scroll');
-        }, 100);
+        loadSafetyData();
     });
+
+    function loadSafetyData() {
+        $.ajax({
+            url: "/api/trial-safety",
+            method: "GET",
+            dataType: "json",
+            success: function(data) {
+                const container = $("#safetyListContainer");
+                container.empty();
+
+                if (!data || data.length === 0) {
+                    container.append('<p class="text-center w-100" style="padding: 100px 0;">Chưa có hạng mục thử nghiệm nào được đăng ký.</p>');
+                    return;
+                }
+
+                data.forEach(function(item) {
+                    const imgSrc = item.thumbnailUrl ? item.thumbnailUrl : "/images/icon/symbol.svg";
+
+                    const itemHtml = `
+                        <div class="item">
+                            <div class="text">
+                                <div class="tit">${item.title}</div>
+                                <div class="txt">
+                                    <p>Thời gian thử nghiệm : ${item.trialPeriod || '-'}</p><br>
+                                    <p>Số lượng người tham gia : ${item.participantCount || '-'}</p><br>
+                                    <p>Vị trí thử nghiệm : ${item.trialLocation || '-'}</p><br>
+                                    <p>Sản phẩm bàn giao : ${item.trialOutput || '-'}</p>
+                                </div>
+                            </div>
+                            <div class="img"><img src="${imgSrc}" alt="${item.title}"></div>
+                        </div>
+                    `;
+                    container.append(itemHtml);
+                });
+
+                setTimeout(function() {
+                    $(window).trigger('scroll');
+                }, 100);
+            },
+            error: function(err) {
+                console.error("데이터 로드 실패:", err);
+                $("#safetyListContainer").html('<p class="text-center w-100">Không thể tải dữ liệu.</p>');
+            }
+        });
+    }
 </script>
 </body>
 </html>

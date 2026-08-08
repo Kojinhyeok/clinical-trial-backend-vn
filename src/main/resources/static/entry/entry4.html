@@ -48,29 +48,7 @@
                 <p>Thử nghiệm tế bào để đánh giá độ an toàn/hiệu quả của nguyên liệu và mỹ phẩm</p>
             </div>
             <div class="content">
-                <div class="list1" id="invitroListContainer">
-                    <!-- 샘플 데이터로 고정 렌더링 (백엔드 연동 전) -->
-                    <div class="item">
-                        <div class="text">
-                            <div class="tit">Thử nghiệm độc tính tế bào (Cytotoxicity Test)</div>
-                            <div class="txt">
-                                <p class="detail">Đánh giá mức độ an toàn của nguyên liệu đối với tế bào da</p>
-                                <p>Sản phẩm bàn giao : Báo cáo<br class="pc_only"> kết quả thử nghiệm</p>
-                            </div>
-                        </div>
-                        <div class="img"><img src="/images/icon/symbol.svg" alt="Thử nghiệm độc tính tế bào"></div>
-                    </div>
-                    <div class="item">
-                        <div class="text">
-                            <div class="tit">Thử nghiệm chống oxy hóa (Antioxidant Test)</div>
-                            <div class="txt">
-                                <p class="detail">Đánh giá khả năng chống oxy hóa của nguyên liệu ở cấp độ tế bào</p>
-                                <p>Sản phẩm bàn giao : Báo cáo<br class="pc_only"> kết quả thử nghiệm</p>
-                            </div>
-                        </div>
-                        <div class="img"><img src="/images/icon/symbol.svg" alt="Thử nghiệm chống oxy hóa"></div>
-                    </div>
-                </div>
+                <div class="list1" id="invitroListContainer"></div>
             </div>
         </div>
     </section>
@@ -81,12 +59,51 @@
             $("#head").load("/head.html");
             $("#foot").load("/foot.html");
 
-            // 2단계(백엔드 연동)에서 /api/trial-invitro 붙이면서
-            // 위 샘플 렌더링을 다시 loadInvitroData() AJAX 호출로 교체 예정.
-            setTimeout(function() {
-                $(window).trigger('scroll');
-            }, 100);
+            loadInvitroData();
         });
+
+        function loadInvitroData() {
+            $.ajax({
+                url: "/api/trial-invitro",
+                method: "GET",
+                dataType: "json",
+                success: function(data) {
+                    const container = $("#invitroListContainer");
+                    container.empty();
+
+                    if (!data || data.length === 0) {
+                        container.append('<p class="text-center w-100" style="padding: 100px 0;">Chưa có hạng mục thử nghiệm nào được đăng ký.</p>');
+                        return;
+                    }
+
+                    data.forEach(function(item) {
+                        const imgSrc = item.thumbnailUrl ? item.thumbnailUrl : "/images/icon/symbol.svg";
+
+                        const itemHtml = `
+                            <div class="item">
+                                <div class="text">
+                                    <div class="tit">${item.title}</div>
+                                    <div class="txt">
+                                        ${item.detail ? `<p class="detail">${item.detail}</p>` : ''}
+                                        <p>Sản phẩm bàn giao : ${item.trialOutput || '-'}</p>
+                                    </div>
+                                </div>
+                                <div class="img"><img src="${imgSrc}" alt="${item.title}"></div>
+                            </div>
+                        `;
+                        container.append(itemHtml);
+                    });
+
+                    setTimeout(function() {
+                        $(window).trigger('scroll');
+                    }, 100);
+                },
+                error: function(err) {
+                    console.error("데이터 로드 실패:", err);
+                    $("#invitroListContainer").html('<p class="text-center w-100">Không thể tải dữ liệu.</p>');
+                }
+            });
+        }
     </script>
 </body>
 </html>
