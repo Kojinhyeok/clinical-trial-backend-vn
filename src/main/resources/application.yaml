@@ -45,4 +45,4 @@ server:
 email:
     provider: smtp
     from: noreply@humantest.co.kr
-    base-url: https://13.125.41.8
+    base-url: https://human-skin.com
